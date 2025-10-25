@@ -1,0 +1,14 @@
+[project]
+name = "be-cam"
+version = "0.1.0"
+description = "Backend of CAM"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "alembic>=1.17.0",
+    "bcrypt>=5.0.0",
+    "psycopg2-binary>=2.9.11",
+    "python-dotenv>=1.0.0",
+    "robyn>=0.72.2",
+    "sqlalchemy>=2.0.44",
+]

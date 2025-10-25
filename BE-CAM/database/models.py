@@ -1,0 +1,216 @@
+from sqlalchemy import (
+    Table,
+    Column,
+    String,
+    Integer,
+    Boolean,
+    ForeignKey,
+    Enum,
+    Text,
+    DateTime,
+    func,
+    UniqueConstraint,
+)
+from sqlalchemy.orm import relationship, declarative_base
+
+from .enums import (
+    HttpMethod,
+    ApiLevel,
+    ParamLocation,
+    ParamType,
+    UserRole,
+    UserLevel,
+)
+from bcrypt import hashpw, gensalt, checkpw
+
+Base = declarative_base()
+# 数据库表名和列名的命名规范
+naming_convention = {
+    "ix": "ix_%(column_0_label)s",
+    "uq": "uq_%(table_name)s_%(column_0_name)s",
+    "ck": "ck_%(table_name)s_%(column_0_name)s",
+    "fk": "fk_%(table_name)s_%(column_0_name)s_%(referred_table_name)s",
+    "pk": "pk_%(table_name)s",
+}
+Base.metadata.naming_convention = naming_convention
+
+
+# ---- 用户-服务关联表 ----
+user_service_link = Table(
+    "user_service_link",
+    Base.metadata,
+    Column("user_id", Integer, ForeignKey("user.id"), primary_key=True),
+    Column("service_id", Integer, ForeignKey("service.id"), primary_key=True),
+)
+
+
+# ---- 用户表 ----
+class User(Base):
+    __tablename__ = "user"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    services = relationship(
+        "Service", secondary=user_service_link, back_populates="maintainers"
+    )
+
+    username = Column(String(64), unique=True, nullable=False, index=True)
+    password = Column(String(128), nullable=False)
+    nickname = Column(String(64), nullable=True, index=True)
+    email = Column(String(128), nullable=True, unique=True)
+    role = Column(Enum(UserRole), default=UserRole.GUEST)
+    level = Column(Enum(UserLevel), default=UserLevel.L4)
+    created_at = Column(DateTime, server_default=func.now())
+
+    @staticmethod
+    def hash_password(password):
+        hashed = hashpw(password.encode("utf-8"), gensalt())
+        return hashed.decode("utf-8")
+
+    def check_password(self, password):
+        return checkpw(password.encode("utf-8"), self.password.encode("utf-8"))
+
+    def __repr__(self):
+        return f"<User {self.username}>"
+
+
+# ---- 服务表 ----
+class Service(Base):
+    __tablename__ = "service"
+    # 防止重复版本上传
+    __table_args__ = (
+        UniqueConstraint("service_uuid", "version", name="uq_service_version"),
+    )
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    owner_id = Column(Integer, ForeignKey("user.id"), nullable=False, index=True)
+    owner = relationship("User", backref="services")
+    maintainers = relationship(
+        "User", secondary=user_service_link, back_populates="services"
+    )
+
+    service_uuid = Column(String(64), unique=True, nullable=False, index=True)
+    version = Column(String(32), nullable=False, index=True)
+    description = Column(Text)
+    created_at = Column(DateTime, server_default=func.now())
+    updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
+
+    # 软删除
+    is_deleted = Column(Boolean, default=False, index=True)
+    deleted_at = Column(DateTime, nullable=True)
+
+    def __repr__(self):
+        return f"<Service {self.service_uuid}:{self.version}>"
+
+
+class ApiCategory(Base):
+    __tablename__ = "api_category"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    name = Column(String(64), unique=True, nullable=False, index=True)
+    description = Column(Text)
+
+    def __repr__(self):
+        return f"<ApiCategory {self.name}>"
+
+
+# ---- 接口表 ----
+class Api(Base):
+    __tablename__ = "api"
+    # API路径和方法组合唯一约束
+    __table_args__ = (
+        UniqueConstraint("service_id", "method", "path", name="uq_api_method_path"),
+    )
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    service_id = Column(Integer, ForeignKey("service.id"), nullable=False, index=True)
+    service = relationship("Service", backref="apis")
+    owner_id = Column(Integer, ForeignKey("user.id"), nullable=False, index=True)
+    owner = relationship("User", backref="apis")
+    category_id = Column(
+        Integer, ForeignKey("api_category.id"), nullable=True, index=True
+    )
+    category = relationship("ApiCategory", backref="apis")
+
+    name = Column(String(128), nullable=False)
+    method = Column(Enum(HttpMethod), nullable=False, index=True)
+    path = Column(String(256), nullable=False, index=True)
+    description = Column(Text)
+    level = Column(Enum(ApiLevel), default=ApiLevel.P4)  # P0/P1/P2/P3/P4
+    is_enabled = Column(Boolean, default=True)  # 是否启用
+    created_at = Column(DateTime, server_default=func.now())
+    updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
+
+    # 软删除
+    is_deleted = Column(Boolean, default=False, index=True)
+    deleted_at = Column(DateTime, nullable=True)
+
+    def __repr__(self):
+        return f"<Api {self.name} [{self.method.value}] {self.path}>"
+
+
+# ---- 请求参数 ----
+class RequestParam(Base):
+    __tablename__ = "request_param"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    api_id = Column(Integer, ForeignKey("api.id"), nullable=False, index=True)
+    api = relationship("Api", backref="request_params")
+
+    name = Column(String(64), nullable=False, index=True)
+    location = Column(Enum(ParamLocation), nullable=False)  # query/path/header/cookie
+    type = Column(
+        Enum(ParamType), nullable=False
+    )  # string/int/double/boolean/array/object/binary
+    required = Column(Boolean, default=False)
+    default_value = Column(String(256), nullable=True)
+    description = Column(Text)
+    example = Column(String(256))
+
+    # 如果是array类型，需要规定元素类型
+    array_child_type = Column(Enum(ParamType), nullable=True)
+    # 如果存在是object类型，需要有子参数（这里以子参数视角）
+    parent_param_id = Column(Integer, ForeignKey("request_param.id"), nullable=True)
+    parent_param = relationship(
+        "RequestParam", backref="child_params", remote_side=[id]
+    )
+    updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
+
+    def __repr__(self):
+        return f"<RequestParam {self.name} ({self.location.value})>"
+
+
+# ---- 响应参数 ----
+class ResponseParam(Base):
+    __tablename__ = "response_param"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    api_id = Column(Integer, ForeignKey("api.id"), nullable=False, index=True)
+    api = relationship("Api", backref="response_params")
+
+    status_code = Column(Integer, nullable=False)
+    name = Column(String(64), nullable=False, index=True)
+    type = Column(Enum(ParamType), nullable=False)
+    description = Column(Text)
+    example = Column(String(256))
+
+    # 如果是array类型，需要规定元素类型
+    array_child_type = Column(Enum(ParamType), nullable=True)
+    # 如果存在是object类型，需要有子参数（这里以子参数视角）
+    parent_param_id = Column(Integer, ForeignKey("response_param.id"), nullable=True)
+    parent_param = relationship(
+        "ResponseParam", backref="child_params", remote_side=[id]
+    )
+    updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
+
+    def __repr__(self):
+        return f"<ResponseParam {self.name} ({self.status_code})>"
+
+
+# 创建所有表（被alembic替代）
+if __name__ == "__main__":
+    try:
+        from database.database import engine
+    except ImportError:
+        from database import engine
+
+    Base.metadata.create_all(bind=engine)
