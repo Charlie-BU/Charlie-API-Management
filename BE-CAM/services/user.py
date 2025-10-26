@@ -1,3 +1,4 @@
+from robyn.robyn import Request
 from sqlalchemy.orm import Session
 from jose import jwt
 import os
@@ -23,6 +24,18 @@ def createAccessToken(data: dict, expires_delta: timedelta = None) -> str:
 
 def decodeAccessToken(token: str) -> dict:
     return jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+
+
+def userGetUserIdByAccessToken(request: Request = None, token: str = None) -> int:
+    if request is not None and token is not None:
+        raise Exception("Request and token should not be provided at the same time")
+    if request is not None:
+        authorization = request.headers.get("Authorization")
+        token = authorization.split("Bearer ")[1]
+    elif token is None:
+        raise Exception("Either request or token is required")
+    payload = decodeAccessToken(token)
+    return payload["id"]
 
 
 def userGetUserById(db: Session, id: int) -> dict:

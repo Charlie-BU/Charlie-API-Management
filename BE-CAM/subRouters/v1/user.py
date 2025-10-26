@@ -19,13 +19,21 @@ def handle_exception(error):
 userRouterV1.configure_authentication(AuthHandler(token_getter=BearerGetter()))
 
 
+@userRouterV1.get("/getUserById", auth_required=True)
+async def getUserById(request: Request):
+    id = request.query_params.get("id", None)
+    with session() as db:
+        res = userGetUserById(db=db, id=int(id))
+    return res
+
+
 @userRouterV1.post("/login")
 async def login(request: Request):
     data = request.json()
     username = data["username"]
     password = data["password"]
     with session() as db:
-        res = userLogin(db, username, password)
+        res = userLogin(db=db, username=username, password=password)
     return res
 
 
@@ -38,13 +46,12 @@ async def register(request: Request):
     email = data["email"]
     role = data["role"]
     with session() as db:
-        res = userRegister(db, username, password, nickname, email, role)
-    return res
-
-
-@userRouterV1.get("/getUserById", auth_required=True)
-async def getUserById(request: Request):
-    id = request.query_params.get("id", None)
-    with session() as db:
-        res = userGetUserById(db, int(id))
+        res = userRegister(
+            db=db,
+            username=username,
+            password=password,
+            nickname=nickname,
+            email=email,
+            role=role,
+        )
     return res
