@@ -1,4 +1,5 @@
 from sqlalchemy import (
+    inspect,
     Table,
     Column,
     String,
@@ -12,6 +13,7 @@ from sqlalchemy import (
     UniqueConstraint,
 )
 from sqlalchemy.orm import relationship, declarative_base
+from datetime import datetime
 
 from .enums import (
     HttpMethod,
@@ -35,6 +37,39 @@ naming_convention = {
 Base.metadata.naming_convention = naming_convention
 
 
+# 可序列化Mixin基类，提供toJson方法将模型实例转换为JSON
+class SerializableMixin:
+    def toJson(self, include=None, exclude=["password"], include_relations=False):
+        include = set(include) if include else None
+        exclude = set(exclude) if exclude else set()
+        mapper = inspect(self.__class__)
+
+        data = {}
+        for column in mapper.columns:
+            name = column.key
+            if include and name not in include:
+                continue
+            if name in exclude:
+                continue
+            value = getattr(self, name)
+            if isinstance(value, datetime):
+                value = value.isoformat()
+            data[name] = value
+
+        if include_relations:
+            for rel in mapper.relationships:
+                if rel.key in exclude:
+                    continue
+                value = getattr(self, rel.key)
+                if value is None:
+                    data[rel.key] = None
+                elif isinstance(value, list):
+                    data[rel.key] = [v.toJson() for v in value]
+                else:
+                    data[rel.key] = value.toJson()
+        return data
+
+
 # ---- 用户-服务关联表 ----
 user_service_link = Table(
     "user_service_link",
@@ -45,7 +80,7 @@ user_service_link = Table(
 
 
 # ---- 用户表 ----
-class User(Base):
+class User(Base, SerializableMixin):
     __tablename__ = "user"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
@@ -62,11 +97,11 @@ class User(Base):
     created_at = Column(DateTime, server_default=func.now())
 
     @staticmethod
-    def hash_password(password):
+    def hashPassword(password):
         hashed = hashpw(password.encode("utf-8"), gensalt())
         return hashed.decode("utf-8")
 
-    def check_password(self, password):
+    def checkPassword(self, password):
         return checkpw(password.encode("utf-8"), self.password.encode("utf-8"))
 
     def __repr__(self):
@@ -74,7 +109,7 @@ class User(Base):
 
 
 # ---- 服务表 ----
-class Service(Base):
+class Service(Base, SerializableMixin):
     __tablename__ = "service"
     # 防止重复版本上传
     __table_args__ = (
@@ -83,7 +118,7 @@ class Service(Base):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     owner_id = Column(Integer, ForeignKey("user.id"), nullable=False, index=True)
-    owner = relationship("User", backref="services")
+    owner = relationship("User", backref="owned_services")
     maintainers = relationship(
         "User", secondary=user_service_link, back_populates="services"
     )
@@ -102,7 +137,7 @@ class Service(Base):
         return f"<Service {self.service_uuid}:{self.version}>"
 
 
-class ApiCategory(Base):
+class ApiCategory(Base, SerializableMixin):
     __tablename__ = "api_category"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
@@ -114,7 +149,7 @@ class ApiCategory(Base):
 
 
 # ---- 接口表 ----
-class Api(Base):
+class Api(Base, SerializableMixin):
     __tablename__ = "api"
     # API路径和方法组合唯一约束
     __table_args__ = (
@@ -149,7 +184,7 @@ class Api(Base):
 
 
 # ---- 请求参数 ----
-class RequestParam(Base):
+class RequestParam(Base, SerializableMixin):
     __tablename__ = "request_param"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
@@ -180,7 +215,7 @@ class RequestParam(Base):
 
 
 # ---- 响应参数 ----
-class ResponseParam(Base):
+class ResponseParam(Base, SerializableMixin):
     __tablename__ = "response_param"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
