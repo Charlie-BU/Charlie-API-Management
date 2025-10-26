@@ -2,7 +2,7 @@ from robyn import SubRouter
 from robyn.robyn import Request, Response
 from robyn.authentication import BearerGetter
 
-from middlewares import AuthHandler
+from authentication import AuthHandler
 from database.database import session
 from services.user import userLogin, userRegister, userGetUserById
 
@@ -15,8 +15,16 @@ def handle_exception(error):
     return Response(status_code=500, description=f"error msg: {error}", headers={})
 
 
-# 鉴权
+# 鉴权中间件
 userRouterV1.configure_authentication(AuthHandler(token_getter=BearerGetter()))
+
+
+@userRouterV1.get("/getUserById", auth_required=True)
+async def getUserById(request: Request):
+    id = request.query_params.get("id", None)
+    with session() as db:
+        res = userGetUserById(db=db, id=int(id))
+    return res
 
 
 @userRouterV1.post("/login")
@@ -25,7 +33,7 @@ async def login(request: Request):
     username = data["username"]
     password = data["password"]
     with session() as db:
-        res = userLogin(db, username, password)
+        res = userLogin(db=db, username=username, password=password)
     return res
 
 
@@ -38,13 +46,12 @@ async def register(request: Request):
     email = data["email"]
     role = data["role"]
     with session() as db:
-        res = userRegister(db, username, password, nickname, email, role)
-    return res
-
-
-@userRouterV1.get("/getUserById")
-async def getUserById(request: Request):
-    id = request.query_params.get("id", None)
-    with session() as db:
-        res = userGetUserById(db, int(id))
+        res = userRegister(
+            db=db,
+            username=username,
+            password=password,
+            nickname=nickname,
+            email=email,
+            role=role,
+        )
     return res

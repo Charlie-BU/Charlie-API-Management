@@ -1,9 +1,11 @@
 from robyn import Robyn, ALLOW_CORS
 from robyn.robyn import Response
 from subRouters.v1.user import userRouterV1
+from subRouters.v1.service import serviceRouterV1
 
 app = Robyn(__file__)
 app.include_router(userRouterV1)
+app.include_router(serviceRouterV1)
 # 生产环境需要注释：使用nginx解决跨域
 ALLOW_CORS(app, origins=["http://localhost:8888"])
 

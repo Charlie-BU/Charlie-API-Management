@@ -141,6 +141,9 @@ class ApiCategory(Base, SerializableMixin):
     __tablename__ = "api_category"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
+    service_id = Column(Integer, ForeignKey("service.id"), nullable=False, index=True)
+    service = relationship("Service", backref="api_categories")
+
     name = Column(String(64), unique=True, nullable=False, index=True)
     description = Column(Text)
 
