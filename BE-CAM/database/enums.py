@@ -48,6 +48,7 @@ class UserRole(enum.Enum):
     GUEST = "guest"  # 访客
 
 
+# 用户等级，从高到低
 class UserLevel(enum.Enum):
     L0 = 0
     L1 = 1
