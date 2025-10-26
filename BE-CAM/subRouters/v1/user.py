@@ -19,6 +19,7 @@ def handle_exception(error):
 userRouterV1.configure_authentication(AuthHandler(token_getter=BearerGetter()))
 
 
+# 通过用户id获取用户详情
 @userRouterV1.get("/getUserById", auth_required=True)
 async def getUserById(request: Request):
     id = request.query_params.get("id", None)
@@ -27,6 +28,7 @@ async def getUserById(request: Request):
     return res
 
 
+# 用户登录
 @userRouterV1.post("/login")
 async def login(request: Request):
     data = request.json()
@@ -37,6 +39,7 @@ async def login(request: Request):
     return res
 
 
+# 用户注册
 @userRouterV1.post("/register")
 async def register(request: Request):
     data = request.json()
