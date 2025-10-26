@@ -123,7 +123,7 @@ class Service(Base, SerializableMixin):
         "User", secondary=user_service_link, back_populates="services"
     )
 
-    service_uuid = Column(String(64), unique=True, nullable=False, index=True)
+    service_uuid = Column(String(64), nullable=False, index=True)
     version = Column(String(32), nullable=False, index=True)
     description = Column(Text)
     created_at = Column(DateTime, server_default=func.now())
