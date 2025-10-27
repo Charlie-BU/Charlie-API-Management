@@ -17,7 +17,7 @@ ALLOW_CORS(app, origins=["http://localhost:8888"])
 
 @app.exception
 def handle_exception(error):
-    return Response(status_code=500, description=f"error msg: {error}", headers={})
+    return Response(status_code=500, headers={}, description=f"error msg: {error}")
 
 
 @app.get("/")

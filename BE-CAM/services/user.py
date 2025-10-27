@@ -1,4 +1,4 @@
-from robyn.robyn import Request
+from robyn.robyn import Request, Response
 from sqlalchemy.orm import Session
 from jose import jwt
 import os
@@ -51,15 +51,9 @@ def userGetUserById(db: Session, id: int) -> dict:
 def userLogin(db: Session, username: str, password: str) -> dict:
     user = db.query(User).filter(User.username == username).first()
     if user is None:
-        return {
-            "message": "User not found",
-            "access_token": "",
-        }
+        return Response(status_code=404, headers={}, description="User not found")
     if not user.checkPassword(password):
-        return {
-            "message": "Wrong password",
-            "access_token": "",
-        }
+        return Response(status_code=401, headers={}, description="Wrong password")
     access_token = createAccessToken(data={"id": user.id, "username": user.username})
     return {
         "message": "Login success",
@@ -73,7 +67,9 @@ def userRegister(
 ) -> dict:
     existing_user = db.query(User).filter(User.username == username).first()
     if existing_user:
-        return {"message": "Username already registered"}
+        return Response(
+            status_code=400, headers={}, description="Username already registered"
+        )
     try:
         user_role = UserRole(role)
     except ValueError:
