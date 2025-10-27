@@ -77,7 +77,7 @@ def serviceGetServiceByUuidAndVersion(
             headers={},
             description="You are not the owner of this service",
         )
-    return service.toJson(include_relations=True)
+    return service.toJson()
 
 
 # 通过service_uuid获取全部版本号
