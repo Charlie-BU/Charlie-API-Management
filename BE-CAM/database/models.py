@@ -139,6 +139,10 @@ class Service(Base, SerializableMixin):
 
 class ApiCategory(Base, SerializableMixin):
     __tablename__ = "api_category"
+    # API路径和方法组合唯一约束
+    __table_args__ = (
+        UniqueConstraint("service_id", "name", name="uq_service_category_name"),
+    )
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     service_id = Column(Integer, ForeignKey("service.id"), nullable=False, index=True)

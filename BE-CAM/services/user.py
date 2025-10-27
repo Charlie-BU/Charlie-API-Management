@@ -1,4 +1,4 @@
-from robyn.robyn import Request
+from robyn.robyn import Request, Response
 from sqlalchemy.orm import Session
 from jose import jwt
 import os
@@ -14,6 +14,7 @@ ALGORITHM = os.getenv("ALGORITHM")
 SECRET_KEY = os.getenv("LOGIN_SECRET")
 
 
+# 生成access token
 def createAccessToken(data: dict, expires_delta: timedelta = None) -> str:
     to_encode = data.copy()
     expire = datetime.utcnow() + (expires_delta or timedelta(hours=3))
@@ -22,10 +23,12 @@ def createAccessToken(data: dict, expires_delta: timedelta = None) -> str:
     return encoded_jwt
 
 
+# 解析access token
 def decodeAccessToken(token: str) -> dict:
     return jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
 
 
+# 通过access token获取user id
 def userGetUserIdByAccessToken(request: Request = None, token: str = None) -> int:
     if request is not None and token is not None:
         raise Exception("Request and token should not be provided at the same time")
@@ -38,23 +41,19 @@ def userGetUserIdByAccessToken(request: Request = None, token: str = None) -> in
     return payload["id"]
 
 
+# 通过user id获取user信息
 def userGetUserById(db: Session, id: int) -> dict:
     user = db.get(User, id)
     return user.toJson()
 
 
+# 用户登录
 def userLogin(db: Session, username: str, password: str) -> dict:
     user = db.query(User).filter(User.username == username).first()
     if user is None:
-        return {
-            "message": "User not found",
-            "access_token": "",
-        }
+        return Response(status_code=404, headers={}, description="User not found")
     if not user.checkPassword(password):
-        return {
-            "message": "Wrong password",
-            "access_token": "",
-        }
+        return Response(status_code=401, headers={}, description="Wrong password")
     access_token = createAccessToken(data={"id": user.id, "username": user.username})
     return {
         "message": "Login success",
@@ -62,13 +61,15 @@ def userLogin(db: Session, username: str, password: str) -> dict:
     }
 
 
+# 用户注册
 def userRegister(
     db: Session, username: str, password: str, nickname: str, email: str, role: str
 ) -> dict:
     existing_user = db.query(User).filter(User.username == username).first()
     if existing_user:
-        return {"message": "Username already registered"}
-
+        return Response(
+            status_code=400, headers={}, description="Username already registered"
+        )
     try:
         user_role = UserRole(role)
     except ValueError:
@@ -87,10 +88,3 @@ def userRegister(
         "message": "Register success",
         "user": user.toJson(),
     }
-
-
-if __name__ == "__main__":
-    from database.database import session
-
-    with session() as db:
-        user = getServiceById(db, 1)

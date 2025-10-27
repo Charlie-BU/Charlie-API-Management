@@ -1,6 +1,7 @@
 from datetime import datetime
-
+from robyn.robyn import Response
 from sqlalchemy.orm import Session
+
 from database.models import Service, User
 from utils import version2Number
 
@@ -9,11 +10,15 @@ from utils import version2Number
 def serviceGetServiceById(db: Session, id: int, user_id: int) -> dict:
     service = db.get(Service, id)
     if not service:
-        return {"message": "Service not found"}
+        return Response(status_code=404, headers={}, description="Service not found")
     user = db.get(User, user_id)
     # 非L0用户只能查看自己的服务
     if service.owner_id != user_id and user.level.value != 0:
-        return {"message": "You are not the owner of this service"}
+        return Response(
+            status_code=403,
+            headers={},
+            description="You are not the owner of this service",
+        )
     return service.toJson(include_relations=True)
 
 
@@ -63,12 +68,16 @@ def serviceGetServiceByUuidAndVersion(
         .first()
     )
     if not service:
-        return {"message": "Service not found"}
+        return Response(status_code=404, headers={}, description="Service not found")
     user = db.get(User, user_id)
     # 非L0用户只能查看自己的服务
     if service.owner_id != user_id and user.level.value != 0:
-        return {"message": "You are not the owner of this service"}
-    return service.toJson(include_relations=True)
+        return Response(
+            status_code=403,
+            headers={},
+            description="You are not the owner of this service",
+        )
+    return service.toJson()
 
 
 # 通过service_uuid获取全部版本号
@@ -83,11 +92,15 @@ def serviceGetAllVersionsByUuid(db: Session, service_uuid: str, user_id: int) ->
         .all()
     )
     if not services:
-        return {"message": "Service not found"}
+        return Response(status_code=404, headers={}, description="Service not found")
     user = db.get(User, user_id)
     # 非L0用户只能查看自己的服务
     if services[0].owner_id != user_id and user.level.value != 0:
-        return {"message": "You are not the owner of this service"}
+        return Response(
+            status_code=403,
+            headers={},
+            description="You are not the owner of this service",
+        )
     return {"versions": [service.version for service in services]}
 
 
@@ -100,7 +113,9 @@ def serviceCreateNewService(
         db.query(Service).filter(Service.service_uuid == service_uuid).first()
     )
     if existing_service:
-        return {"message": "Service UUID already exists"}
+        return Response(
+            status_code=400, headers={}, description="Service UUID already exists"
+        )
 
     service = Service(
         service_uuid=service_uuid,
@@ -126,7 +141,9 @@ def serviceGetAllDeletedServicesByUserId(db: Session, user_id: int) -> dict:
         .all()
     )
     if not services:
-        return {"message": "No deleted services found"}
+        return Response(
+            status_code=404, headers={}, description="No deleted services found"
+        )
     # 按service_uuid分组，每个service_uuid只保留最新删除的一个
     service_groups = {}
     for service in services:
@@ -147,11 +164,15 @@ def serviceGetAllDeletedServicesByUserId(db: Session, user_id: int) -> dict:
 def serviceDeleteServiceById(db: Session, id: int, user_id: int) -> dict:
     service = db.get(Service, id)
     if not service:
-        return {"message": "Service not found"}
+        return Response(status_code=404, headers={}, description="Service not found")
     user = db.get(User, user_id)
     # 非L0用户只能删除自己的服务
     if service.owner_id != user_id and user.level.value != 0:
-        return {"message": "You are not the owner of this service"}
+        return Response(
+            status_code=403,
+            headers={},
+            description="You are not the owner of this service",
+        )
     service.is_deleted = True
     service.deleted_at = datetime.now()
     db.commit()
@@ -162,13 +183,19 @@ def serviceDeleteServiceById(db: Session, id: int, user_id: int) -> dict:
 def serviceRestoreServiceById(db: Session, id: int, user_id: int) -> dict:
     service = db.get(Service, id)
     if not service:
-        return {"message": "Service not found"}
+        return Response(status_code=404, headers={}, description="Service not found")
     user = db.get(User, user_id)
     # 非L0用户只能还原自己的服务
     if service.owner_id != user_id and user.level.value != 0:
-        return {"message": "You are not the owner of this service"}
+        return Response(
+            status_code=403,
+            headers={},
+            description="You are not the owner of this service",
+        )
     if not service.is_deleted:
-        return {"message": "Service is not deleted"}
+        return Response(
+            status_code=400, headers={}, description="Service is not deleted"
+        )
     service.is_deleted = False
     service.deleted_at = None
     db.commit()
@@ -185,11 +212,15 @@ def serviceDeleteAllVersionsByUuid(
         .all()
     )
     if not services:
-        return {"message": "No services found"}
+        return Response(status_code=404, headers={}, description="No services found")
     user = db.get(User, user_id)
     # 非L0用户只能删除自己的服务
     if services[0].owner_id != user_id and user.level.value != 0:
-        return {"message": "You are not the owner of this service"}
+        return Response(
+            status_code=403,
+            headers={},
+            description="You are not the owner of this service",
+        )
     for service in services:
         service.is_deleted = True
         service.deleted_at = datetime.now()
@@ -207,11 +238,17 @@ def serviceRestoreAllVersionsByUuid(
         .all()
     )
     if not services:
-        return {"message": "No deleted services found"}
+        return Response(
+            status_code=404, headers={}, description="No deleted services found"
+        )
     user = db.get(User, user_id)
     # 非L0用户只能还原自己的服务
     if services[0].owner_id != user_id and user.level.value != 0:
-        return {"message": "You are not the owner of this service"}
+        return Response(
+            status_code=403,
+            headers={},
+            description="You are not the owner of this service",
+        )
     for service in services:
         service.is_deleted = False
         service.deleted_at = None
