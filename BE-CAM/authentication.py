@@ -8,8 +8,7 @@ from database.enums import UserLevel
 
 # 接口权限映射，value为访问该接口最低的用户等级
 API_PERMISSION_MAP = {
-    "/v1/user/getUserById": UserLevel.L1,
-    "/v1/service/createNewService": UserLevel.L4,  # 需登录，但全部用户可访问
+    "/v1/user/getUserById": UserLevel.L0,
 }
 
 
@@ -29,6 +28,6 @@ class AuthHandler(AuthenticationHandler):
             if (
                 api_path in API_PERMISSION_MAP
                 and user_level.value > API_PERMISSION_MAP[api_path].value
-            ):
+            ):  # 在API_PERMISSION_MAP中，且用户等级低于最低要求，拒绝访问
                 return None
         return Identity(claims={"user": f"{ user }"})

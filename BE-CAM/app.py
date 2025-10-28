@@ -4,6 +4,12 @@ from subRouters.v1.user import userRouterV1
 from subRouters.v1.service import serviceRouterV1
 from subRouters.v1.api import apiRouterV1
 
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+PORT = int(os.getenv("PORT"))
+
 
 app = Robyn(__file__)
 
@@ -26,4 +32,4 @@ async def index():
 
 
 if __name__ == "__main__":
-    app.start(host="0.0.0.0", port=1024)
+    app.start(host="0.0.0.0", port=PORT)

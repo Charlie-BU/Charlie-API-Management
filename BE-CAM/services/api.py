@@ -237,6 +237,8 @@ def apiAddApiByServiceId(
                 headers={},
                 description="Category not belongs to this service",
             )
+
+    service.is_staged = True
     api = Api(
         service_id=service_id,
         owner_id=user_id,

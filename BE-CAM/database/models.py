@@ -9,9 +9,11 @@ from sqlalchemy import (
     Enum,
     Text,
     DateTime,
+    JSON,
     func,
     UniqueConstraint,
 )
+from sqlalchemy.ext.mutable import MutableList
 from sqlalchemy.orm import relationship, declarative_base
 from datetime import datetime
 
@@ -128,13 +130,37 @@ class Service(Base, SerializableMixin):
     description = Column(Text)
     created_at = Column(DateTime, server_default=func.now())
     updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
-
     # 软删除
     is_deleted = Column(Boolean, default=False, index=True)
     deleted_at = Column(DateTime, nullable=True)
 
     def __repr__(self):
         return f"<Service {self.service_uuid}:{self.version}>"
+
+
+# ---- 服务备份表（在服务被设为暂存时备份服务全部信息） ----
+class ServiceBackup(Base, SerializableMixin):
+    __tablename__ = "service_backup"
+    # 防止重复版本上传
+    __table_args__ = (
+        UniqueConstraint("service_uuid", "version", name="uq_service_backup_version"),
+    )
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    # 备份的服务id
+    service_id = Column(Integer, ForeignKey("service.id"), nullable=False, index=True)
+    service = relationship("Service", backref="backups")
+
+    owner_id = Column(Integer, ForeignKey("user.id"), nullable=False, index=True)
+    # 减小开销只储存维护人id
+    maintainer_ids = Column(MutableList.as_mutable(JSON()), default=[])
+
+    service_uuid = Column(String(64), nullable=False, index=True)
+    version = Column(String(32), nullable=False, index=True)
+    description = Column(Text)
+
+    def __repr__(self):
+        return f"<ServiceBackup {self.service_uuid}:{self.version}>"
 
 
 class ApiCategory(Base, SerializableMixin):
