@@ -130,8 +130,6 @@ class Service(Base, SerializableMixin):
     description = Column(Text)
     created_at = Column(DateTime, server_default=func.now())
     updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
-    # 是否处于暂存态
-    is_staged = Column(Boolean, nullable=False, default=False, index=True)
     # 软删除
     is_deleted = Column(Boolean, default=False, index=True)
     deleted_at = Column(DateTime, nullable=True)
@@ -149,6 +147,10 @@ class ServiceBackup(Base, SerializableMixin):
     )
 
     id = Column(Integer, primary_key=True, autoincrement=True)
+    # 备份的服务id
+    service_id = Column(Integer, ForeignKey("service.id"), nullable=False, index=True)
+    service = relationship("Service", backref="backups")
+
     owner_id = Column(Integer, ForeignKey("user.id"), nullable=False, index=True)
     # 减小开销只储存维护人id
     maintainer_ids = Column(MutableList.as_mutable(JSON()), default=[])
