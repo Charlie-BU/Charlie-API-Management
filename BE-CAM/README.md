@@ -13,7 +13,7 @@
 -   项目默认监听 1024 端口，可通过修改`.env`中的环境变量`PORT`修改
 -   项目环境变量配置在`.env`中，包含以下字段：
 
-    ```toml
+    ```
     # 项目根路径
     PYTHONPATH=<YOUR-PROJECT-PATH>
 
