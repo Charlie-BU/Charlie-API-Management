@@ -156,6 +156,7 @@ class ServiceIteration(Base, SerializableMixin):
         return f"<ServiceIteration {self.service_id}:{self.version}>"
 
 
+# ---- 接口分类表 ----
 class ApiCategory(Base, SerializableMixin):
     __tablename__ = "api_category"
     # API路径和方法组合唯一约束

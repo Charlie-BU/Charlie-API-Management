@@ -33,7 +33,7 @@ def getAllCategoriesByServiceId(request: Request):
     return res
 
 
-# 通过service_id获取全部api（可带category_id）
+# 通过service_id获取全部api（可带category_id，不包括api内包含的params）
 @apiRouterV1.get("/getAllApisByServiceId", auth_required=True)
 def getAllApisByServiceId(request: Request):
     service_id = request.query_params.get("service_id", None)
@@ -46,13 +46,16 @@ def getAllApisByServiceId(request: Request):
     return res
 
 
-# 通过api_id获取api详情
+# 通过api_id获取api详情（包括api内包含的params）
 @apiRouterV1.get("/getApiById", auth_required=True)
 def getApiById(request: Request):
     api_id = request.query_params.get("api_id", None)
+    is_latest = request.query_params.get("is_latest", True)
     user_id = userGetUserIdByAccessToken(request)
     with session() as db:
-        res = apiGetApiById(db=db, api_id=api_id, user_id=user_id)
+        res = apiGetApiById(
+            db=db, api_id=api_id, user_id=user_id, is_latest=bool(is_latest)
+        )
     return res
 
 
