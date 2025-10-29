@@ -112,10 +112,6 @@ class User(Base, SerializableMixin):
 # ---- 服务表 ----
 class Service(Base, SerializableMixin):
     __tablename__ = "service"
-    # 防止重复版本上传
-    __table_args__ = (
-        UniqueConstraint("service_uuid", "version", name="uq_service_version"),
-    )
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     owner_id = Column(Integer, ForeignKey("user.id"), nullable=False, index=True)
@@ -124,7 +120,9 @@ class Service(Base, SerializableMixin):
         "User", secondary=user_service_link, back_populates="services"
     )
 
-    service_uuid = Column(String(64), nullable=False, index=True)
+    service_uuid = Column(
+        String(64), unique=True, nullable=False, index=True
+    )  # 只存放一个服务的最新版本，历史版本存在ServiceIteration表中
     version = Column(String(32), nullable=False, index=True)
     description = Column(Text)
     created_at = Column(DateTime, server_default=func.now())
