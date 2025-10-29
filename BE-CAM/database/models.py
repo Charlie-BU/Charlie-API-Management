@@ -146,7 +146,9 @@ class ServiceIteration(Base, SerializableMixin):
     creator_id = Column(Integer, ForeignKey("user.id"))
     creator = relationship("User", backref="created_iterations")
 
-    version = Column(String(32), nullable=False)  # 最新迭代与 service.version 对齐
+    version = Column(
+        String(32), nullable=True
+    )  # 发布前可为空，发布后最新迭代与 service.version 对齐
     description = Column(Text)
     created_at = Column(DateTime, default=datetime.utcnow)
     # 是否已发布
