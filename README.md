@@ -1,4 +1,4 @@
-# 🧭 CAM (Charlie API Management) — 产品需求文档（PRD）
+# CAM (Charlie API Management) — PRD
 
 ## 一、产品概述
 
@@ -169,7 +169,7 @@ export const getUser = (id: number) =>
             ▼
 +----------------------+
 |       后端服务       |
-|  Python (Robyn) 或 Go |
+|  Python (Robyn)     |
 |----------------------|
 | - OpenAPI 解析器     |
 | - Thrift 解析器      |
@@ -180,7 +180,7 @@ export const getUser = (id: number) =>
             ▼
 +----------------------+
 |      存储层          |
-|  DB2 / PostgreSQL    |
+|     PostgreSQL      |
 |----------------------|
 | - 服务与接口元数据   |
 | - OpenAPI JSON 存储  |
@@ -194,11 +194,11 @@ export const getUser = (id: number) =>
 
 | 模块     | 推荐技术栈                                       |
 | ------ | ------------------------------------------- |
-| 前端     | Vue3 + TypeScript + ElementPlus             |
-| 后端     | Robyn / FastAPI / Go + Fiber / Hertz        |
-| 数据库    | PostgreSQL / IBM Db2                        |
+| 前端     | React + TypeScript + ArcoDesign             |
+| 后端     | Robyn         |
+| 数据库    | PostgreSQL                       |
 | 文件解析   | pyyaml / openapi-spec-validator / thriftpy2 |
-| 代码生成   | openapi-typescript, jinja2 模板引擎             |
+| 代码生成   | openapi-typescript             |
 | 鉴权（规划） | JWT / OAuth2                                |
 | 部署     | Docker + Nginx                              |
 
@@ -230,7 +230,6 @@ export const getUser = (id: number) =>
 **CAM (Charlie API Management)**
 寓意为：
 
-> “以 Charlie 的方式管理 API”
 > —— Clean, Accurate, Maintainable.
 
 ---
@@ -248,8 +247,3 @@ export const getUser = (id: number) =>
         ↓
 [前后端联调，版本更新自动同步]
 ```
-
----
-
-是否希望我帮你继续完善下一版内容（例如：**数据表设计** 或 **前端页面结构草图**）？
-这些是 PRD 后续进入开发阶段非常关键的部分。
