@@ -2,7 +2,17 @@ from datetime import datetime
 from robyn.robyn import Response
 from sqlalchemy.orm import Session
 
-from database.models import Service, ServiceIteration, User
+from database.models import (
+    User,
+    Service,
+    ServiceIteration,
+    Api,
+    RequestParam,
+    ResponseParam,
+    ApiDraft,
+    RequestParamDraft,
+    ResponseParamDraft,
+)
 
 
 # 通过id获取服务详情
@@ -217,9 +227,13 @@ def serviceRestoreServiceById(db: Session, id: int, user_id: int) -> dict:
 
 
 # 通过service_iteration_id删除服务历史版本
-def serviceDeleteIterationById(db: Session, id: str, user_id: int) -> dict:
+def serviceDeleteIterationById(
+    db: Session, service_iteration_id: int, user_id: int
+) -> dict:
     service_iteration = (
-        db.query(ServiceIteration).filter(ServiceIteration.id == id).first()
+        db.query(ServiceIteration)
+        .filter(ServiceIteration.id == service_iteration_id)
+        .first()
     )
     if not service_iteration:
         return Response(
@@ -240,3 +254,275 @@ def serviceDeleteIterationById(db: Session, id: str, user_id: int) -> dict:
     db.delete(service_iteration)
     db.commit()
     return {"message": "Delete service iteration success"}
+
+
+# ---- ⚠️ 以下为service迭代流程相关方法 ----
+# 发起service迭代流程
+def serviceStartIteration(db: Session, service_id: int, user_id: int) -> dict:
+    # 检查服务是否存在
+    curr_service = db.get(Service, service_id)
+    if not curr_service:
+        return Response(status_code=404, headers={}, description="Service not found")
+    # 非L0用户，为当前service owner或当前迭代creator，才有权限发起迭代
+    user = db.get(User, user_id)
+    if curr_service.owner_id != user_id and user.level.value != 0:
+        return Response(
+            status_code=403,
+            headers={},
+            description="You are not the owner of this service",
+        )
+    # 检查当前用户是否已存在未提交的迭代周期
+    existing_new_iteration = (
+        db.query(ServiceIteration)
+        .filter(
+            ServiceIteration.service_id == service_id,
+            ~ServiceIteration.is_committed,
+            ServiceIteration.creator_id
+            == user_id,  # 同个迭代周期通过service_id和creator_id标识
+        )
+        .first()
+    )
+    if existing_new_iteration:
+        return Response(
+            status_code=400,
+            headers={},
+            description="You have an uncommitted service iteration in progress",
+        )
+    # 符合发起迭代条件
+    new_iteration = ServiceIteration(
+        service_id=service_id,
+        creator_id=user_id,
+        version=None,
+        description=None,
+        is_committed=False,
+    )
+    db.add(new_iteration)
+    db.flush()  # 获取 new_iteration.id
+    # 将当前服务最新版本全部信息备份到新迭代周期
+    for api in curr_service.apis:
+        api_draft = ApiDraft(
+            service_iteration_id=new_iteration.id,
+            owner_id=api.owner_id,
+            category_id=api.category_id,
+            name=api.name,
+            method=api.method,
+            path=api.path,
+            description=api.description,
+            level=api.level,
+            is_enabled=api.is_enabled,
+        )
+        db.add(api_draft)
+        db.flush()
+
+        # 建立请求参数的ID映射关系
+        req_param_id_mapping = {}
+        for req in api.request_params:
+            request_param_draft = RequestParamDraft(
+                api_draft_id=api_draft.id,
+                name=req.name,
+                location=req.location,
+                type=req.type,
+                required=req.required,
+                default_value=req.default_value,
+                description=req.description,
+                example=req.example,
+                array_child_type=req.array_child_type,
+                parent_param_id=None,  # 先设为None，后续更新
+            )
+            db.add(request_param_draft)
+            db.flush()
+            req_param_id_mapping[req.id] = request_param_draft.id
+
+        # 更新请求参数的parent_param_id
+        for req in api.request_params:
+            if req.parent_param_id is not None:
+                draft_param = (
+                    db.query(RequestParamDraft)
+                    .filter(RequestParamDraft.id == req_param_id_mapping[req.id])
+                    .first()
+                )
+                draft_param.parent_param_id = req_param_id_mapping[req.parent_param_id]
+
+        # 建立响应参数的ID映射关系
+        resp_param_id_mapping = {}
+        for resp in api.response_params:
+            response_param_draft = ResponseParamDraft(
+                api_draft_id=api_draft.id,
+                status_code=resp.status_code,
+                name=resp.name,
+                type=resp.type,
+                description=resp.description,
+                example=resp.example,
+                array_child_type=resp.array_child_type,
+                parent_param_id=None,  # 先设为None，后续更新
+            )
+            db.add(response_param_draft)
+            db.flush()
+            resp_param_id_mapping[resp.id] = response_param_draft.id
+
+        # 更新响应参数的parent_param_id
+        for resp in api.response_params:
+            if resp.parent_param_id is not None:
+                draft_param = (
+                    db.query(ResponseParamDraft)
+                    .filter(ResponseParamDraft.id == resp_param_id_mapping[resp.id])
+                    .first()
+                )
+                draft_param.parent_param_id = resp_param_id_mapping[
+                    resp.parent_param_id
+                ]
+    db.commit()
+    return {
+        "message": "Start service iteration success",
+        "service_iteration_id": new_iteration.id,  # 存在前端，在一个service迭代周期内作为唯一标识
+    }
+
+
+# 完成service迭代流程，service版本更新
+def serviceCommitIteration(
+    db: Session, service_iteration_id: int, new_version: str, user_id: int
+) -> dict:
+    service_iteration = db.get(ServiceIteration, service_iteration_id)
+    if not service_iteration:
+        return Response(
+            status_code=404, headers={}, description="No service iteration found"
+        )
+    service = service_iteration.service
+    user = db.get(User, user_id)
+    # 非L0用户，为当前service owner或当前迭代creator，才有权限提交
+    if (
+        service.owner_id != user_id
+        and service_iteration.creator_id != user_id
+        and user.level.value != 0
+    ):
+        return Response(
+            status_code=403,
+            headers={},
+            description="You are neither the owner of this service, nor the creator of this service iteration",
+        )
+    if service_iteration.is_committed:
+        return Response(
+            status_code=400,
+            headers={},
+            description="Service iteration has been committed",
+        )
+    if new_version == service.version:
+        return Response(
+            status_code=400,
+            headers={},
+            description="New version is the same as current version",
+        )
+    # 符合提交迭代条件
+    # 将service_iteration全部信息更新到service
+    service.description = service_iteration.description
+    service.version = new_version
+    # 递归删除service下所有api，并通过CASCADE删除api下所有相关的request_params和response_params
+    db.query(Api).filter(Api.service_id == service.id).delete(synchronize_session=False)
+
+    for api_draft in service_iteration.api_drafts:
+        new_api = Api(
+            service_id=service.id,
+            owner_id=api_draft.owner_id,
+            category_id=api_draft.category_id,
+            name=api_draft.name,
+            method=api_draft.method,
+            path=api_draft.path,
+            description=api_draft.description,
+            level=api_draft.level,
+            is_enabled=api_draft.is_enabled,
+        )
+        db.add(new_api)
+        db.flush()
+
+        # 建立请求参数的ID映射关系
+        req_param_id_mapping = {}
+        for req in api_draft.request_params:
+            request_param = RequestParam(
+                api_id=new_api.id,
+                name=req.name,
+                location=req.location,
+                type=req.type,
+                required=req.required,
+                default_value=req.default_value,
+                description=req.description,
+                example=req.example,
+                array_child_type=req.array_child_type,
+                parent_param_id=None,  # 先设为None，后续更新
+            )
+            db.add(request_param)
+            db.flush()
+            req_param_id_mapping[req.id] = request_param.id
+
+        # 更新请求参数的parent_param_id
+        for req in api_draft.request_params:
+            if req.parent_param_id is not None:
+                param = (
+                    db.query(RequestParam)
+                    .filter(RequestParam.id == req_param_id_mapping[req.id])
+                    .first()
+                )
+                param.parent_param_id = req_param_id_mapping[req.parent_param_id]
+
+        # 建立响应参数的ID映射关系
+        resp_param_id_mapping = {}
+        for resp in api_draft.response_params:
+            response_param = ResponseParam(
+                api_id=new_api.id,
+                status_code=resp.status_code,
+                name=resp.name,
+                type=resp.type,
+                description=resp.description,
+                example=resp.example,
+                array_child_type=resp.array_child_type,
+                parent_param_id=None,  # 先设为None，后续更新
+            )
+            db.add(response_param)
+            db.flush()
+            resp_param_id_mapping[resp.id] = response_param.id
+
+        # 更新响应参数的parent_param_id
+        for resp in api_draft.response_params:
+            if resp.parent_param_id is not None:
+                param = (
+                    db.query(ResponseParam)
+                    .filter(ResponseParam.id == resp_param_id_mapping[resp.id])
+                    .first()
+                )
+                param.parent_param_id = resp_param_id_mapping[resp.parent_param_id]
+
+    service_iteration.version = new_version
+    service_iteration.is_committed = True
+    db.commit()
+    return {
+        "message": "Commit service iteration success",
+        "service_id": service.id,
+        "service_iteration_id": service_iteration.id,
+        "version": new_version,
+    }
+
+
+# 通过 service_iteration_id 修改 service description
+def serviceUpdateDescription(
+    db: Session, service_iteration_id: int, description: str, user_id: int
+) -> dict:
+    service_iteration = db.get(ServiceIteration, service_iteration_id)
+    if not service_iteration:
+        return Response(
+            status_code=404, headers={}, description="No service iteration found"
+        )
+    user = db.get(User, user_id)
+    # 非L0用户，为当前service owner或当前迭代creator，才有权限修改
+    if (
+        service_iteration.service.owner_id != user_id
+        and service_iteration.creator_id != user_id
+        and user.level.value != 0
+    ):
+        return Response(
+            status_code=403,
+            headers={},
+            description="You are neither the owner of this service, nor the creator of this service iteration",
+        )
+    # 符合修改条件
+    service_iteration.description = description
+    db.commit()
+    return {"message": "Update service description success"}

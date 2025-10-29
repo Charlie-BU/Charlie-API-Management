@@ -112,6 +112,7 @@
     -   数据表中定义了`Service`和`ServiceBackup`表
     -   如下几种情形：
 
+        -   修改 service description
         -   添加/修改/删除 API
         -   添加/修改/删除 API 请求参数
         -   添加/修改/删除 API 响应参数
