@@ -31,7 +31,7 @@ def getServiceById(request: Request):
     return res
 
 
-# 通过service_uuid和version获取服务详情
+# 通过service_uuid和version获取服务详情（根据version判断是否为最新版本）
 @serviceRouterV1.get("/getServiceByUuidAndVersion", auth_required=True)
 def getServiceByUuidAndVersion(request: Request):
     service_uuid = request.query_params.get("service_uuid", None)
@@ -61,7 +61,7 @@ def getAllVersionsByUuid(request: Request):
     return res
 
 
-# 通过用户id获取用户的所有最新版本服务的列表
+# 通过用户id获取用户的所有最新版本服务（Service表中）的列表
 @serviceRouterV1.get("/getHisNewestServicesByOwnerId", auth_required=True)
 def getHisNewestServicesByOwnerId(request: Request):
     owner_id = userGetUserIdByAccessToken(request=request)
@@ -87,7 +87,7 @@ def createNewService(request: Request):
     return res
 
 
-# 通过user_id获取全部删除的服务（不包括全部版本）
+# 通过user_id获取全部删除的服务
 @serviceRouterV1.get("/getAllDeletedServicesByUserId", auth_required=True)
 def getAllDeletedServicesByUserId(request: Request):
     user_id = userGetUserIdByAccessToken(request=request)
@@ -96,7 +96,7 @@ def getAllDeletedServicesByUserId(request: Request):
     return res
 
 
-# 通过服务id删除服务（删除一个版本）
+# 通过服务id删除服务（最新版本），历史版本不动
 @serviceRouterV1.post("/deleteServiceById", auth_required=True)
 def deleteServiceById(request: Request):
     data = request.json()
@@ -107,7 +107,7 @@ def deleteServiceById(request: Request):
     return res
 
 
-# 通过服务id还原服务（还原一个版本）
+# 通过服务id还原服务（还原最新版本），历史版本不动
 @serviceRouterV1.post("/restoreServiceById", auth_required=True)
 def restoreServiceById(request: Request):
     data = request.json()
@@ -125,22 +125,7 @@ def deleteAllVersionsByUuid(request: Request):
     service_uuid = data["service_uuid"]
     user_id = userGetUserIdByAccessToken(request=request)
     with session() as db:
-        res = serviceDeleteAllVersionsByUuid(
-            db=db,
-            service_uuid=service_uuid,
-            user_id=user_id,
-        )
-    return res
-
-
-# 通过service_uuid还原服务全部版本
-@serviceRouterV1.post("/restoreAllVersionsByUuid", auth_required=True)
-def restoreAllVersionsByUuid(request: Request):
-    data = request.json()
-    service_uuid = data["service_uuid"]
-    user_id = userGetUserIdByAccessToken(request=request)
-    with session() as db:
-        res = serviceRestoreAllVersionsByUuid(
+        res = serviceDeleteIterationById(
             db=db,
             service_uuid=service_uuid,
             user_id=user_id,

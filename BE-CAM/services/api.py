@@ -43,7 +43,7 @@ def apiGetAllApisByServiceId(
             headers={},
             description="You are not the owner of this service",
         )
-    query = db.query(Api).filter(Api.service_id == service_id, Api.is_deleted == False)
+    query = db.query(Api).filter(Api.service_id == service_id, ~Api.is_deleted)
     if category_id is not None:
         query = query.filter(Api.category_id == category_id)
     apis = query.order_by(Api.id.desc()).all()
@@ -272,7 +272,7 @@ def apiGetDeletedApisByServiceId(db: Session, service_id: str, user_id: int) -> 
         )
     apis = (
         db.query(Api)
-        .filter(Api.service_id == service_id, Api.is_deleted == True)
+        .filter(Api.service_id == service_id, Api.is_deleted)
         .order_by(Api.deleted_at.desc())
         .all()
     )
@@ -293,7 +293,7 @@ def apiDeleteApiById(db: Session, api_id: str, user_id: int) -> dict:
             description="You are not the owner of this api",
         )
     api.is_deleted = True
-    api.deleted_at = datetime.now()
+    api.deleted_at = datetime.utcnow()
     db.commit()
     return {"message": "Delete api success"}
 

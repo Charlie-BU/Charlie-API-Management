@@ -13,7 +13,7 @@
 -   项目默认监听 1024 端口，可通过修改`.env`中的环境变量`PORT`修改
 -   项目环境变量配置在`.env`中，包含以下字段：
 
-    ```
+    ```ini
     # 项目根路径
     PYTHONPATH=<YOUR-PROJECT-PATH>
 
@@ -118,6 +118,7 @@
 
         会触发 service 版本迭代
 
+    > 这个方案有问题！TBD
     -   service 版本迭代流程：上述情形在一个迭代周期内首次发生，在当前 `service` 内容变化前在 `ServiceBackup` 表中新增记录 `serviceBackup` 对当前版本进行备份 ---> 相应内容变化在 `serviceBackup` 进行并落库，`service` 不做操作 ---> ...（上述情形发生，重复上述流程） ---> 当前迭代周期内全部修改完成，用户提交 ---> `serviceBackup` 中备份的内容替换当前 `service` 内容，`service` 版本号增加（用户自定义） ---> `serviceBackup` 删除 ---> 迭代周期结束
 
     若迭代周期内用户并未提交，则直接删除 `serviceBackup` 备份，提前结束迭代周期

@@ -9,7 +9,6 @@ from sqlalchemy import (
     Enum,
     Text,
     DateTime,
-    JSON,
     func,
     UniqueConstraint,
 )
@@ -113,10 +112,6 @@ class User(Base, SerializableMixin):
 # ---- 服务表 ----
 class Service(Base, SerializableMixin):
     __tablename__ = "service"
-    # 防止重复版本上传
-    __table_args__ = (
-        UniqueConstraint("service_uuid", "version", name="uq_service_version"),
-    )
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     owner_id = Column(Integer, ForeignKey("user.id"), nullable=False, index=True)
@@ -125,7 +120,9 @@ class Service(Base, SerializableMixin):
         "User", secondary=user_service_link, back_populates="services"
     )
 
-    service_uuid = Column(String(64), nullable=False, index=True)
+    service_uuid = Column(
+        String(64), unique=True, nullable=False, index=True
+    )  # 只存放一个服务的最新版本，历史版本存在ServiceIteration表中
     version = Column(String(32), nullable=False, index=True)
     description = Column(Text)
     created_at = Column(DateTime, server_default=func.now())
@@ -138,29 +135,25 @@ class Service(Base, SerializableMixin):
         return f"<Service {self.service_uuid}:{self.version}>"
 
 
-# ---- 服务备份表（在服务被设为暂存时备份服务全部信息） ----
-class ServiceBackup(Base, SerializableMixin):
-    __tablename__ = "service_backup"
-    # 防止重复版本上传
-    __table_args__ = (
-        UniqueConstraint("service_uuid", "version", name="uq_service_backup_version"),
-    )
-
+# ---- 服务迭代表（存储每个服务的每个历史版本和最新版本，最新版本和Service保持一致） ----
+class ServiceIteration(Base, SerializableMixin):
+    __tablename__ = "service_iteration"
     id = Column(Integer, primary_key=True, autoincrement=True)
-    # 备份的服务id
-    service_id = Column(Integer, ForeignKey("service.id"), nullable=False, index=True)
-    service = relationship("Service", backref="backups")
+    # 每个 iteration 对应 service 的一次完整快照
+    service_id = Column(Integer, ForeignKey("service.id"), nullable=False)
+    service = relationship("Service", backref="iterations")
+    # 迭代创建人
+    creator_id = Column(Integer, ForeignKey("user.id"))
+    creator = relationship("User", backref="created_iterations")
 
-    owner_id = Column(Integer, ForeignKey("user.id"), nullable=False, index=True)
-    # 减小开销只储存维护人id
-    maintainer_ids = Column(MutableList.as_mutable(JSON()), default=[])
-
-    service_uuid = Column(String(64), nullable=False, index=True)
-    version = Column(String(32), nullable=False, index=True)
+    version = Column(String(32), nullable=False)  # 最新迭代与 service.version 对齐
     description = Column(Text)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    # 是否已发布
+    is_committed = Column(Boolean, default=False)
 
     def __repr__(self):
-        return f"<ServiceBackup {self.service_uuid}:{self.version}>"
+        return f"<ServiceIteration {self.service_id}:{self.version}>"
 
 
 class ApiCategory(Base, SerializableMixin):
@@ -174,7 +167,7 @@ class ApiCategory(Base, SerializableMixin):
     service_id = Column(Integer, ForeignKey("service.id"), nullable=False, index=True)
     service = relationship("Service", backref="api_categories")
 
-    name = Column(String(64), unique=True, nullable=False, index=True)
+    name = Column(String(64), nullable=False, index=True)
     description = Column(Text)
 
     def __repr__(self):
@@ -272,6 +265,107 @@ class ResponseParam(Base, SerializableMixin):
 
     def __repr__(self):
         return f"<ResponseParam {self.name} ({self.status_code})>"
+
+
+# ---- 接口草稿表 ----
+class ApiDraft(Base, SerializableMixin):
+    __tablename__ = "api_draft"
+    # API路径和方法组合唯一约束
+    __table_args__ = (
+        UniqueConstraint(
+            "service_iteration_id", "method", "path", name="uq_api_method_path_draft"
+        ),
+    )
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    service_iteration_id = Column(
+        Integer, ForeignKey("service_iteration.id"), nullable=False, index=True
+    )
+    service_iteration = relationship("ServiceIteration", backref="api_drafts")
+    owner_id = Column(Integer, ForeignKey("user.id"), nullable=False, index=True)
+    owner = relationship("User", backref="api_drafts")
+    category_id = Column(
+        Integer, ForeignKey("api_category.id"), nullable=True, index=True
+    )
+    category = relationship("ApiCategory", backref="api_drafts")
+
+    name = Column(String(128), nullable=False)
+    method = Column(Enum(HttpMethod), nullable=False, index=True)
+    path = Column(String(256), nullable=False, index=True)
+    description = Column(Text)
+    level = Column(Enum(ApiLevel), default=ApiLevel.P4)  # P0/P1/P2/P3/P4
+    is_enabled = Column(Boolean, default=True)  # 是否启用
+    created_at = Column(DateTime, server_default=func.now())
+    updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
+
+    def __repr__(self):
+        return f"<ApiDraft {self.name} [{self.method.value}] {self.path}>"
+
+
+# ---- 请求参数草稿 ----
+class RequestParamDraft(Base, SerializableMixin):
+    __tablename__ = "request_param_draft"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    api_draft_id = Column(
+        Integer, ForeignKey("api_draft.id"), nullable=False, index=True
+    )
+    api_draft = relationship("ApiDraft", backref="request_params")
+
+    name = Column(String(64), nullable=False, index=True)
+    location = Column(Enum(ParamLocation), nullable=False)  # query/path/header/cookie
+    type = Column(
+        Enum(ParamType), nullable=False
+    )  # string/int/double/boolean/array/object/binary
+    required = Column(Boolean, default=False)
+    default_value = Column(String(256), nullable=True)
+    description = Column(Text)
+    example = Column(String(256))
+
+    # 如果是array类型，需要规定元素类型
+    array_child_type = Column(Enum(ParamType), nullable=True)
+    # 如果存在是object类型，需要有子参数（这里以子参数视角）
+    parent_param_id = Column(
+        Integer, ForeignKey("request_param_draft.id"), nullable=True
+    )
+    parent_param = relationship(
+        "RequestParamDraft", backref="child_params", remote_side=[id]
+    )
+    updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
+
+    def __repr__(self):
+        return f"<RequestParamDraft {self.name} ({self.location.value})>"
+
+
+# ---- 响应参数草稿 ----
+class ResponseParamDraft(Base, SerializableMixin):
+    __tablename__ = "response_param_draft"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    api_draft_id = Column(
+        Integer, ForeignKey("api_draft.id"), nullable=False, index=True
+    )
+    api_draft = relationship("ApiDraft", backref="response_params")
+
+    status_code = Column(Integer, nullable=False)
+    name = Column(String(64), nullable=False, index=True)
+    type = Column(Enum(ParamType), nullable=False)
+    description = Column(Text)
+    example = Column(String(256))
+
+    # 如果是array类型，需要规定元素类型
+    array_child_type = Column(Enum(ParamType), nullable=True)
+    # 如果存在是object类型，需要有子参数（这里以子参数视角）
+    parent_param_id = Column(
+        Integer, ForeignKey("response_param_draft.id"), nullable=True
+    )
+    parent_param = relationship(
+        "ResponseParamDraft", backref="child_params", remote_side=[id]
+    )
+    updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
+
+    def __repr__(self):
+        return f"<ResponseParamDraft {self.name} ({self.status_code})>"
 
 
 # 创建所有表（被alembic替代）
