@@ -31,6 +31,15 @@ def getServiceById(request: Request):
     return res
 
 
+# 通过用户id获取用户的所有最新版本服务（Service表中）的列表
+@serviceRouterV1.get("/getHisNewestServicesByOwnerId", auth_required=True)
+def getHisNewestServicesByOwnerId(request: Request):
+    owner_id = userGetUserIdByAccessToken(request=request)
+    with session() as db:
+        res = serviceGetHisNewestServicesByOwnerId(db=db, owner_id=owner_id)
+    return res
+
+
 # 通过service_uuid和version获取服务详情（根据version判断是否为最新版本）
 @serviceRouterV1.get("/getServiceByUuidAndVersion", auth_required=True)
 def getServiceByUuidAndVersion(request: Request):
@@ -58,15 +67,6 @@ def getAllVersionsByUuid(request: Request):
             service_uuid=service_uuid,
             user_id=user_id,
         )
-    return res
-
-
-# 通过用户id获取用户的所有最新版本服务（Service表中）的列表
-@serviceRouterV1.get("/getHisNewestServicesByOwnerId", auth_required=True)
-def getHisNewestServicesByOwnerId(request: Request):
-    owner_id = userGetUserIdByAccessToken(request=request)
-    with session() as db:
-        res = serviceGetHisNewestServicesByOwnerId(db=db, owner_id=owner_id)
     return res
 
 
@@ -118,16 +118,62 @@ def restoreServiceById(request: Request):
     return res
 
 
-# 通过service_uuid删除服务全部版本
-@serviceRouterV1.post("/deleteAllVersionsByUuid", auth_required=True)
-def deleteAllVersionsByUuid(request: Request):
+# 通过service_iteration_id删除服务历史版本
+@serviceRouterV1.post("/deleteIterationById", auth_required=True)
+def deleteIterationById(request: Request):
     data = request.json()
-    service_uuid = data["service_uuid"]
+    service_iteration_id = data["service_iteration_id"]
     user_id = userGetUserIdByAccessToken(request=request)
     with session() as db:
         res = serviceDeleteIterationById(
             db=db,
-            service_uuid=service_uuid,
+            service_iteration_id=service_iteration_id,
+            user_id=user_id,
+        )
+    return res
+
+
+# ---- ⚠️ 以下为service迭代流程相关路由 ----
+# 发起service迭代流程
+@serviceRouterV1.post("/startIteration", auth_required=True)
+def startIteration(request: Request):
+    data = request.json()
+    service_id = data["service_id"]
+    user_id = userGetUserIdByAccessToken(request=request)
+    with session() as db:
+        res = serviceStartIteration(db=db, service_id=service_id, user_id=user_id)
+    return res
+
+
+# 完成service迭代流程，service版本更新
+@serviceRouterV1.post("/commitIteration", auth_required=True)
+def commitIteration(request: Request):
+    data = request.json()
+    service_iteration_id = data["service_iteration_id"]
+    new_version = data["new_version"]
+    user_id = userGetUserIdByAccessToken(request=request)
+    with session() as db:
+        res = serviceCommitIteration(
+            db=db,
+            service_iteration_id=service_iteration_id,
+            new_version=new_version,
+            user_id=user_id,
+        )
+    return res
+
+
+# 通过 service_iteration_id 修改 service description
+@serviceRouterV1.post("/updateDescription", auth_required=True)
+def updateDescription(request: Request):
+    data = request.json()
+    service_iteration_id = data["service_iteration_id"]
+    description = data["description"]
+    user_id = userGetUserIdByAccessToken(request=request)
+    with session() as db:
+        res = serviceUpdateDescription(
+            db=db,
+            service_iteration_id=service_iteration_id,
+            description=description,
             user_id=user_id,
         )
     return res

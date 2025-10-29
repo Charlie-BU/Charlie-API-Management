@@ -204,10 +204,6 @@ class Api(Base, SerializableMixin):
     created_at = Column(DateTime, server_default=func.now())
     updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
 
-    # 软删除
-    is_deleted = Column(Boolean, default=False, index=True)
-    deleted_at = Column(DateTime, nullable=True)
-
     def __repr__(self):
         return f"<Api {self.name} [{self.method.value}] {self.path}>"
 
@@ -217,7 +213,9 @@ class RequestParam(Base, SerializableMixin):
     __tablename__ = "request_param"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-    api_id = Column(Integer, ForeignKey("api.id"), nullable=False, index=True)
+    api_id = Column(
+        Integer, ForeignKey("api.id", ondelete="CASCADE"), nullable=False, index=True
+    )  # 级联删除：删除api时，删除所有相关的param
     api = relationship("Api", backref="request_params")
 
     name = Column(String(64), nullable=False, index=True)
@@ -233,7 +231,11 @@ class RequestParam(Base, SerializableMixin):
     # 如果是array类型，需要规定元素类型
     array_child_type = Column(Enum(ParamType), nullable=True)
     # 如果存在是object类型，需要有子参数（这里以子参数视角）
-    parent_param_id = Column(Integer, ForeignKey("request_param.id"), nullable=True)
+    parent_param_id = Column(
+        Integer,
+        ForeignKey("request_param.id", ondelete="CASCADE"),
+        nullable=True,  # 级联删除：删除param时，删除所有相关的子param
+    )
     parent_param = relationship(
         "RequestParam", backref="child_params", remote_side=[id]
     )
@@ -248,7 +250,9 @@ class ResponseParam(Base, SerializableMixin):
     __tablename__ = "response_param"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-    api_id = Column(Integer, ForeignKey("api.id"), nullable=False, index=True)
+    api_id = Column(
+        Integer, ForeignKey("api.id", ondelete="CASCADE"), nullable=False, index=True
+    )  # 级联删除：删除api时，删除所有相关的param
     api = relationship("Api", backref="response_params")
 
     status_code = Column(Integer, nullable=False)
@@ -260,7 +264,9 @@ class ResponseParam(Base, SerializableMixin):
     # 如果是array类型，需要规定元素类型
     array_child_type = Column(Enum(ParamType), nullable=True)
     # 如果存在是object类型，需要有子参数（这里以子参数视角）
-    parent_param_id = Column(Integer, ForeignKey("response_param.id"), nullable=True)
+    parent_param_id = Column(
+        Integer, ForeignKey("response_param.id", ondelete="CASCADE"), nullable=True
+    )  # 级联删除：删除param时，删除所有相关的子param
     parent_param = relationship(
         "ResponseParam", backref="child_params", remote_side=[id]
     )
@@ -311,8 +317,11 @@ class RequestParamDraft(Base, SerializableMixin):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     api_draft_id = Column(
-        Integer, ForeignKey("api_draft.id"), nullable=False, index=True
-    )
+        Integer,
+        ForeignKey("api_draft.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )  # 级联删除：删除draft时，删除所有相关的param
     api_draft = relationship("ApiDraft", backref="request_params")
 
     name = Column(String(64), nullable=False, index=True)
@@ -329,8 +338,8 @@ class RequestParamDraft(Base, SerializableMixin):
     array_child_type = Column(Enum(ParamType), nullable=True)
     # 如果存在是object类型，需要有子参数（这里以子参数视角）
     parent_param_id = Column(
-        Integer, ForeignKey("request_param_draft.id"), nullable=True
-    )
+        Integer, ForeignKey("request_param_draft.id", ondelete="CASCADE"), nullable=True
+    )  # 级联删除：删除param时，删除所有相关的子param
     parent_param = relationship(
         "RequestParamDraft", backref="child_params", remote_side=[id]
     )
@@ -346,8 +355,11 @@ class ResponseParamDraft(Base, SerializableMixin):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     api_draft_id = Column(
-        Integer, ForeignKey("api_draft.id"), nullable=False, index=True
-    )
+        Integer,
+        ForeignKey("api_draft.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )  # 级联删除：删除draft时，删除所有相关的param
     api_draft = relationship("ApiDraft", backref="response_params")
 
     status_code = Column(Integer, nullable=False)
@@ -360,8 +372,10 @@ class ResponseParamDraft(Base, SerializableMixin):
     array_child_type = Column(Enum(ParamType), nullable=True)
     # 如果存在是object类型，需要有子参数（这里以子参数视角）
     parent_param_id = Column(
-        Integer, ForeignKey("response_param_draft.id"), nullable=True
-    )
+        Integer,
+        ForeignKey("response_param_draft.id", ondelete="CASCADE"),
+        nullable=True,
+    )  # 级联删除：删除param时，删除所有相关的子param
     parent_param = relationship(
         "ResponseParamDraft", backref="child_params", remote_side=[id]
     )

@@ -28,9 +28,8 @@ def apiGetAllCategoriesByServiceId(db: Session, service_id: str, user_id: int) -
     return {"categories": [category.toJson() for category in categories]}
 
 
-# service最新版（Service---Api---Param）
-# ‼️ 这个方法和service/serviceGetServiceByUuidAndVersion()类似。区别在于这个方法返回的只有apis，不包含service的其他信息；另外这个方法支持通过category_id筛选。
-# 通过service_id获取全部api（可带category_id，不包括api内包含的params）
+# 通过service_id获取全部api（最新版本，可带category_id，不包括api内包含的params）
+# ⚠️ 注意：这个方法和service/serviceGetServiceByUuidAndVersion()类似。区别在于这个方法返回的只有apis，不包含service的其他信息；另外这个方法支持通过category_id筛选。
 def apiGetAllApisByServiceId(
     db: Session, service_id: str, user_id: int, category_id: int = None
 ) -> dict:
@@ -203,7 +202,7 @@ def apiUpdateCategoryById(
 # 通过service_id新增api，暂存ApiDraft表（可指定category_id）
 def apiAddApiByServiceId(
     db: Session,
-    service_id: str,
+    service_iteration_id: int,
     user_id: int,
     name: str,
     method: str,
@@ -212,52 +211,53 @@ def apiAddApiByServiceId(
     level: str,
     category_id: int = None,
 ) -> dict:
-    service = db.get(Service, service_id)
-    if not service:
-        return Response(status_code=404, headers={}, description="Service not found")
-    # 非L0用户只能操作自己的服务
+    service_iteration = db.get(ServiceIteration, service_iteration_id)
+    if not service_iteration or service_iteration.is_committed:
+        return Response(
+            status_code=404,
+            headers={},
+            description="Service iteration not found or committed",
+        )
+    # 非L0用户，为当前service owner或当前迭代creator，才有权限新增api
     user = db.get(User, user_id)
-    if service.owner_id != user_id and user.level.value != 0:
+    if (
+        service_iteration.service.owner_id != user_id
+        and service_iteration.creator_id != user_id
+        and user.level.value != 0
+    ):
         return Response(
             status_code=403,
             headers={},
-            description="You are not the owner of this service",
+            description="You are neither the owner of this service, nor the creator of this service iteration",
         )
-    # 检查api_name是否已存在（只在Api表校验，不考虑ApiDraft表）
+    # 检查当前服务中是否已存在同名同路径的api
+    # 当前服务最新版本的api
     existing_api = (
         db.query(Api)
-        .filter(Api.service_id == service_id, Api.method == method, Api.path == path)
+        .filter(
+            Api.service_id == service_iteration.service_id,
+            Api.method == method,
+            Api.path == path,
+        )
         .first()
     )
-    if existing_api:
+    # 当前迭代周期的api草稿
+    existing_api_draft = (
+        db.query(ApiDraft)
+        .filter(
+            ApiDraft.service_iteration_id == service_iteration_id,
+            ApiDraft.method == method,
+            ApiDraft.path == path,
+        )
+        .first()
+    )
+    if existing_api or existing_api_draft:
         return Response(
             status_code=400,
             headers={},
             description="Api method and path already exists in this service",
         )
     # 符合新增条件
-    # 进入迭代流程，判定是否为当前迭代周期的首次行为
-    new_iteration = (
-        db.query(ServiceIteration)
-        .filter(
-            ServiceIteration.service_id == service_id,
-            ~ServiceIteration.is_committed,
-            ServiceIteration.creator_id
-            == user_id,  # 同个迭代周期通过service_id和creator_id标识
-        )
-        .first()
-    )
-    if not new_iteration:
-        new_iteration = ServiceIteration(
-            service_id=service_id,
-            creator_id=user_id,
-            version=None,
-            description=None,
-            is_committed=False,
-        )
-        db.add(new_iteration)
-        db.commit()
-    # 判定完毕，新增ApiDraft
     try:
         api_method = HttpMethod(method)
     except ValueError:
@@ -273,7 +273,7 @@ def apiAddApiByServiceId(
             return Response(
                 status_code=404, headers={}, description="Category not found"
             )
-        if category.service_id != service_id:
+        if category.service_id != service_iteration.service_id:
             return Response(
                 status_code=400,
                 headers={},
@@ -281,7 +281,7 @@ def apiAddApiByServiceId(
             )
 
     api_draft = ApiDraft(
-        service_iteration_id=new_iteration.id,
+        service_iteration_id=service_iteration_id,
         owner_id=user_id,
         name=name,
         method=api_method,
@@ -298,29 +298,7 @@ def apiAddApiByServiceId(
     }
 
 
-# # 通过service_id获取全部已删除api
-# def apiGetDeletedApisByServiceId(db: Session, service_id: str, user_id: int) -> dict:
-#     service = db.get(Service, service_id)
-#     if not service:
-#         return Response(status_code=404, headers={}, description="Service not found")
-#     # 非L0用户只能查看自己的服务
-#     user = db.get(User, user_id)
-#     if service.owner_id != user_id and user.level.value != 0:
-#         return Response(
-#             status_code=403,
-#             headers={},
-#             description="You are not the owner of this service",
-#         )
-#     apis = (
-#         db.query(Api)
-#         .filter(Api.service_id == service_id, Api.is_deleted)
-#         .order_by(Api.deleted_at.desc())
-#         .all()
-#     )
-#     return {"apis": [api.toJson() for api in apis]}
-
-
-# # 通过api_id删除api
+# 通过api_id删除api
 # def apiDeleteApiById(db: Session, api_id: str, user_id: int) -> dict:
 #     api = db.get(Api, api_id)
 #     if not api:
@@ -337,29 +315,3 @@ def apiAddApiByServiceId(
 #     api.deleted_at = datetime.utcnow()
 #     db.commit()
 #     return {"message": "Delete api success"}
-
-
-# # 通过api_id还原api
-# def apiRestoreApiById(db: Session, api_id: str, user_id: int) -> dict:
-#     api = db.get(Api, api_id)
-#     if not api:
-#         return Response(status_code=404, headers={}, description="Api not found")
-#     # 非L0用户只能操作自己的api
-#     user = db.get(User, user_id)
-#     if api.owner_id != user_id and user.level.value != 0:
-#         return Response(
-#             status_code=403,
-#             headers={},
-#             description="You are not the owner of this api",
-#         )
-#     # 检查api是否已被删除
-#     if not api.is_deleted:
-#         return Response(
-#             status_code=400,
-#             headers={},
-#             description="Api is not deleted",
-#         )
-#     api.is_deleted = False
-#     api.deleted_at = None
-#     db.commit()
-#     return {"message": "Restore api success"}

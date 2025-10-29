@@ -33,7 +33,7 @@ def getAllCategoriesByServiceId(request: Request):
     return res
 
 
-# 通过service_id获取全部api（可带category_id，不包括api内包含的params）
+# 通过service_id获取全部api（最新版本，可带category_id，不包括api内包含的params）
 @apiRouterV1.get("/getAllApisByServiceId", auth_required=True)
 def getAllApisByServiceId(request: Request):
     service_id = request.query_params.get("service_id", None)
@@ -74,18 +74,6 @@ def addCategoryByServiceId(request: Request):
             user_id=user_id,
             category_name=category_name,
             description=description,
-        )
-    return res
-
-
-# 通过service_id获取全部已删除api
-@apiRouterV1.get("/getDeletedApisByServiceId", auth_required=True)
-def getDeletedApisByServiceId(request: Request):
-    service_id = request.query_params.get("service_id", None)
-    user_id = userGetUserIdByAccessToken(request)
-    with session() as db:
-        res = apiGetDeletedApisByServiceId(
-            db=db, service_id=service_id, user_id=user_id
         )
     return res
 
@@ -155,15 +143,4 @@ def deleteApiById(request: Request):
     user_id = userGetUserIdByAccessToken(request)
     with session() as db:
         res = apiDeleteApiById(db=db, api_id=api_id, user_id=user_id)
-    return res
-
-
-# 通过api_id还原api
-@apiRouterV1.post("/restoreApiById", auth_required=True)
-def restoreApiById(request: Request):
-    data = request.json()
-    api_id = data["api_id"]
-    user_id = userGetUserIdByAccessToken(request)
-    with session() as db:
-        res = apiRestoreApiById(db=db, api_id=api_id, user_id=user_id)
     return res
