@@ -20,6 +20,16 @@ def checkServiceIterationPermission(
                 description="Service iteration not found or committed",
             ),
         }
+    # 已提交的迭代，不可进行迭代操作
+    if service_iteration.is_committed:
+        return {
+            "is_ok": False,
+            "error": Response(
+                status_code=400,
+                headers={},
+                description="Service iteration has been committed",
+            ),
+        }
     # 非L0用户，为当前service owner或当前迭代creator，才有权限进行迭代操作
     user = db.get(User, user_id)
     if (

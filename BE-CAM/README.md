@@ -70,7 +70,7 @@
 
 ## 服务与 API 实现
 
--   将全部服务分为 user、service、api、api-param 四类，分别对应四个子路由
+-   将全部服务分为 user、service、api 三类，分别对应三个子路由
 -   每个路由实现内部逻辑都交由 service 层处理。路由层仅负责接收请求参数、调用 service 层方法、返回响应。service 层再调用对应的 model 层方法进行数据库的 CRUD
 -   本项目中 service 层的方法规范：
     -   方法命名为`<service_name><operation_name>`，例如`userLogin()`、`serviceGetAllCategoriesByServiceId()`等。避免和路由及路由函数函数重名

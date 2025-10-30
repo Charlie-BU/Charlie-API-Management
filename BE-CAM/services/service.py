@@ -383,30 +383,15 @@ def serviceStartIteration(db: Session, service_id: int, user_id: int) -> dict:
 def serviceCommitIteration(
     db: Session, service_iteration_id: int, new_version: str, user_id: int
 ) -> dict:
-    service_iteration = db.get(ServiceIteration, service_iteration_id)
-    if not service_iteration:
-        return Response(
-            status_code=404, headers={}, description="No service iteration found"
-        )
-    service = service_iteration.service
-    user = db.get(User, user_id)
-    # 非L0用户，为当前service owner或当前迭代creator，才有权限提交
-    if (
-        service.owner_id != user_id
-        and service_iteration.creator_id != user_id
-        and user.level.value != 0
-    ):
-        return Response(
-            status_code=403,
-            headers={},
-            description="You are neither the owner of this service, nor the creator of this service iteration",
-        )
-    if service_iteration.is_committed:
-        return Response(
-            status_code=400,
-            headers={},
-            description="Service iteration has been committed",
-        )
+    # 版本迭代行为权限校验
+    check_res = checkServiceIterationPermission(
+        db=db,
+        service_iteration_id=service_iteration_id,
+        user_id=user_id,
+    )
+    if not check_res["is_ok"]:
+        return check_res
+    service_iteration = check_res["service_iteration"]
     if new_version == service.version:
         return Response(
             status_code=400,

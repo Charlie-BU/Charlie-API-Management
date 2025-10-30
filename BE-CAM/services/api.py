@@ -2,8 +2,17 @@ from sqlalchemy.orm import Session
 from robyn.robyn import Response
 from datetime import datetime
 
-from database.models import Service, Api, ApiCategory, ServiceIteration, User, ApiDraft
-from database.enums import ApiLevel, HttpMethod
+from database.models import (
+    Service,
+    Api,
+    ApiCategory,
+    ServiceIteration,
+    User,
+    ApiDraft,
+    RequestParamDraft,
+    ResponseParamDraft,
+)
+from database.enums import ApiLevel, HttpMethod, ParamType, ParamLocation
 from services.utils import checkServiceIterationPermission
 
 
@@ -285,7 +294,7 @@ def apiAddApi(
     try:
         api_level = ApiLevel(level)
     except ValueError:
-        api_level = ApiLevel.GUEST
+        api_level = ApiLevel.P2
     # 若有category_id，检查category_id是否属于该服务
     if category_id is not None:
         category = db.get(ApiCategory, category_id)
@@ -318,7 +327,7 @@ def apiAddApi(
     }
 
 
-# 通过service_iteration_id，api_draft_id删除api
+# 通过service_iteration_id、api_draft_id删除api
 def apiDeleteApiByApiDraftId(
     db: Session, service_iteration_id: int, api_draft_id: int, user_id: int
 ) -> dict:
@@ -328,7 +337,6 @@ def apiDeleteApiByApiDraftId(
     )
     if not check_res["is_ok"]:
         return check_res["error"]
-    # 符合删除条件
     api_draft = db.get(ApiDraft, api_draft_id)
     if not api_draft:
         return Response(status_code=404, headers={}, description="Api draft not found")
@@ -338,9 +346,236 @@ def apiDeleteApiByApiDraftId(
             headers={},
             description="Api draft not belongs to this service iteration",
         )
+    # 符合删除条件
     db.delete(api_draft)
     db.commit()
     return {"message": "Delete api success"}
 
 
-# api的修改同params修改一并处理
+# 通过service_iteration_id、api_draft_id编辑api（包括api自有属性、请求params和响应params）
+"""
+约定req_params参数格式（支持嵌套结构）：
+[
+    {
+        "name": "user",
+        "location": "body",
+        "type": "object",
+        "required": true,
+        "default_value": null,
+        "description": "用户信息",
+        "example": "{}",
+        "array_child_type": null,
+        "children": [
+            {
+                "name": "name",
+                "type": "string",
+                "required": true,
+                "default_value": null,
+                "description": "用户姓名",
+                "example": "张三",
+                "array_child_type": null,
+                "children": null
+            },
+            {
+                "name": "profile",
+                "type": "object",
+                "required": false,
+                "default_value": null,
+                "description": "用户档案",
+                "example": "{}",
+                "array_child_type": null,
+                "children": [
+                    {
+                        "name": "age",
+                        "type": "int",
+                        "required": true,
+                        "default_value": null,
+                        "description": "年龄",
+                        "example": "25",
+                        "array_child_type": null,
+                        "children": null
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "name": "tags",
+        "location": "query",
+        "type": "array",
+        "required": false,
+        "default_value": null,
+        "description": "标签列表",
+        "example": "[\"tag1\", \"tag2\"]",
+        "array_child_type": "string",
+        "children": null
+    }
+]
+
+说明：
+- 对于object类型的参数，使用children字段存储子参数
+- 对于array类型的参数，使用array_child_type指定数组元素类型
+- 子参数不需要location字段，会继承父参数的location
+- children为null表示该参数没有子参数
+"""
+
+
+# 辅助函数：递归处理参数列表，支持嵌套的object类型参数
+def _process_params_recursively(
+    db: Session,
+    params: list,
+    api_draft_id: int,
+    parent_param_id: int = None,
+    parent_location: str = None,
+    param_model_class=RequestParamDraft,
+) -> None:
+    for param in params:
+        param_name = param["name"]
+        param_type = param["type"]
+        param_required = param.get("required", False)
+        param_default_value = param.get("default_value")
+        param_description = param.get("description")
+        param_example = param.get("example")
+        param_array_child_type = param.get("array_child_type")
+        param_children = param.get("children")
+
+        # 确定参数位置：子参数继承父参数的location
+        if parent_location:
+            param_location = parent_location
+        else:
+            param_location = param.get("location", "body")
+
+        # 验证并转换枚举值
+        try:
+            param_location_enum = ParamLocation(param_location)
+        except ValueError:
+            param_location_enum = ParamLocation.BODY
+
+        try:
+            param_type_enum = ParamType(param_type)
+        except ValueError:
+            param_type_enum = ParamType.STRING
+
+        # 处理array_child_type
+        param_array_child_type_enum = None
+        if param_array_child_type:
+            try:
+                param_array_child_type_enum = ParamType(param_array_child_type)
+            except ValueError:
+                param_array_child_type_enum = None
+
+        # 创建参数记录
+        if param_model_class == RequestParamDraft:
+            param_record = RequestParamDraft(
+                api_draft_id=api_draft_id,
+                name=param_name,
+                location=param_location_enum,
+                type=param_type_enum,
+                required=param_required,
+                default_value=param_default_value,
+                description=param_description,
+                example=param_example,
+                array_child_type=param_array_child_type_enum,
+                parent_param_id=parent_param_id,
+            )
+        else:  # ResponseParamDraft
+            # 响应参数需要status_code，这里使用默认值200
+            status_code = param.get("status_code", 200)
+            param_record = ResponseParamDraft(
+                api_draft_id=api_draft_id,
+                status_code=status_code,
+                name=param_name,
+                type=param_type_enum,
+                description=param_description,
+                example=param_example,
+                array_child_type=param_array_child_type_enum,
+                parent_param_id=parent_param_id,
+            )
+
+        db.add(param_record)
+        db.flush()  # 获取新创建记录的ID
+
+        # 如果是object类型且有子参数，递归处理子参数
+        if param_type_enum == ParamType.OBJECT and param_children:
+            _process_params_recursively(
+                db=db,
+                params=param_children,
+                api_draft_id=api_draft_id,
+                parent_param_id=param_record.id,
+                parent_location=param_location,
+                param_model_class=param_model_class,
+            )
+
+
+# 通过service_iteration_id、api_draft_id更新API
+def apiUpdateApiByApiDraftId(
+    db: Session,
+    service_iteration_id: int,
+    api_draft_id: int,
+    user_id: int,
+    name: str,
+    method: str,
+    path: str,
+    description: str,
+    level: str,
+    req_params: list,
+    resp_params: list,
+) -> dict:
+    # 版本迭代行为权限校验
+    check_res = checkServiceIterationPermission(
+        db=db, service_iteration_id=service_iteration_id, user_id=user_id
+    )
+    if not check_res["is_ok"]:
+        return check_res["error"]
+    api_draft = db.get(ApiDraft, api_draft_id)
+    if not api_draft:
+        return Response(status_code=404, headers={}, description="Api draft not found")
+    if api_draft.service_iteration_id != service_iteration_id:
+        return Response(
+            status_code=400,
+            headers={},
+            description="Api draft not belongs to this service iteration",
+        )
+    # 符合更新条件
+    try:
+        api_method = HttpMethod(method)
+    except ValueError:
+        api_method = HttpMethod.GET
+    try:
+        api_level = ApiLevel(level)
+    except ValueError:
+        api_level = ApiLevel.P2
+    api_draft.name = name
+    api_draft.method = api_method
+    api_draft.path = path
+    api_draft.description = description
+    api_draft.level = api_level
+    # 更新请求参数和响应参数
+    # 先删除已存在的请求参数和响应参数，再新增
+    db.query(RequestParamDraft).filter(
+        RequestParamDraft.api_draft_id == api_draft_id
+    ).delete()
+    db.query(ResponseParamDraft).filter(
+        ResponseParamDraft.api_draft_id == api_draft_id
+    ).delete()
+
+    # 处理请求参数（支持嵌套结构）
+    if req_params:
+        _process_params_recursively(
+            db=db,
+            params=req_params,
+            api_draft_id=api_draft_id,
+            param_model_class=RequestParamDraft,
+        )
+
+    # 处理响应参数（支持嵌套结构）
+    if resp_params:
+        _process_params_recursively(
+            db=db,
+            params=resp_params,
+            api_draft_id=api_draft_id,
+            param_model_class=ResponseParamDraft,
+        )
+
+    db.commit()
+    return {"message": "Update api success"}

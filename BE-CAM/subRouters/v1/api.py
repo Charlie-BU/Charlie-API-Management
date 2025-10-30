@@ -150,7 +150,7 @@ def addApi(request: Request):
     return res
 
 
-# 通过service_iteration_id，api_draft_id删除api
+# 通过service_iteration_id、api_draft_id删除api
 @apiRouterV1.post("/deleteApiByApiDraftId", auth_required=True)
 def deleteApiByApiDraftId(request: Request):
     data = request.json()
@@ -163,5 +163,37 @@ def deleteApiByApiDraftId(request: Request):
             service_iteration_id=service_iteration_id,
             api_draft_id=api_draft_id,
             user_id=user_id,
+        )
+    return res
+
+
+# 通过service_iteration_id、api_draft_id更新API（正式表Api）
+@apiRouterV1.post("/updateApiByApiDraftId", auth_required=True)
+def updateApiByApiDraftId(request: Request):
+    data = request.json()
+    service_iteration_id = data["service_iteration_id"]
+    api_draft_id = data["api_draft_id"]
+    name = data["name"]
+    method = data["method"]
+    path = data["path"]
+    description = data["description"]
+    level = data["level"]
+    req_params = json.loads(data["req_params"])
+    resp_params = json.loads(data["resp_params"])
+
+    user_id = userGetUserIdByAccessToken(request)
+    with session() as db:
+        res = apiUpdateApiByApiDraftId(
+            db=db,
+            service_iteration_id=service_iteration_id,
+            api_draft_id=api_draft_id,
+            user_id=user_id,
+            name=name,
+            method=method,
+            path=path,
+            description=description,
+            level=level,
+            req_params=req_params,
+            resp_params=resp_params,
         )
     return res

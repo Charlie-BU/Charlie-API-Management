@@ -9,10 +9,9 @@ from sqlalchemy import (
     Enum,
     Text,
     DateTime,
-    func,
     UniqueConstraint,
+    func,
 )
-from sqlalchemy.ext.mutable import MutableList
 from sqlalchemy.orm import relationship, declarative_base
 from datetime import datetime
 
