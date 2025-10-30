@@ -218,7 +218,9 @@ class RequestParam(Base, SerializableMixin):
     api = relationship("Api", backref="request_params")
 
     name = Column(String(64), nullable=False, index=True)
-    location = Column(Enum(ParamLocation), nullable=False)  # query/path/header/cookie
+    location = Column(
+        Enum(ParamLocation), nullable=False
+    )  # query/path/header/cookie/body
     type = Column(
         Enum(ParamType), nullable=False
     )  # string/int/double/boolean/array/object/binary
@@ -257,6 +259,7 @@ class ResponseParam(Base, SerializableMixin):
     status_code = Column(Integer, nullable=False)
     name = Column(String(64), nullable=False, index=True)
     type = Column(Enum(ParamType), nullable=False)
+    required = Column(Boolean, default=False)
     description = Column(Text)
     example = Column(String(256))
 
@@ -324,7 +327,9 @@ class RequestParamDraft(Base, SerializableMixin):
     api_draft = relationship("ApiDraft", backref="request_params")
 
     name = Column(String(64), nullable=False, index=True)
-    location = Column(Enum(ParamLocation), nullable=False)  # query/path/header/cookie
+    location = Column(
+        Enum(ParamLocation), nullable=False
+    )  # query/path/header/cookie/body
     type = Column(
         Enum(ParamType), nullable=False
     )  # string/int/double/boolean/array/object/binary
@@ -364,6 +369,7 @@ class ResponseParamDraft(Base, SerializableMixin):
     status_code = Column(Integer, nullable=False)
     name = Column(String(64), nullable=False, index=True)
     type = Column(Enum(ParamType), nullable=False)
+    required = Column(Boolean, default=False)
     description = Column(Text)
     example = Column(String(256))
 

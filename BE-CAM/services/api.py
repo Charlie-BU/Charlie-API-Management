@@ -486,6 +486,7 @@ def _process_params_recursively(
                 status_code=status_code,
                 name=param_name,
                 type=param_type_enum,
+                required=param_required,
                 description=param_description,
                 example=param_example,
                 array_child_type=param_array_child_type_enum,
