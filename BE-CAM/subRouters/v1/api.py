@@ -108,11 +108,26 @@ def updateCategoryById(request: Request):
     return res
 
 
-# 通过service_id新增api（可指定category_id）
-@apiRouterV1.post("/addApiByServiceId", auth_required=True)
-def addApiByServiceId(request: Request):
+# 通过api_id、category_id修改api所属分类（仅支持修改正式表Api，不支持草稿表ApiDraft）
+@apiRouterV1.post("/updateApiCategoryById", auth_required=True)
+def updateApiCategoryById(request: Request):
     data = request.json()
-    service_id = data["service_id"]
+    api_id = data["api_id"]
+    category_id = data["category_id"]
+    user_id = userGetUserIdByAccessToken(request)
+    with session() as db:
+        res = apiUpdateApiCategory(
+            db=db, api_id=api_id, category_id=category_id, user_id=user_id
+        )
+    return res
+
+
+# ---- ⚠️ 以下为service迭代流程相关路由 ----
+# 通过service_iteration_id新增api（存ApiDraft表，可指定category_id）
+@apiRouterV1.post("/addApi", auth_required=True)
+def addApi(request: Request):
+    data = request.json()
+    service_iteration_id = data["service_iteration_id"]
     name = data["name"]
     method = data["method"]
     path = data["path"]
@@ -121,9 +136,9 @@ def addApiByServiceId(request: Request):
     category_id = data.get("category_id", None)
     user_id = userGetUserIdByAccessToken(request)
     with session() as db:
-        res = apiAddApiByServiceId(
+        res = apiAddApi(
             db=db,
-            service_id=service_id,
+            service_iteration_id=service_iteration_id,
             user_id=user_id,
             name=name,
             method=method,
@@ -135,12 +150,18 @@ def addApiByServiceId(request: Request):
     return res
 
 
-# 通过api_id删除api
-@apiRouterV1.post("/deleteApiById", auth_required=True)
-def deleteApiById(request: Request):
+# 通过service_iteration_id，api_draft_id删除api
+@apiRouterV1.post("/deleteApiByApiDraftId", auth_required=True)
+def deleteApiByApiDraftId(request: Request):
     data = request.json()
-    api_id = data["api_id"]
+    service_iteration_id = data["service_iteration_id"]
+    api_draft_id = data["api_draft_id"]
     user_id = userGetUserIdByAccessToken(request)
     with session() as db:
-        res = apiDeleteApiById(db=db, api_id=api_id, user_id=user_id)
+        res = apiDeleteApiByApiDraftId(
+            db=db,
+            service_iteration_id=service_iteration_id,
+            api_draft_id=api_draft_id,
+            user_id=user_id,
+        )
     return res
