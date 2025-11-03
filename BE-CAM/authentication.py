@@ -1,8 +1,9 @@
-from robyn.robyn import Request
-from robyn.authentication import AuthenticationHandler, Identity
+from robyn.robyn import Request, Identity
+from robyn.authentication import AuthenticationHandler
 
 from database.database import session
 from services.user import decodeAccessToken, userGetUserById
+
 from database.enums import UserLevel
 
 
@@ -16,7 +17,7 @@ class AuthHandler(AuthenticationHandler):
     def authenticate(self, request: Request):
         token = self.token_getter.get_token(request)
         try:
-            payload = decodeAccessToken(token)
+            payload = decodeAccessToken(token or "")
             id = payload["id"]
         except Exception:
             return None

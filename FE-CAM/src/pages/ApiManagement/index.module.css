@@ -1,0 +1,118 @@
+.container {
+  padding: 0;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.title {
+  margin: 0 !important;
+  font-size: 20px;
+  font-weight: 600;
+  color: #1d2129;
+}
+
+.card {
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 0;
+}
+
+.searchSection {
+  display: flex;
+  align-items: center;
+}
+
+.tableSection {
+  margin-top: 16px;
+}
+
+.tableHeader {
+  margin-bottom: 16px;
+}
+
+.tableTitle {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1d2129;
+}
+
+.table {
+  margin-bottom: 24px;
+}
+
+.apiName {
+  color: #165dff;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.apiName:hover {
+  text-decoration: underline;
+}
+
+.parametersSection {
+  border-top: 1px solid #e5e6eb;
+  padding-top: 24px;
+}
+
+.sectionTitle {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1d2129;
+  margin-bottom: 16px;
+}
+
+.parametersContent {
+  background: #f7f8fa;
+  border-radius: 6px;
+  padding: 16px;
+}
+
+.parameterRow {
+  display: grid;
+  grid-template-columns: 120px 80px 60px 1fr;
+  gap: 16px;
+  padding: 12px 0;
+  border-bottom: 1px solid #e5e6eb;
+  align-items: flex-start;
+}
+
+.parameterRow:last-child {
+  border-bottom: none;
+}
+
+.parameterName {
+  font-weight: 500;
+  color: #1d2129;
+  font-size: 14px;
+}
+
+.parameterType {
+  color: #86909c;
+  font-size: 14px;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+}
+
+.parameterRequired {
+  font-size: 12px;
+  color: #f53f3f;
+  font-weight: 500;
+}
+
+.parameterDescription {
+  color: #4e5969;
+  font-size: 14px;
+  line-height: 1.5;
+}

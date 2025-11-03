@@ -1,0 +1,13 @@
+.layout {
+  height: 100vh;
+  background-color: #f5f5f5;
+}
+
+.content {
+  padding: 24px;
+  background-color: #fff;
+  margin: 16px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  overflow: auto;
+}

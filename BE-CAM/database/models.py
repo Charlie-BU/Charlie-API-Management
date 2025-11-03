@@ -43,6 +43,8 @@ class SerializableMixin:
         include = set(include) if include else None
         exclude = set(exclude) if exclude else set()
         mapper = inspect(self.__class__)
+        if not mapper:
+            return {}
 
         data = {}
         for column in mapper.columns:
@@ -388,13 +390,3 @@ class ResponseParamDraft(Base, SerializableMixin):
 
     def __repr__(self):
         return f"<ResponseParamDraft {self.name} ({self.status_code})>"
-
-
-# 创建所有表（被alembic替代）
-if __name__ == "__main__":
-    try:
-        from database.database import engine
-    except ImportError:
-        from database import engine
-
-    Base.metadata.create_all(bind=engine)

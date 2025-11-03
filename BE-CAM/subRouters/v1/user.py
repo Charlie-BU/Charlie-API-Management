@@ -23,6 +23,12 @@ userRouterV1.configure_authentication(AuthHandler(token_getter=BearerGetter()))
 @userRouterV1.get("/getUserById", auth_required=True)
 async def getUserById(request: Request):
     id = request.query_params.get("id", None)
+    if not id:
+        return Response(
+            status_code=400,
+            description="id is required",
+            headers={},
+        )
     with session() as db:
         res = userGetUserById(db=db, id=int(id))
     return res

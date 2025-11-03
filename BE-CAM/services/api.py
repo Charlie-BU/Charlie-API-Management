@@ -17,13 +17,15 @@ from services.utils import checkServiceIterationPermission
 
 
 # 通过service_id获取全部categories
-def apiGetAllCategoriesByServiceId(db: Session, service_id: str, user_id: int) -> dict:
+def apiGetAllCategoriesByServiceId(
+    db: Session, service_id: int, user_id: int
+) -> dict | Response:
     service = db.get(Service, service_id)
     if not service:
         return Response(status_code=404, headers={}, description="Service not found")
     # 非L0用户只能查看自己的服务
     user = db.get(User, user_id)
-    if service.owner_id != user_id and user.level.value != 0:
+    if service.owner_id != user_id and user.level.value != 0:  # type: ignore
         return Response(
             status_code=403,
             headers={},
@@ -41,14 +43,14 @@ def apiGetAllCategoriesByServiceId(db: Session, service_id: str, user_id: int) -
 # 通过service_id获取全部api（最新版本，可带category_id，不包括api内包含的params）
 # ⚠️ 注意：这个方法和service/serviceGetServiceByUuidAndVersion()类似。区别在于这个方法返回的只有apis，不包含service的其他信息；另外这个方法支持通过category_id筛选。
 def apiGetAllApisByServiceId(
-    db: Session, service_id: str, user_id: int, category_id: int = None
-) -> dict:
+    db: Session, service_id: int, user_id: int, category_id: int | None = None
+) -> dict | Response:
     service = db.get(Service, service_id)
     if not service:
         return Response(status_code=404, headers={}, description="Service not found")
     # 非L0用户只能查看自己的服务
     user = db.get(User, user_id)
-    if service.owner_id != user_id and user.level.value != 0:
+    if service.owner_id != user_id and user.level.value != 0:  # type: ignore
         return Response(
             status_code=403,
             headers={},
@@ -65,12 +67,14 @@ def apiGetAllApisByServiceId(
 # 若传入is_latest为False，则api_id为api_draft_id，对应的是历史版本的api，相应params也来自param_draft
 def apiGetApiById(
     db: Session, api_id: int, user_id: int, is_latest: bool = True
-) -> dict:
+) -> dict | Response:
     api = db.get(Api, api_id) if is_latest else db.get(ApiDraft, api_id)
     if not api:
         return Response(status_code=404, headers={}, description="Api not found")
     # 非L0用户只能查看自己的服务
     user = db.get(User, user_id)
+    if not user:
+        return Response(status_code=404, headers={}, description="User not found")
     if user.level.value != 0:
         if is_latest and api.service.owner_id != user_id:
             return Response(
@@ -97,14 +101,14 @@ def apiAddCategoryByServiceId(
     service_id: str,
     user_id: int,
     category_name: str,
-    description: str = None,
-) -> dict:
+    description: str | None = None,
+) -> dict | Response:
     service = db.get(Service, service_id)
     if not service:
         return Response(status_code=404, headers={}, description="Service not found")
     # 非L0用户只能操作自己的服务
     user = db.get(User, user_id)
-    if service.owner_id != user_id and user.level.value != 0:
+    if service.owner_id != user_id and user.level.value != 0:  # type: ignore
         return Response(
             status_code=403,
             headers={},
@@ -134,12 +138,16 @@ def apiAddCategoryByServiceId(
 
 
 # 通过category_id删除category
-def apiDeleteCategoryById(db: Session, category_id: int, user_id: int) -> dict:
+def apiDeleteCategoryById(
+    db: Session, category_id: int, user_id: int
+) -> dict | Response:
     category = db.get(ApiCategory, category_id)
     if not category:
         return Response(status_code=404, headers={}, description="Category not found")
     # 非L0用户只能操作自己的服务
     user = db.get(User, user_id)
+    if not user:
+        return Response(status_code=404, headers={}, description="User not found")
     if category.service.owner_id != user_id and user.level.value != 0:
         return Response(
             status_code=403,
@@ -156,14 +164,16 @@ def apiUpdateCategoryById(
     db: Session,
     category_id: int,
     user_id: int,
-    category_name: str = None,
-    description: str = None,
-) -> dict:
+    category_name: str | None = None,
+    description: str | None = None,
+) -> dict | Response:
     category = db.get(ApiCategory, category_id)
     if not category:
         return Response(status_code=404, headers={}, description="Category not found")
     # 非L0用户只能操作自己的服务
     user = db.get(User, user_id)
+    if not user:
+        return Response(status_code=404, headers={}, description="User not found")
     if category.service.owner_id != user_id and user.level.value != 0:
         return Response(
             status_code=403,
@@ -197,8 +207,8 @@ def apiUpdateCategoryById(
             headers={},
             description="Category name already exists",
         )
-    category.name = category_name
-    category.description = description
+    category.name = category_name  # type: ignore
+    category.description = description  # type: ignore
     db.commit()
     return {
         "message": "Update category success",
@@ -207,19 +217,23 @@ def apiUpdateCategoryById(
 
 
 # 通过api_id、category_id修改api所属分类（仅支持修改正式表Api，不支持草稿表ApiDraft）
-def apiUpdateApiCategory(db: Session, api_id: int, category_id: int, user_id: int):
+def apiUpdateApiCategory(
+    db: Session, api_id: int, category_id: int, user_id: int
+) -> dict | Response:
     api = db.get(Api, api_id)
     if not api:
         return Response(status_code=404, headers={}, description="Api not found")
     # 非L0用户只能操作自己的服务
     user = db.get(User, user_id)
+    if not user:
+        return Response(status_code=404, headers={}, description="User not found")
     if api.service.owner_id != user_id and user.level.value != 0:
         return Response(
             status_code=403,
             headers={},
             description="You are not the owner of this service",
         )
-    if api.category_id == category_id:
+    if api.category_id == category_id:  # type: ignore
         return Response(
             status_code=400,
             headers={},
@@ -228,13 +242,13 @@ def apiUpdateApiCategory(db: Session, api_id: int, category_id: int, user_id: in
     category = db.get(ApiCategory, category_id)
     if not category:
         return Response(status_code=404, headers={}, description="Category not found")
-    if category.service_id != api.service_id:
+    if category.service_id != api.service_id:  # type: ignore
         return Response(
             status_code=400,
             headers={},
             description="Category not belongs to this service",
         )
-    api.category_id = category_id
+    api.category_id = category_id  # type: ignore
     db.commit()
     return {"message": "Update api category success"}
 
@@ -250,8 +264,8 @@ def apiAddApi(
     path: str,
     description: str,
     level: str,
-    category_id: int = None,
-) -> dict:
+    category_id: int | None = None,
+) -> dict | Response:
     # 版本迭代行为权限校验
     check_res = checkServiceIterationPermission(
         db=db, service_iteration_id=service_iteration_id, user_id=user_id
@@ -330,7 +344,7 @@ def apiAddApi(
 # 通过service_iteration_id、api_draft_id删除api
 def apiDeleteApiByApiDraftId(
     db: Session, service_iteration_id: int, api_draft_id: int, user_id: int
-) -> dict:
+) -> dict | Response:
     # 版本迭代行为权限校验
     check_res = checkServiceIterationPermission(
         db=db, service_iteration_id=service_iteration_id, user_id=user_id
@@ -340,7 +354,7 @@ def apiDeleteApiByApiDraftId(
     api_draft = db.get(ApiDraft, api_draft_id)
     if not api_draft:
         return Response(status_code=404, headers={}, description="Api draft not found")
-    if api_draft.service_iteration_id != service_iteration_id:
+    if api_draft.service_iteration_id != service_iteration_id:  # type: ignore
         return Response(
             status_code=400,
             headers={},
@@ -425,8 +439,8 @@ def _process_params_recursively(
     db: Session,
     params: list,
     api_draft_id: int,
-    parent_param_id: int = None,
-    parent_location: str = None,
+    parent_param_id: int | None = None,
+    parent_location: str | None = None,
     param_model_class=RequestParamDraft,
 ) -> None:
     for param in params:
@@ -465,7 +479,7 @@ def _process_params_recursively(
                 param_array_child_type_enum = None
 
         # 创建参数记录
-        if param_model_class == RequestParamDraft:
+        if param_model_class is RequestParamDraft:
             param_record = RequestParamDraft(
                 api_draft_id=api_draft_id,
                 name=param_name,
@@ -502,7 +516,7 @@ def _process_params_recursively(
                 db=db,
                 params=param_children,
                 api_draft_id=api_draft_id,
-                parent_param_id=param_record.id,
+                parent_param_id=param_record.id,  # type: ignore
                 parent_location=param_location,
                 param_model_class=param_model_class,
             )
@@ -521,7 +535,7 @@ def apiUpdateApiByApiDraftId(
     level: str,
     req_params: list,
     resp_params: list,
-) -> dict:
+) -> dict | Response:
     # 版本迭代行为权限校验
     check_res = checkServiceIterationPermission(
         db=db, service_iteration_id=service_iteration_id, user_id=user_id
@@ -531,7 +545,7 @@ def apiUpdateApiByApiDraftId(
     api_draft = db.get(ApiDraft, api_draft_id)
     if not api_draft:
         return Response(status_code=404, headers={}, description="Api draft not found")
-    if api_draft.service_iteration_id != service_iteration_id:
+    if api_draft.service_iteration_id != service_iteration_id:  # type: ignore
         return Response(
             status_code=400,
             headers={},
@@ -546,11 +560,11 @@ def apiUpdateApiByApiDraftId(
         api_level = ApiLevel(level)
     except ValueError:
         api_level = ApiLevel.P2
-    api_draft.name = name
-    api_draft.method = api_method
-    api_draft.path = path
-    api_draft.description = description
-    api_draft.level = api_level
+    api_draft.name = name  # type: ignore
+    api_draft.method = api_method  # type: ignore
+    api_draft.path = path  # type: ignore
+    api_draft.description = description  # type: ignore
+    api_draft.level = api_level  # type: ignore
     # 更新请求参数和响应参数
     # 先删除已存在的请求参数和响应参数，再新增
     db.query(RequestParamDraft).filter(

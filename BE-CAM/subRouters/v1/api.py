@@ -1,3 +1,4 @@
+import json
 from robyn import SubRouter
 from robyn.robyn import Request, Response
 from robyn.authentication import BearerGetter
@@ -5,7 +6,7 @@ from robyn.authentication import BearerGetter
 from authentication import AuthHandler
 from database.database import session
 from services.user import userGetUserIdByAccessToken
-from services.api import *
+from services.api import *  # type: ignore
 
 
 apiRouterV1 = SubRouter(__file__, prefix="/v1/api")
@@ -25,10 +26,14 @@ apiRouterV1.configure_authentication(AuthHandler(token_getter=BearerGetter()))
 @apiRouterV1.get("/getAllCategoriesByServiceId", auth_required=True)
 def getAllCategoriesByServiceId(request: Request):
     service_id = request.query_params.get("service_id", None)
+    if not service_id:
+        return Response(
+            status_code=400, headers={}, description="service_id is required"
+        )
     user_id = userGetUserIdByAccessToken(request)
     with session() as db:
         res = apiGetAllCategoriesByServiceId(
-            db=db, service_id=service_id, user_id=user_id
+            db=db, service_id=int(service_id), user_id=user_id
         )
     return res
 
@@ -38,10 +43,19 @@ def getAllCategoriesByServiceId(request: Request):
 def getAllApisByServiceId(request: Request):
     service_id = request.query_params.get("service_id", None)
     category_id = request.query_params.get("category_id", None)
+    if not service_id or not category_id:
+        return Response(
+            status_code=400,
+            headers={},
+            description="service_id and category_id are required",
+        )
     user_id = userGetUserIdByAccessToken(request)
     with session() as db:
         res = apiGetAllApisByServiceId(
-            db=db, service_id=service_id, category_id=category_id, user_id=user_id
+            db=db,
+            service_id=int(service_id),
+            category_id=int(category_id),
+            user_id=user_id,
         )
     return res
 
@@ -50,11 +64,16 @@ def getAllApisByServiceId(request: Request):
 @apiRouterV1.get("/getApiById", auth_required=True)
 def getApiById(request: Request):
     api_id = request.query_params.get("api_id", None)
-    is_latest = request.query_params.get("is_latest", True)
+    if not api_id:
+        return Response(status_code=400, headers={}, description="api_id is required")
+    is_latest = request.query_params.get("is_latest")
     user_id = userGetUserIdByAccessToken(request)
     with session() as db:
         res = apiGetApiById(
-            db=db, api_id=api_id, user_id=user_id, is_latest=bool(is_latest)
+            db=db,
+            api_id=int(api_id),
+            user_id=user_id,
+            is_latest=bool(is_latest) if is_latest else True,
         )
     return res
 

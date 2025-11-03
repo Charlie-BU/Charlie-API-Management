@@ -5,7 +5,7 @@ from robyn.authentication import BearerGetter
 from authentication import AuthHandler
 from database.database import session
 from services.user import userGetUserIdByAccessToken
-from services.service import *
+from services.service import *  # type: ignore
 
 
 serviceRouterV1 = SubRouter(__file__, prefix="/v1/service")
@@ -24,10 +24,12 @@ serviceRouterV1.configure_authentication(AuthHandler(token_getter=BearerGetter()
 # 通过服务id获取服务详情
 @serviceRouterV1.get("/getServiceById", auth_required=True)
 def getServiceById(request: Request):
-    id = int(request.query_params.get("id", None))
+    id = request.query_params.get("id", None)
+    if not id:
+        return Response(status_code=400, description="id is required", headers={})
     user_id = userGetUserIdByAccessToken(request=request)
     with session() as db:
-        res = serviceGetServiceById(db=db, id=id, user_id=user_id)
+        res = serviceGetServiceById(db=db, id=int(id), user_id=user_id)
     return res
 
 
@@ -45,6 +47,12 @@ def getHisNewestServicesByOwnerId(request: Request):
 def getServiceByUuidAndVersion(request: Request):
     service_uuid = request.query_params.get("service_uuid", None)
     version = request.query_params.get("version", None)
+    if not service_uuid or not version:
+        return Response(
+            status_code=400,
+            description="service_uuid and version are required",
+            headers={},
+        )
     user_id = userGetUserIdByAccessToken(request=request)
     with session() as db:
         res = serviceGetServiceByUuidAndVersion(
@@ -60,6 +68,12 @@ def getServiceByUuidAndVersion(request: Request):
 @serviceRouterV1.get("/getAllVersionsByUuid", auth_required=True)
 def getAllVersionsByUuid(request: Request):
     service_uuid = request.query_params.get("service_uuid", None)
+    if not service_uuid:
+        return Response(
+            status_code=400,
+            description="service_uuid is required",
+            headers={},
+        )
     user_id = userGetUserIdByAccessToken(request=request)
     with session() as db:
         res = serviceGetAllVersionsByUuid(

@@ -8,7 +8,7 @@ import os
 from dotenv import load_dotenv
 
 load_dotenv()
-PORT = int(os.getenv("PORT"))
+PORT = int(os.getenv("PORT") or 1024)
 
 
 app = Robyn(__file__)
