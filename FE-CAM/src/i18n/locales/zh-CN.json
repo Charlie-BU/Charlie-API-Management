@@ -17,7 +17,9 @@
     "name": "名称",
     "description": "描述",
     "createTime": "创建时间",
-    "updateTime": "更新时间"
+    "updateTime": "更新时间",
+    "changePassword": "修改密码",
+    "logout": "退出登录"
   },
   "api": {
     "title": "API管理",

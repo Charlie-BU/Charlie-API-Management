@@ -1,24 +1,30 @@
-import React from 'react';
-import { Outlet } from 'react-router-dom';
-import { Layout as ArcoLayout } from '@cloud-materials/common';
-import Header from './Header';
-import Sidebar from './Sidebar';
-import styles from './index.module.less';
+import React from "react";
+import { Outlet } from "react-router-dom";
+import { Layout as ArcoLayout } from "@cloud-materials/common";
+import Header from "./Header";
+import Sidebar from "./Sidebar";
+import styles from "./index.module.less";
 
-const { Content } = ArcoLayout;
+const ArcoHeader = ArcoLayout.Header;
+const ArcoSider = ArcoLayout.Sider;
+const ArcoContent = ArcoLayout.Content;
 
 const Layout: React.FC = () => {
-  return (
-    <ArcoLayout className={styles.layout}>
-      <Header />
-      <ArcoLayout>
-        <Sidebar />
-        <Content className={styles.content}>
-          <Outlet />
-        </Content>
-      </ArcoLayout>
-    </ArcoLayout>
-  );
+    return (
+        <ArcoLayout className={styles.layout}>
+            <ArcoHeader>
+                <Header />
+            </ArcoHeader>
+            <ArcoLayout>
+                <ArcoSider style={{ width: "200px" }}>
+                    <Sidebar />
+                </ArcoSider>
+                <ArcoContent className={styles.content}>
+                    <Outlet />
+                </ArcoContent>
+            </ArcoLayout>
+        </ArcoLayout>
+    );
 };
 
 export default Layout;
