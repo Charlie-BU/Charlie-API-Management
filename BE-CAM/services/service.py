@@ -17,13 +17,13 @@ from services.utils import checkServiceIterationPermission
 
 
 # 通过id获取服务详情
-def serviceGetServiceById(db: Session, id: int, user_id: int) -> dict:
+def serviceGetServiceById(db: Session, id: int, user_id: int) -> dict | Response:
     service = db.get(Service, id)
     if not service:
         return Response(status_code=404, headers={}, description="Service not found")
     user = db.get(User, user_id)
     # 非L0用户只能查看自己的服务
-    if service.owner_id != user_id and user.level.value != 0:
+    if service.owner_id != user_id and user.level.value != 0:  # type: ignore
         return Response(
             status_code=403,
             headers={},
@@ -51,7 +51,7 @@ def serviceGetHisNewestServicesByOwnerId(db: Session, owner_id: int) -> dict:
 # 通过service_uuid和version获取服务详情（根据version判断是否为最新版本）
 def serviceGetServiceByUuidAndVersion(
     db: Session, service_uuid: str, version: str, user_id: int
-) -> dict:
+) -> dict | Response:
     curr_service = (
         db.query(Service)
         .filter(
@@ -63,7 +63,7 @@ def serviceGetServiceByUuidAndVersion(
     if not curr_service:
         return Response(status_code=404, headers={}, description="Service not found")
     # 判断是否最新版本（当前version是否与curr_service版本一致）
-    if curr_service.version == version:
+    if curr_service.version == version:  # type: ignore
         is_latest = True
         service = curr_service
     else:
@@ -85,14 +85,14 @@ def serviceGetServiceByUuidAndVersion(
 
     user = db.get(User, user_id)
     # 非L0用户，为当前service owner或当前迭代creator，才有权限查看
-    if curr_service.owner_id != user_id and user.level.value != 0:
-        if not service.creator_id:  # 最新版
+    if curr_service.owner_id != user_id and user.level.value != 0:  # type: ignore
+        if service.creator_id is None:  # 最新版
             return Response(
                 status_code=403,
                 headers={},
                 description="You are not the owner of this service",
             )
-        elif service.creator_id != user_id:  # 历史版本，需判断是否为当前迭代creator
+        elif service.creator_id != user_id:  # type: ignore  # 历史版本，需判断是否为当前迭代creator
             return Response(
                 status_code=403,
                 headers={},
@@ -107,7 +107,9 @@ def serviceGetServiceByUuidAndVersion(
 
 
 # 通过service_uuid获取全部版本号
-def serviceGetAllVersionsByUuid(db: Session, service_uuid: str, user_id: int) -> dict:
+def serviceGetAllVersionsByUuid(
+    db: Session, service_uuid: str, user_id: int
+) -> dict | Response:
     curr_service = (
         db.query(Service)
         .filter(
@@ -128,7 +130,7 @@ def serviceGetAllVersionsByUuid(db: Session, service_uuid: str, user_id: int) ->
 
     user = db.get(User, user_id)
     # 非L0用户只能查看自己的服务
-    if curr_service.owner_id != user_id and user.level.value != 0:
+    if curr_service.owner_id != user_id and user.level.value != 0:  # type: ignore
         return Response(
             status_code=403,
             headers={},
@@ -166,7 +168,7 @@ def serviceCreateNewService(
 
 
 # 通过user_id获取全部删除的服务
-def serviceGetAllDeletedServicesByUserId(db: Session, user_id: int) -> dict:
+def serviceGetAllDeletedServicesByUserId(db: Session, user_id: int) -> dict | Response:
     services = (
         db.query(Service)
         .filter(Service.is_deleted, Service.owner_id == user_id)
@@ -186,43 +188,43 @@ def serviceGetAllDeletedServicesByUserId(db: Session, user_id: int) -> dict:
 
 
 # 通过服务id删除服务（最新版本），历史版本不动
-def serviceDeleteServiceById(db: Session, id: int, user_id: int) -> dict:
+def serviceDeleteServiceById(db: Session, id: int, user_id: int) -> dict | Response:
     service = db.get(Service, id)
     if not service:
         return Response(status_code=404, headers={}, description="Service not found")
     user = db.get(User, user_id)
     # 非L0用户只能删除自己的服务
-    if service.owner_id != user_id and user.level.value != 0:
+    if service.owner_id != user_id and user.level.value != 0:  # type: ignore
         return Response(
             status_code=403,
             headers={},
             description="You are not the owner of this service",
         )
-    service.is_deleted = True
-    service.deleted_at = datetime.utcnow()
+    service.is_deleted = True  # type: ignore
+    service.deleted_at = datetime.utcnow()  # type: ignore
     db.commit()
     return {"message": "Delete service success"}
 
 
 # 通过服务id还原服务（还原最新版本），历史版本不动
-def serviceRestoreServiceById(db: Session, id: int, user_id: int) -> dict:
+def serviceRestoreServiceById(db: Session, id: int, user_id: int) -> dict | Response:
     service = db.get(Service, id)
     if not service:
         return Response(status_code=404, headers={}, description="Service not found")
     user = db.get(User, user_id)
     # 非L0用户只能还原自己的服务
-    if service.owner_id != user_id and user.level.value != 0:
+    if service.owner_id != user_id and user.level.value != 0:  # type: ignore
         return Response(
             status_code=403,
             headers={},
             description="You are not the owner of this service",
         )
-    if not service.is_deleted:
+    if not service.is_deleted:  # type: ignore
         return Response(
             status_code=400, headers={}, description="Service is not deleted"
         )
-    service.is_deleted = False
-    service.deleted_at = None
+    service.is_deleted = False  # type: ignore
+    service.deleted_at = None  # type: ignore
     db.commit()
     return {"message": "Restore service success"}
 
@@ -230,7 +232,7 @@ def serviceRestoreServiceById(db: Session, id: int, user_id: int) -> dict:
 # 通过service_iteration_id删除服务历史版本
 def serviceDeleteIterationById(
     db: Session, service_iteration_id: int, user_id: int
-) -> dict:
+) -> dict | Response:
     service_iteration = (
         db.query(ServiceIteration)
         .filter(ServiceIteration.id == service_iteration_id)
@@ -245,7 +247,7 @@ def serviceDeleteIterationById(
     if (
         service_iteration.service.owner_id != user_id
         and service_iteration.creator_id != user_id
-        and user.level.value != 0
+        and user.level.value != 0  # type: ignore
     ):
         return Response(
             status_code=403,
@@ -259,14 +261,16 @@ def serviceDeleteIterationById(
 
 # ---- ⚠️ 以下为service迭代流程相关方法 ----
 # 发起service迭代流程
-def serviceStartIteration(db: Session, service_id: int, user_id: int) -> dict:
+def serviceStartIteration(
+    db: Session, service_id: int, user_id: int
+) -> dict | Response:
     # 检查服务是否存在
     curr_service = db.get(Service, service_id)
     if not curr_service:
         return Response(status_code=404, headers={}, description="Service not found")
     # 非L0用户，为当前service owner或当前迭代creator，才有权限发起迭代
     user = db.get(User, user_id)
-    if curr_service.owner_id != user_id and user.level.value != 0:
+    if curr_service.owner_id != user_id and user.level.value != 0:  # type: ignore
         return Response(
             status_code=403,
             headers={},
@@ -342,7 +346,10 @@ def serviceStartIteration(db: Session, service_id: int, user_id: int) -> dict:
                     .filter(RequestParamDraft.id == req_param_id_mapping[req.id])
                     .first()
                 )
-                draft_param.parent_param_id = req_param_id_mapping[req.parent_param_id]
+                if draft_param:
+                    draft_param.parent_param_id = req_param_id_mapping[
+                        req.parent_param_id
+                    ]
 
         # 建立响应参数的ID映射关系
         resp_param_id_mapping = {}
@@ -370,9 +377,10 @@ def serviceStartIteration(db: Session, service_id: int, user_id: int) -> dict:
                     .filter(ResponseParamDraft.id == resp_param_id_mapping[resp.id])
                     .first()
                 )
-                draft_param.parent_param_id = resp_param_id_mapping[
-                    resp.parent_param_id
-                ]
+                if draft_param:
+                    draft_param.parent_param_id = resp_param_id_mapping[
+                        resp.parent_param_id
+                    ]
     db.commit()
     return {
         "message": "Start service iteration success",
@@ -383,7 +391,7 @@ def serviceStartIteration(db: Session, service_id: int, user_id: int) -> dict:
 # 完成service迭代流程，service版本更新
 def serviceCommitIteration(
     db: Session, service_iteration_id: int, new_version: str, user_id: int
-) -> dict:
+) -> dict | Response:
     # 版本迭代行为权限校验
     check_res = checkServiceIterationPermission(
         db=db,
@@ -393,6 +401,7 @@ def serviceCommitIteration(
     if not check_res["is_ok"]:
         return check_res
     service_iteration = check_res["service_iteration"]
+    service = service_iteration.service
     if new_version == service.version:
         return Response(
             status_code=400,
@@ -448,7 +457,8 @@ def serviceCommitIteration(
                     .filter(RequestParam.id == req_param_id_mapping[req.id])
                     .first()
                 )
-                param.parent_param_id = req_param_id_mapping[req.parent_param_id]
+                if param:
+                    param.parent_param_id = req_param_id_mapping[req.parent_param_id]
 
         # 建立响应参数的ID映射关系
         resp_param_id_mapping = {}
@@ -476,7 +486,8 @@ def serviceCommitIteration(
                     .filter(ResponseParam.id == resp_param_id_mapping[resp.id])
                     .first()
                 )
-                param.parent_param_id = resp_param_id_mapping[resp.parent_param_id]
+                if param:
+                    param.parent_param_id = resp_param_id_mapping[resp.parent_param_id]
 
     service_iteration.version = new_version
     service_iteration.is_committed = True

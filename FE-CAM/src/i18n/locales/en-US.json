@@ -1,0 +1,58 @@
+{
+  "common": {
+    "search": "Search",
+    "create": "Create",
+    "edit": "Edit",
+    "delete": "Delete",
+    "save": "Save",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "back": "Back",
+    "next": "Next",
+    "previous": "Previous",
+    "loading": "Loading...",
+    "noData": "No Data",
+    "operation": "Operation",
+    "status": "Status",
+    "name": "Name",
+    "description": "Description",
+    "createTime": "Create Time",
+    "updateTime": "Update Time",
+    "changePassword": "Change Password",
+    "logout": "Logout"
+  },
+  "api": {
+    "title": "API Management",
+    "list": "API List",
+    "create": "Create API",
+    "edit": "Edit API",
+    "delete": "Delete API",
+    "method": "Method",
+    "path": "Path",
+    "parameters": "Parameters",
+    "response": "Response",
+    "documentation": "Documentation",
+    "test": "Test",
+    "mock": "Mock",
+    "version": "Version",
+    "category": "Category",
+    "tags": "Tags"
+  },
+  "job": {
+    "title": "Job Management",
+    "list": "Job List",
+    "create": "Create Job",
+    "type": "Job Type",
+    "config": "Config",
+    "logs": "Logs",
+    "upload": "Upload",
+    "bambooConfig": "Bamboo Config"
+  },
+  "nav": {
+    "home": "Home",
+    "apiManagement": "API Management",
+    "jobManagement": "Job Management",
+    "settings": "Settings",
+    "help": "Help"
+  }
+}

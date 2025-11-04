@@ -1,0 +1,58 @@
+{
+  "common": {
+    "search": "搜索",
+    "create": "创建",
+    "edit": "编辑",
+    "delete": "删除",
+    "save": "保存",
+    "cancel": "取消",
+    "confirm": "确认",
+    "back": "返回",
+    "next": "下一步",
+    "previous": "上一步",
+    "loading": "加载中...",
+    "noData": "暂无数据",
+    "operation": "操作",
+    "status": "状态",
+    "name": "名称",
+    "description": "描述",
+    "createTime": "创建时间",
+    "updateTime": "更新时间",
+    "changePassword": "修改密码",
+    "logout": "退出登录"
+  },
+  "api": {
+    "title": "API管理",
+    "list": "API列表",
+    "create": "创建API",
+    "edit": "编辑API",
+    "delete": "删除API",
+    "method": "请求方法",
+    "path": "请求路径",
+    "parameters": "参数",
+    "response": "响应",
+    "documentation": "文档",
+    "test": "测试",
+    "mock": "Mock",
+    "version": "版本",
+    "category": "分类",
+    "tags": "标签"
+  },
+  "job": {
+    "title": "任务管理",
+    "list": "任务列表",
+    "create": "创建任务",
+    "type": "任务类型",
+    "config": "配置",
+    "logs": "日志",
+    "upload": "上传",
+    "bambooConfig": "Bamboo配置"
+  },
+  "nav": {
+    "home": "首页",
+    "apiManagement": "API管理",
+    "jobManagement": "任务管理",
+    "settings": "设置",
+    "help": "帮助"
+  }
+}
