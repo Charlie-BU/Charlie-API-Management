@@ -49,6 +49,7 @@
     "bambooConfig": "Bamboo Config"
   },
   "nav": {
+    "home": "Home",
     "apiManagement": "API Management",
     "jobManagement": "Job Management",
     "settings": "Settings",

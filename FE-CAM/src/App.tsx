@@ -15,7 +15,7 @@ const router = createBrowserRouter([
         children: [
             {
                 index: true,
-                element: <Navigate to="/api" replace />,
+                element: <Navigate to="/" replace />,
             },
             {
                 path: "api",
