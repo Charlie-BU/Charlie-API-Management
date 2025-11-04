@@ -3,7 +3,7 @@ import { Outlet } from 'react-router-dom';
 import { Layout as ArcoLayout } from '@cloud-materials/common';
 import Header from './Header';
 import Sidebar from './Sidebar';
-import styles from './index.module.css';
+import styles from './index.module.less';
 
 const { Content } = ArcoLayout;
 

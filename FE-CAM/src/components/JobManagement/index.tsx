@@ -1,7 +1,7 @@
 import React from 'react';
 import { Card, Typography } from '@cloud-materials/common';
 import { useTranslation } from 'react-i18next';
-import styles from './index.module.css';
+import styles from './index.module.less';
 
 const { Title } = Typography;
 

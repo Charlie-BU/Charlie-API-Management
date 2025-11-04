@@ -6,7 +6,7 @@ import {
 import Layout from "./components/Layout";
 import ApiManagement from "./components/ApiManagement";
 import JobManagement from "./components/JobManagement";
-import "./App.css";
+import "./App.less";
 
 // 创建路由配置
 const router = createBrowserRouter([

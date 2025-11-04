@@ -2,7 +2,7 @@ import React from 'react';
 import { Layout, Menu } from '@cloud-materials/common';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import styles from './index.module.css';
+import styles from './index.module.less';
 
 const { Sider } = Layout;
 const MenuItem = Menu.Item;
