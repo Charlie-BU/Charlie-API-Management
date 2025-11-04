@@ -1,6 +1,6 @@
 import React from "react";
 import { Menu } from "@cloud-materials/common";
-import { IconHome, IconAPIGatewayP } from "@cloud-materials/common/ve-o-iconbox";
+import { IconHouseDashboard, IconAPIGatewayP } from "@cloud-materials/common/ve-o-iconbox";
 
 import { useNavigate, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
@@ -15,7 +15,7 @@ const Sidebar: React.FC = () => {
     const tabList = [
         {
             key: "/",
-            icon: <IconHome style={{ width: 20, height: 20 }} />,
+            icon: <IconHouseDashboard style={{ width: 20, height: 20 }} />,
             title: t("nav.home"),
         },
         {

@@ -47,14 +47,14 @@ const Header: React.FC = () => {
             className={styles["custom-header"]}
             title={
                 <div style={{ display: "flex", alignItems: "center" }}>
-                    <Space size={"medium"}>
-                        <Avatar size={30}>
-                            <img alt="avatar" src={Logo} />
-                        </Avatar>
-                        <div style={{ fontSize: "20px", fontWeight: "bold" }}>
+                        <img
+                            alt="avatar"
+                            src={Logo}
+                            style={{ width: 32, height: 32 }}
+                        />
+                        <div style={{ fontSize: "20px", fontWeight: "bold", marginLeft: 12 }}>
                             API 管理 CAM
                         </div>
-                    </Space>
                 </div>
             }
             subTitle={
