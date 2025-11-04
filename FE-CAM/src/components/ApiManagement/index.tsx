@@ -101,7 +101,7 @@ const ApiManagement: React.FC = () => {
       title: t('common.action'),
       key: 'action',
       width: 150,
-      render: (_: any, record: ApiItem) => {
+      render: (_: any, _record: ApiItem) => {
         const menu = (
           <Menu>
             <Menu.Item key="edit">{t('common.edit')}</Menu.Item>

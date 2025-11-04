@@ -1,10 +1,9 @@
 import React from 'react';
-import { Layout, Menu } from '@cloud-materials/common';
+import { Menu } from '@cloud-materials/common';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import styles from './index.module.less';
 
-const { Sider } = Layout;
 const MenuItem = Menu.Item;
 
 const Sidebar: React.FC = () => {
@@ -19,12 +18,10 @@ const Sidebar: React.FC = () => {
   const getSelectedKeys = () => {
     const path = location.pathname;
     if (path.startsWith('/api')) return ['/api'];
-    if (path.startsWith('/job')) return ['/job'];
     return ['/api'];
   };
 
   return (
-    <Sider className={styles.sider} width={240}>
       <Menu
         selectedKeys={getSelectedKeys()}
         onClickMenuItem={handleMenuClick}
@@ -33,11 +30,7 @@ const Sidebar: React.FC = () => {
         <MenuItem key="/api">
           {t('nav.apiManagement')}
         </MenuItem>
-        <MenuItem key="/job">
-          {t('nav.jobManagement')}
-        </MenuItem>
       </Menu>
-    </Sider>
   );
 };
 
