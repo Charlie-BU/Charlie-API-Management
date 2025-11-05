@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { useNavigate } from "react-router-dom";
 import {
     PageHeader,
@@ -15,8 +15,8 @@ import { useTranslation } from "react-i18next";
 import styles from "./index.module.less";
 import { Logo } from "@/assets/icons";
 import { useUser } from "@/hooks/useUser";
-import UserPopover from "./UserPopover";
-import Login from "@/components/Login";
+import Profile from "@/components/User/Profile";
+import Login from "@/components/User/Login";
 
 const Header: React.FC = () => {
     const navigate = useNavigate();
@@ -90,7 +90,7 @@ const Header: React.FC = () => {
                         position="br"
                         content={
                             user ? (
-                                <UserPopover userInfo={user} logout={logout} />
+                                <Profile userInfo={user} logout={logout} />
                             ) : (
                                 <Login />
                             )

@@ -13,12 +13,12 @@ import { useTranslation } from "react-i18next";
 
 import type { UserProfile } from "@/services/user/types";
 
-interface UserPopoverProps {
+interface UserProfileProps {
     userInfo: UserProfile;
     logout: () => void;
 }
 
-const UserPopover: React.FC<UserPopoverProps> = ({ userInfo, logout }) => {
+const Profile: React.FC<UserProfileProps> = ({ userInfo, logout }) => {
     const { t } = useTranslation();
 
     const handleChangePassword = () => {
@@ -82,4 +82,4 @@ const UserPopover: React.FC<UserPopoverProps> = ({ userInfo, logout }) => {
     );
 };
 
-export default UserPopover;
+export default Profile;

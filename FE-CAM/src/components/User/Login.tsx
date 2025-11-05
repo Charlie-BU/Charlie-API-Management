@@ -13,10 +13,10 @@ import { useUser } from "@/hooks/useUser";
 
 const Login: React.FC = () => {
     const { t } = useTranslation();
+    const navigate = useNavigate();
 
     const [form] = Form.useForm();
     const [loading, setLoading] = useState(false);
-    const navigate = useNavigate();
     const { login } = useUser();
 
     const handleSubmit = async () => {
@@ -24,11 +24,12 @@ const Login: React.FC = () => {
             await form.validate();
             const values = form.getFieldsValue();
             setLoading(true);
-            await login({
+            const res = await login({
                 username: values.username,
                 password: values.password,
             });
-            Message.success(t("login.success"));
+            // 组件层负责提示
+            Message.success(res.message || t("login.success"));
             navigate("/");
         } catch (err: unknown) {
             const msg = err instanceof Error ? err.message : t("login.failure");

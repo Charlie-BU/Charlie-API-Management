@@ -77,10 +77,13 @@ export const useUser = create<UserStore>((set, get) => ({
 
     login: async (formData: LoginRequest) => {
         const res = await UserLogin(formData);
-        if (res.access_token) {
-            localStorage.setItem(TOKEN_KEY, res.access_token);
-            await get().fetchUser();
+        if (res.status !== 200) {
+            // Hook不出UI提示，失败抛错由组件处理
+            throw new Error(res.message || "登录失败");
         }
+        // 成功：写入令牌并恢复会话
+        localStorage.setItem(TOKEN_KEY, res.access_token);
+        await get().fetchUser();
         return res;
     },
 
