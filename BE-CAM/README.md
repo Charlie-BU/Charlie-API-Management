@@ -120,6 +120,8 @@
 
         在每个路由中设定 `auth_required=True` 开启鉴权，即只有登录用户有权限访问
 
+-   错误处理：对于一个 API，若缺少必要参数或参数格式错误，返回 `400 Bad Request` 错误；而其他逻辑错误（例如密码错误），则响应正常返回 `200` ，附带 `status` 为负， `message` 为错误描述。
+
 ### service 相关
 
 -   每个 `service` 有一个 `owner`，多个 `maintainer`，但计划 `MVP` 版本不引入 `maintainer`。因此除了 `L0` 用户外，只有 `owner` 才能操作其 `service`

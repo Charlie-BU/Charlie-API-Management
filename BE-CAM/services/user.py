@@ -1,4 +1,4 @@
-from robyn.robyn import Request, Response
+from robyn.robyn import Request
 from sqlalchemy.orm import Session
 from jose import jwt
 import os
@@ -50,22 +50,36 @@ def userGetUserIdByAccessToken(
 
 
 # 通过user id获取user信息
-def userGetUserById(db: Session, id: int) -> dict | Response:
+def userGetUserById(db: Session, id: int) -> dict:
     user = db.get(User, id)
     if user is None:
-        return Response(status_code=404, headers={}, description="User not found")
-    return user.toJson()
+        return {
+            "status": -1,
+            "message": "User not found",
+        }
+    return {
+        "status": 200,
+        "message": "Get user success",
+        "user": user.toJson(),
+    }
 
 
 # 用户登录
-def userLogin(db: Session, username: str, password: str) -> dict | Response:
+def userLogin(db: Session, username: str, password: str) -> dict:
     user = db.query(User).filter(User.username == username).first()
     if user is None:
-        return Response(status_code=404, headers={}, description="User not found")
+        return {
+            "status": -1,
+            "message": "User not found",
+        }
     if not user.checkPassword(password):
-        return Response(status_code=401, headers={}, description="Wrong password")
+        return {
+            "status": -2,
+            "message": "Wrong password",
+        }
     access_token = createAccessToken(data={"id": user.id, "username": user.username})
     return {
+        "status": 200,
         "message": "Login success",
         "access_token": access_token,
     }
@@ -74,12 +88,13 @@ def userLogin(db: Session, username: str, password: str) -> dict | Response:
 # 用户注册
 def userRegister(
     db: Session, username: str, password: str, nickname: str, email: str, role: str
-) -> dict | Response:
+) -> dict:
     existing_user = db.query(User).filter(User.username == username).first()
     if existing_user:
-        return Response(
-            status_code=400, headers={}, description="Username already registered"
-        )
+        return {
+            "status": -1,
+            "message": "Username already registered",
+        }
     try:
         user_role = UserRole(role)
     except ValueError:
@@ -95,5 +110,6 @@ def userRegister(
     db.commit()
     db.refresh(user)
     return {
+        "status": 200,
         "message": "Register success",
     }

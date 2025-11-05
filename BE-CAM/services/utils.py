@@ -1,4 +1,3 @@
-from robyn.robyn import Response
 from sqlalchemy.orm import Session
 
 from database.models import ServiceIteration, User
@@ -9,26 +8,24 @@ def checkServiceIterationPermission(
     db: Session,
     service_iteration_id: int,
     user_id: int,
-):
+) -> dict:
     service_iteration = db.get(ServiceIteration, service_iteration_id)
     if not service_iteration or service_iteration.is_committed:  # type: ignore
         return {
             "is_ok": False,
-            "error": Response(
-                status_code=404,
-                headers={},
-                description="Service iteration not found or committed",
-            ),
+            "error": {
+                "status": -10,
+                "message": "Service iteration not found or committed",
+            },
         }
     # 已提交的迭代，不可进行迭代操作
     if service_iteration.is_committed:  # type: ignore
         return {
             "is_ok": False,
-            "error": Response(
-                status_code=400,
-                headers={},
-                description="Service iteration has been committed",
-            ),
+            "error": {
+                "status": -20,
+                "message": "Service iteration has been committed",
+            },
         }
     # 非L0用户，为当前service owner或当前迭代creator，才有权限进行迭代操作
     user = db.get(User, user_id)
@@ -39,11 +36,10 @@ def checkServiceIterationPermission(
     ):
         return {
             "is_ok": False,
-            "error": Response(
-                status_code=403,
-                headers={},
-                description="You are neither the owner of this service, nor the creator of this service iteration",
-            ),
+            "error": {
+                "status": -30,
+                "message": "You are neither the owner of this service, nor the creator of this service iteration",
+            },
         }
     return {
         "is_ok": True,
