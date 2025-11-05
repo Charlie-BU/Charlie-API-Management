@@ -11,17 +11,6 @@ const getAccessToken = (): string => {
     }
 };
 
-export class ApiError extends Error {
-    status?: number;
-    data?: unknown;
-    constructor(message: string, status?: number, data?: unknown) {
-        super(message);
-        this.name = "ApiError";
-        this.status = status;
-        this.data = data;
-    }
-}
-
 export const http: AxiosInstance = axios.create({
     baseURL: BASE_URL,
     timeout: 15000,
@@ -43,6 +32,17 @@ http.interceptors.request.use(
     },
     (error) => Promise.reject(error)
 );
+
+export class ApiError extends Error {
+    status?: number;
+    data?: unknown;
+    constructor(message: string, status?: number, data?: unknown) {
+        super(message);
+        this.name = "ApiError";
+        this.status = status;
+        this.data = data;
+    }
+}
 
 // 响应拦截器：统一错误格式
 http.interceptors.response.use(

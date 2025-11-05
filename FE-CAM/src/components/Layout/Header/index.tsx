@@ -9,6 +9,7 @@ import {
     IconDown,
     Popover,
     IconLanguage,
+    IconUser,
 } from "@cloud-materials/common";
 import { useTranslation } from "react-i18next";
 import styles from "./index.module.less";
@@ -26,10 +27,7 @@ const Header: React.FC = () => {
         i18n.changeLanguage(lang);
     };
 
-    const { user, fetchUser, logout } = useUser();
-    useEffect(() => {
-        fetchUser();
-    }, [fetchUser]);
+    const { user, logout } = useUser();
 
     const languageMenu = (
         <Menu>
@@ -98,12 +96,24 @@ const Header: React.FC = () => {
                             )
                         }
                     >
-                        <Avatar
-                            size={32}
-                            style={{ backgroundColor: "#ecf2ff" }}
-                        >
-                            {(user?.username ?? "Guest")[0]}
-                        </Avatar>
+                        {user ? (
+                            <Avatar
+                                size={32}
+                                style={{ backgroundColor: "#ecf2ff" }}
+                            >
+                                {user.username[0]}
+                            </Avatar>
+                        ) : (
+                            <Avatar
+                                size={32}
+                                style={{
+                                    backgroundColor: "#c9cdd4",
+                                    color: "#fff",
+                                }}
+                            >
+                                <IconUser />
+                            </Avatar>
+                        )}
                     </Popover>
                 </Space>
             }

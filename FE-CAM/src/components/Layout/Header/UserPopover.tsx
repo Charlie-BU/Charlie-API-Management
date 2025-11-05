@@ -18,10 +18,7 @@ interface UserPopoverProps {
     logout: () => void;
 }
 
-const UserPopover: React.FC<UserPopoverProps> = ({
-    userInfo,
-    logout,
-}) => {
+const UserPopover: React.FC<UserPopoverProps> = ({ userInfo, logout }) => {
     const { t } = useTranslation();
 
     const handleChangePassword = () => {
@@ -50,7 +47,7 @@ const UserPopover: React.FC<UserPopoverProps> = ({
                     </Layout.Sider>
                     <Layout.Content style={{ width: "100%", paddingLeft: 12 }}>
                         <Typography.Text style={{ fontSize: 16 }}>
-                            {userInfo.username} | {userInfo.role}
+                            {userInfo.username}
                         </Typography.Text>
                         <Typography.Ellipsis
                             rows={1}
@@ -63,10 +60,10 @@ const UserPopover: React.FC<UserPopoverProps> = ({
                 </Layout>
                 <Space style={{ marginTop: 12, marginLeft: 50 }}>
                     <Tag size="small" color="blue">
-                        {userInfo.role}
+                        {t(`user.${userInfo.role}`)}
                     </Tag>
                     <Tag size="small" color="green">
-                        {userInfo.level}
+                        L{userInfo.level}
                     </Tag>
                 </Space>
             </div>

@@ -55,6 +55,18 @@
     "settings": "设置",
     "help": "帮助"
   },
+  "user": {
+    "frontend": "前端开发",
+    "backend": "后端开发",
+    "fullstack": "全栈开发",
+    "qa": "测试工程师",
+    "devops": "运维工程师",
+    "product_manager": "产品经理",
+    "designer": "设计师",
+    "architect": "系统架构师",
+    "proj_lead": "项目负责人",
+    "guest": "访客"
+  },
   "login": {
     "title": "登录 CAM",
     "username": "用户名",

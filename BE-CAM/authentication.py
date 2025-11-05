@@ -22,7 +22,7 @@ class AuthHandler(AuthenticationHandler):
         except Exception:
             return None
         with session() as db:
-            user = userGetUserById(db, id)
+            user = userGetUserById(db, id)["user"]
             # 检查接口权限
             api_path = request.url.path
             user_level = user["level"]

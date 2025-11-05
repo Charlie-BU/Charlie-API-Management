@@ -55,6 +55,18 @@
     "settings": "Settings",
     "help": "Help"
   },
+  "user": {
+    "frontend": "Frontend Developer",
+    "backend": "Backend Developer",
+    "fullstack": "Fullstack Developer",
+    "qa": "QA Engineer",
+    "devops": "DevOps Engineer",
+    "product_manager": "Product Manager",
+    "designer": "Designer",
+    "architect": "Architect",
+    "proj_lead": "Project Lead",
+    "guest": "Guest"
+  },
   "login": {
     "title": "Sign in to CAM",
     "username": "Username",

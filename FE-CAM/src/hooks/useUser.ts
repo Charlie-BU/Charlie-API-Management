@@ -1,5 +1,4 @@
 import { create } from "zustand";
-import { createJSONStorage, persist } from "zustand/middleware";
 
 import type {
     LoginRequest,
@@ -13,19 +12,20 @@ import { Message } from "@cloud-materials/common";
 
 const TOKEN_KEY = "cam_access_token";
 
-// 将中文角色映射到后端期望的小写枚举值
-const roleValueMap = {
-    前端开发: "frontend",
-    后端开发: "backend",
-    全栈开发: "fullstack",
-    测试工程师: "qa",
-    运维工程师: "devops",
-    产品经理: "product_manager",
-    设计师: "designer",
-    系统架构师: "architect",
-    项目负责人: "proj_lead",
-    访客: "guest",
-} as const;
+// 后端角色枚举值（用于注册时的有效性校验与传递）
+const VALID_ROLES = [
+    "frontend",
+    "backend",
+    "fullstack",
+    "qa",
+    "devops",
+    "product_manager",
+    "designer",
+    "architect",
+    "proj_lead",
+    "guest",
+] as const;
+type RoleCode = (typeof VALID_ROLES)[number];
 
 interface RegisterForm extends RegisterRequest {
     confirmPassword: string;
@@ -40,94 +40,93 @@ interface UserStore {
     register: (formData: RegisterForm) => Promise<RegisterResponse>;
 }
 
-export const useUser = create<UserStore>()(
-    persist(
-        (set, get) => ({
-            user: null,
-            loading: false,
+export const useUser = create<UserStore>((set, get) => ({
+    user: null,
+    loading: false,
 
-            fetchUser: async () => {
-                // 如果已经有数据且不在加载中，直接返回
-                if (get().user && !get().loading) {
-                    return;
-                }
+    // 注：角色的显示文案请在 UI 层使用 i18n：i18n.t(`user.${role}`)
 
-                set({ loading: true });
-
-                try {
-                    const result = await GetMyInfo();
-                    console.log("result", result);
-                    set({
-                        user: result || null,
-                        loading: false,
-                    });
-                } catch (error) {
-                    Message.warning("请登录");
-                    set({ loading: false });
-                }
-            },
-
-            login: async (formData: LoginRequest) => {
-                const res = await UserLogin(formData);
-                if (res.access_token) {
-                    localStorage.setItem(TOKEN_KEY, res.access_token);
-                    await get().fetchUser();
-                }
-                return res;
-            },
-
-            logout: () => {
-                localStorage.removeItem(TOKEN_KEY);
-                set({ user: null });
-            },
-
-            register: async (formData: RegisterForm) => {
-                if (
-                    !formData.username ||
-                    !formData.password ||
-                    !formData.nickname ||
-                    !formData.email ||
-                    !formData.role ||
-                    !formData.confirmPassword
-                ) {
-                    throw new Error("请填写完整信息");
-                }
-                if (formData.password !== formData.confirmPassword) {
-                    throw new Error("两次密码输入不一致");
-                }
-                if (!/^[a-zA-Z0-9_]+$/.test(formData.username)) {
-                    throw new Error("用户名只能包含字母、数字和下划线");
-                }
-                if (
-                    !/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(
-                        formData.email
-                    )
-                ) {
-                    throw new Error("请输入正确的邮箱格式");
-                }
-
-                const roleValue =
-                    roleValueMap[formData.role as keyof typeof roleValueMap];
-                if (!roleValue) {
-                    throw new Error("请选择正确的角色");
-                }
-
-                const registerRequest: RegisterRequest = {
-                    username: formData.username,
-                    password: formData.password,
-                    nickname: formData.nickname,
-                    email: formData.email,
-                    role: roleValue,
-                };
-
-                return await UserRegister(registerRequest);
-            }
-        }),
-        {
-            name: "user-store",
-            storage: createJSONStorage(() => sessionStorage),
-            // 不持久化user数据
-            // partialize: (state) => ({ user: state.user }),
+    fetchUser: async () => {
+        // 如果已经有数据且不在加载中，直接返回
+        if (get().user && !get().loading) {
+            return;
         }
-    )
-);
+        // 无 token 时不触发请求
+        const token = localStorage.getItem(TOKEN_KEY);
+        if (!token) {
+            return;
+        }
+        set({ loading: true });
+
+        try {
+            const res = await GetMyInfo();
+            if (res.status !== 200) {
+                Message.warning(res.message || "获取用户信息失败");
+                set({ loading: false });
+                return;
+            }
+            set({
+                user: res.user || null,
+                loading: false,
+            });
+        } catch (error) {
+            // Message.warning("获取用户信息失败");
+            set({ loading: false });
+        }
+    },
+
+    login: async (formData: LoginRequest) => {
+        const res = await UserLogin(formData);
+        if (res.access_token) {
+            localStorage.setItem(TOKEN_KEY, res.access_token);
+            await get().fetchUser();
+        }
+        return res;
+    },
+
+    logout: () => {
+        localStorage.removeItem(TOKEN_KEY);
+        set({ user: null });
+    },
+
+    register: async (formData: RegisterForm) => {
+        if (
+            !formData.username ||
+            !formData.password ||
+            !formData.nickname ||
+            !formData.email ||
+            !formData.role ||
+            !formData.confirmPassword
+        ) {
+            Message.warning("请填写完整信息");
+        }
+        if (formData.password !== formData.confirmPassword) {
+            Message.warning("两次密码输入不一致");
+        }
+        if (!/^[a-zA-Z0-9_]+$/.test(formData.username)) {
+            Message.warning("用户名只能包含字母、数字和下划线");
+        }
+        if (
+            !/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(
+                formData.email
+            )
+        ) {
+            Message.warning("请输入正确的邮箱格式");
+        }
+
+        const roleCode = formData.role as RoleCode;
+        if (!VALID_ROLES.includes(roleCode)) {
+            Message.warning("请选择正确的角色");
+        }
+
+        const registerRequest: RegisterRequest = {
+            username: formData.username,
+            password: formData.password,
+            nickname: formData.nickname,
+            email: formData.email,
+            role: roleCode,
+        };
+
+        return await UserRegister(registerRequest);
+    },
+}));

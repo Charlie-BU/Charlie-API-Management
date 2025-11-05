@@ -4,6 +4,7 @@ export interface LoginRequest {
 }
 
 export interface LoginResponse {
+    status: number;
     message: string;
     access_token: string;
 }
@@ -17,7 +18,14 @@ export interface RegisterRequest {
 }
 
 export interface RegisterResponse {
+    status: number;
     message: string;
+}
+
+export interface UserResponse {
+    status: number;
+    message: string;
+    user: UserProfile;
 }
 
 export interface UserProfile {

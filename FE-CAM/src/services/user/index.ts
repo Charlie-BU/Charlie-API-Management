@@ -5,7 +5,7 @@ import type {
     LoginResponse,
     RegisterRequest,
     RegisterResponse,
-    UserProfile,
+    UserResponse,
 } from "./types";
 
 const prefix = "/v1/user";
@@ -19,9 +19,9 @@ export const UserRegister = async (data: RegisterRequest) => {
 };
 
 export const GetUserById = async (id: number) => {
-    return api.get<UserProfile>(`${prefix}/${id}`);
+    return api.get<UserResponse>(`${prefix}/${id}`);
 };
 
 export const GetMyInfo = async () => {
-    return api.get<UserProfile>(`${prefix}/getMyInfo`);
+    return api.get<UserResponse>(`${prefix}/getMyInfo`);
 };

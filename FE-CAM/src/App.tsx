@@ -1,3 +1,4 @@
+import React, { useEffect } from "react";
 import {
     createBrowserRouter,
     RouterProvider,
@@ -6,6 +7,7 @@ import {
 import Layout from "@/components/Layout";
 import ApiManagement from "@/components/ApiManagement";
 import "./App.less";
+import { useUser } from "@/hooks/useUser";
 
 // 创建路由配置
 const router = createBrowserRouter([
@@ -25,7 +27,17 @@ const router = createBrowserRouter([
     },
 ]);
 
-const App = () => {
+const App: React.FC = () => {
+    // 拉取用户信息
+    const { user, fetchUser } = useUser();
+
+    useEffect(() => {
+        const token = localStorage.getItem("cam_access_token");
+        if (token && !user) {
+            fetchUser();
+        }
+    }, [fetchUser, user]);
+
     return <RouterProvider router={router} />;
 };
 
