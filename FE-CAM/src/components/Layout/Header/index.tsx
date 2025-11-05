@@ -1,4 +1,5 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import {
     PageHeader,
     Space,
@@ -8,28 +9,25 @@ import {
     IconDown,
     Popover,
     IconLanguage,
+    IconUser,
 } from "@cloud-materials/common";
 import { useTranslation } from "react-i18next";
 import styles from "./index.module.less";
 import { Logo } from "@/assets/icons";
-import { userPopoverContent } from "./UserPopover";
+import { useUser } from "@/hooks/useUser";
+import Profile from "@/components/User/Profile";
+import Login from "@/components/User/Login";
 
 const Header: React.FC = () => {
+    const navigate = useNavigate();
     const { i18n } = useTranslation();
+
     const currentLanguage = i18n.resolvedLanguage;
     const toggleLanguage = (lang: string) => {
         i18n.changeLanguage(lang);
     };
 
-    // 模拟用户信息（后续可替换为真实数据）
-    const user = {
-        username: "Cam.admin",
-        nickname: "管理员",
-        email: "admin@example.comadmin@example.comadmin@example.comadmin@example.comadmin@example.comadmin@example.com",
-        role: "Admin",
-        level: "P4",
-        avatar: "https://charlie-assets.oss-rg-china-mainland.aliyuncs.com/images/charlie.jpg",
-    };
+    const { user, logout } = useUser();
 
     const languageMenu = (
         <Menu>
@@ -46,15 +44,28 @@ const Header: React.FC = () => {
         <PageHeader
             className={styles["custom-header"]}
             title={
-                <div style={{ display: "flex", alignItems: "center" }}>
-                        <img
-                            alt="avatar"
-                            src={Logo}
-                            style={{ width: 32, height: 32 }}
-                        />
-                        <div style={{ fontSize: "20px", fontWeight: "bold", marginLeft: 12 }}>
-                            API 管理 CAM
-                        </div>
+                <div
+                    style={{
+                        display: "flex",
+                        alignItems: "center",
+                        cursor: "pointer",
+                    }}
+                    onClick={() => navigate("/")}
+                >
+                    <img
+                        alt="avatar"
+                        src={Logo}
+                        style={{ width: 32, height: 32 }}
+                    />
+                    <div
+                        style={{
+                            fontSize: "20px",
+                            fontWeight: "bold",
+                            marginLeft: 12,
+                        }}
+                    >
+                        API 管理 CAM
+                    </div>
                 </div>
             }
             subTitle={
@@ -75,13 +86,34 @@ const Header: React.FC = () => {
                             </Space>
                         </div>
                     </Dropdown>
-                    <Popover position="br" content={userPopoverContent(user)}>
-                        <Avatar
-                            size={32}
-                            style={{ backgroundColor: "#ecf2ff" }}
-                        >
-                            {user.username[0]}
-                        </Avatar>
+                    <Popover
+                        position="br"
+                        content={
+                            user ? (
+                                <Profile userInfo={user} logout={logout} />
+                            ) : (
+                                <Login />
+                            )
+                        }
+                    >
+                        {user ? (
+                            <Avatar
+                                size={32}
+                                style={{ backgroundColor: "#ecf2ff" }}
+                            >
+                                {user.username[0]}
+                            </Avatar>
+                        ) : (
+                            <Avatar
+                                size={32}
+                                style={{
+                                    backgroundColor: "#c9cdd4",
+                                    color: "#fff",
+                                }}
+                            >
+                                <IconUser />
+                            </Avatar>
+                        )}
                     </Popover>
                 </Space>
             }
