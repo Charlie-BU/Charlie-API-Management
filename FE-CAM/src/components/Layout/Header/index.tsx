@@ -1,4 +1,5 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import {
     PageHeader,
     Space,
@@ -15,6 +16,7 @@ import { Logo } from "@/assets/icons";
 import { userPopoverContent } from "./UserPopover";
 
 const Header: React.FC = () => {
+    const navigate = useNavigate();
     const { i18n } = useTranslation();
     const currentLanguage = i18n.resolvedLanguage;
     const toggleLanguage = (lang: string) => {
@@ -46,7 +48,7 @@ const Header: React.FC = () => {
         <PageHeader
             className={styles["custom-header"]}
             title={
-                <div style={{ display: "flex", alignItems: "center" }}>
+                <div style={{ display: "flex", alignItems: "center", cursor: "pointer" }} onClick={() => navigate("/")}>
                         <img
                             alt="avatar"
                             src={Logo}

@@ -50,7 +50,7 @@
   },
   "nav": {
     "home": "Home",
-    "apiManagement": "API Management",
+    "apiDefinition": "API Definition",
     "jobManagement": "Job Management",
     "settings": "Settings",
     "help": "Help"

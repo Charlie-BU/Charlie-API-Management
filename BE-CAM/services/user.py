@@ -15,25 +15,33 @@ SECRET_KEY = os.getenv("LOGIN_SECRET")
 
 
 # 生成access token
-def createAccessToken(data: dict, expires_delta: timedelta = None) -> str:
+def createAccessToken(data: dict, expires_delta: timedelta | None = None) -> str:
     to_encode = data.copy()
     expire = datetime.utcnow() + (expires_delta or timedelta(hours=3))
     to_encode.update({"exp": expire})
+    if not ALGORITHM or not SECRET_KEY:
+        raise Exception("ALGORITHM or SECRET_KEY is not set in .env file")
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
 
 
 # 解析access token
 def decodeAccessToken(token: str) -> dict:
+    if not ALGORITHM or not SECRET_KEY:
+        raise Exception("ALGORITHM or SECRET_KEY is not set in .env file")
     return jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
 
 
 # 通过access token获取user id
-def userGetUserIdByAccessToken(request: Request = None, token: str = None) -> int:
+def userGetUserIdByAccessToken(
+    request: Request | None = None, token: str | None = None
+) -> int:
     if request is not None and token is not None:
         raise Exception("Request and token should not be provided at the same time")
     if request is not None:
         authorization = request.headers.get("Authorization")
+        if not authorization or not authorization.startswith("Bearer "):
+            raise Exception("Invalid Authorization header format")
         token = authorization.split("Bearer ")[1]
     elif token is None:
         raise Exception("Either request or token is required")
@@ -42,13 +50,15 @@ def userGetUserIdByAccessToken(request: Request = None, token: str = None) -> in
 
 
 # 通过user id获取user信息
-def userGetUserById(db: Session, id: int) -> dict:
+def userGetUserById(db: Session, id: int) -> dict | Response:
     user = db.get(User, id)
+    if user is None:
+        return Response(status_code=404, headers={}, description="User not found")
     return user.toJson()
 
 
 # 用户登录
-def userLogin(db: Session, username: str, password: str) -> dict:
+def userLogin(db: Session, username: str, password: str) -> dict | Response:
     user = db.query(User).filter(User.username == username).first()
     if user is None:
         return Response(status_code=404, headers={}, description="User not found")
@@ -64,7 +74,7 @@ def userLogin(db: Session, username: str, password: str) -> dict:
 # 用户注册
 def userRegister(
     db: Session, username: str, password: str, nickname: str, email: str, role: str
-) -> dict:
+) -> dict | Response:
     existing_user = db.query(User).filter(User.username == username).first()
     if existing_user:
         return Response(
@@ -86,5 +96,4 @@ def userRegister(
     db.refresh(user)
     return {
         "message": "Register success",
-        "user": user.toJson(),
     }

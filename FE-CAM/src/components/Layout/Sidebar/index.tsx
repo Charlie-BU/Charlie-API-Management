@@ -1,6 +1,6 @@
 import React from "react";
 import { Menu } from "@cloud-materials/common";
-import { IconHouseDashboard, IconAPIGatewayP } from "@cloud-materials/common/ve-o-iconbox";
+import { IconHouseDashboard, IconExamineeInformation } from "@cloud-materials/common/ve-o-iconbox";
 
 import { useNavigate, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
@@ -15,13 +15,13 @@ const Sidebar: React.FC = () => {
     const tabList = [
         {
             key: "/",
-            icon: <IconHouseDashboard style={{ width: 20, height: 20 }} />,
+            icon: <IconHouseDashboard style={{ width: 18, height: 18 }} />,
             title: t("nav.home"),
         },
         {
             key: "/api",
-            icon: <IconAPIGatewayP style={{ width: 20, height: 20 }} />,
-            title: t("nav.apiManagement"),
+            icon: <IconExamineeInformation style={{ width: 18, height: 18 }} />,
+            title: t("nav.apiDefinition"),
         },
     ];
 
@@ -31,8 +31,7 @@ const Sidebar: React.FC = () => {
 
     const getSelectedKeys = () => {
         const path = location.pathname;
-        if (path.startsWith("/api")) return ["/api"];
-        return ["/"];
+        return [path];
     };
 
     return (

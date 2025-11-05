@@ -50,7 +50,7 @@
   },
   "nav": {
     "home": "首页",
-    "apiManagement": "API管理",
+    "apiDefinition": "API 定义",
     "jobManagement": "任务管理",
     "settings": "设置",
     "help": "帮助"
