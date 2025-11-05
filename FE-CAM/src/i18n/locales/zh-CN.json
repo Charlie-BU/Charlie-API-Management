@@ -54,5 +54,18 @@
     "jobManagement": "任务管理",
     "settings": "设置",
     "help": "帮助"
+  },
+  "login": {
+    "title": "登录 CAM",
+    "username": "用户名",
+    "usernamePlaceholder": "请输入用户名",
+    "usernameRequired": "请输入用户名",
+    "password": "密码",
+    "passwordPlaceholder": "请输入密码",
+    "passwordRequired": "请输入密码",
+    "reset": "重置",
+    "login": "登录",
+    "success": "登录成功",
+    "failure": "登录失败"
   }
 }

@@ -11,21 +11,18 @@ import {
 import styles from "./index.module.less";
 import { useTranslation } from "react-i18next";
 
-export const userPopoverContent = (userInfo: {
-    username: string;
-    nickname: string;
-    email: string;
-    role: string;
-    level: string;
-    avatar: string;
+import type { UserProfile } from "@/services/user/types";
+
+interface UserPopoverProps {
+    userInfo: UserProfile;
+    logout: () => void;
+}
+
+const UserPopover: React.FC<UserPopoverProps> = ({
+    userInfo,
+    logout,
 }) => {
     const { t } = useTranslation();
-
-    const handleLogout = () => {
-        // TODO: 这里可以接入真实登出逻辑
-        // 比如清理 token 并跳转到登录页
-        console.log("已退出登录（示例）");
-    };
 
     const handleChangePassword = () => {
         // TODO: 跳转到修改密码页面或弹出修改密码对话框
@@ -79,7 +76,7 @@ export const userPopoverContent = (userInfo: {
                     <IconLock className={styles.menuIcon} />{" "}
                     {t("common.changePassword")}
                 </div>
-                <div className={styles.menuItem} onClick={handleLogout}>
+                <div className={styles.menuItem} onClick={logout}>
                     <IconPoweroff className={styles.menuIcon} />{" "}
                     {t("common.logout")}
                 </div>
@@ -87,3 +84,5 @@ export const userPopoverContent = (userInfo: {
         </div>
     );
 };
+
+export default UserPopover;

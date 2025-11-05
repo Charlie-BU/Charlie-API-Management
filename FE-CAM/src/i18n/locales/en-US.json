@@ -54,5 +54,18 @@
     "jobManagement": "Job Management",
     "settings": "Settings",
     "help": "Help"
+  },
+  "login": {
+    "title": "Sign in to CAM",
+    "username": "Username",
+    "usernamePlaceholder": "Enter username",
+    "usernameRequired": "Please enter username",
+    "password": "Password",
+    "passwordPlaceholder": "Enter password",
+    "passwordRequired": "Please enter password",
+    "reset": "Reset",
+    "login": "Login",
+    "success": "Signed in successfully",
+    "failure": "Sign in failed"
   }
 }

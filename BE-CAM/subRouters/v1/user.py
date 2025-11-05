@@ -4,7 +4,12 @@ from robyn.authentication import BearerGetter
 
 from authentication import AuthHandler
 from database.database import session
-from services.user import userLogin, userRegister, userGetUserById
+from services.user import (
+    userGetUserIdByAccessToken,
+    userLogin,
+    userRegister,
+    userGetUserById,
+)
 
 userRouterV1 = SubRouter(__file__, prefix="/v1/user")
 
@@ -31,6 +36,15 @@ async def getUserById(request: Request):
         )
     with session() as db:
         res = userGetUserById(db=db, id=int(id))
+    return res
+
+
+# 通过access_token获取用户详情
+@userRouterV1.get("/getMyInfo", auth_required=True)
+async def getMyInfo(request: Request):
+    user_id = userGetUserIdByAccessToken(request=request)
+    with session() as db:
+        res = userGetUserById(db=db, id=user_id)
     return res
 
 
