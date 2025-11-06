@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
     PageHeader,
@@ -21,6 +21,7 @@ import Login from "@/components/User/Login";
 const Header: React.FC = () => {
     const navigate = useNavigate();
     const { i18n } = useTranslation();
+    const [showPopover, setShowPopover] = useState(false);
 
     const currentLanguage = i18n.resolvedLanguage;
     const toggleLanguage = (lang: string) => {
@@ -88,6 +89,11 @@ const Header: React.FC = () => {
                     </Dropdown>
                     <Popover
                         position="br"
+                        trigger="click"
+                        popupVisible={showPopover}
+                        onVisibleChange={(visible) => {
+                            setShowPopover(visible);
+                        }}
                         content={
                             user ? (
                                 <Profile userInfo={user} logout={logout} />
@@ -99,7 +105,10 @@ const Header: React.FC = () => {
                         {user ? (
                             <Avatar
                                 size={32}
-                                style={{ backgroundColor: "#ecf2ff" }}
+                                style={{
+                                    backgroundColor: "#ecf2ff",
+                                    cursor: "pointer",
+                                }}
                             >
                                 {user.username[0]}
                             </Avatar>
@@ -109,6 +118,7 @@ const Header: React.FC = () => {
                                 style={{
                                     backgroundColor: "#c9cdd4",
                                     color: "#fff",
+                                    cursor: "pointer",
                                 }}
                             >
                                 <IconUser />

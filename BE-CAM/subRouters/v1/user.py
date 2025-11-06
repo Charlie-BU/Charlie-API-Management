@@ -1,3 +1,4 @@
+from services.user import userModifyPassword
 from robyn import SubRouter
 from robyn.robyn import Request, Response
 from robyn.authentication import BearerGetter
@@ -76,5 +77,22 @@ async def register(request: Request):
             nickname=nickname,
             email=email,
             role=role,
+        )
+    return res
+
+
+# 修改密码
+@userRouterV1.post("/modifyPassword", auth_required=True)
+async def modifyPassword(request: Request):
+    data = request.json()
+    id = userGetUserIdByAccessToken(request=request)
+    old_password = data["old_password"]
+    new_password = data["new_password"]
+    with session() as db:
+        res = userModifyPassword(
+            db=db,
+            id=id,
+            old_password=old_password,
+            new_password=new_password,
         )
     return res

@@ -22,6 +22,16 @@ export interface RegisterResponse {
     message: string;
 }
 
+export interface ModifyPasswordRequest {
+    old_password: string;
+    new_password: string;
+}
+
+export interface ModifyPasswordResponse {
+    status: number;
+    message: string;
+}
+
 export interface UserResponse {
     status: number;
     message: string;

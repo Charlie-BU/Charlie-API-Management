@@ -3,6 +3,8 @@ import { api } from "@/api";
 import type {
     LoginRequest,
     LoginResponse,
+    ModifyPasswordRequest,
+    ModifyPasswordResponse,
     RegisterRequest,
     RegisterResponse,
     UserResponse,
@@ -16,6 +18,10 @@ export const UserLogin = async (data: LoginRequest) => {
 
 export const UserRegister = async (data: RegisterRequest) => {
     return api.post<RegisterResponse>(`${prefix}/register`, data);
+};
+
+export const UserModifyPassword = async (data: ModifyPasswordRequest) => {
+    return api.post<ModifyPasswordResponse>(`${prefix}/modifyPassword`, data);
 };
 
 export const GetUserById = async (id: number) => {
