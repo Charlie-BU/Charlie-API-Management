@@ -10,6 +10,7 @@ import {
 } from "@cloud-materials/common";
 import styles from "./index.module.less";
 import { useTranslation } from "react-i18next";
+import { useNavigate } from "react-router-dom";
 
 import type { UserProfile } from "@/services/user/types";
 
@@ -20,10 +21,10 @@ interface UserProfileProps {
 
 const Profile: React.FC<UserProfileProps> = ({ userInfo, logout }) => {
     const { t } = useTranslation();
+    const navigate = useNavigate();
 
-    const handleChangePassword = () => {
-        // TODO: 跳转到修改密码页面或弹出修改密码对话框
-        console.log("修改密码功能开发中（示例）");
+    const handleModifyPassword = () => {
+        navigate("/user/modify-password");
     };
 
     return (
@@ -69,11 +70,17 @@ const Profile: React.FC<UserProfileProps> = ({ userInfo, logout }) => {
             </div>
             <Divider style={{ margin: 0 }} />
             <div className={styles.menuList}>
-                <div className={styles.menuItem} onClick={handleChangePassword}>
+                <div className={styles.menuItem} onClick={handleModifyPassword}>
                     <IconLock className={styles.menuIcon} />{" "}
-                    {t("common.changePassword")}
+                    {t("common.modifyPassword")}
                 </div>
-                <div className={styles.menuItem} onClick={logout}>
+                <div
+                    className={styles.menuItem}
+                    onClick={() => {
+                        logout();
+                        navigate("/");
+                    }}
+                >
                     <IconPoweroff className={styles.menuIcon} />{" "}
                     {t("common.logout")}
                 </div>

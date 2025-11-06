@@ -113,3 +113,31 @@ def userRegister(
         "status": 200,
         "message": "Register success",
     }
+
+
+# 修改密码
+def userModifyPassword(
+    db: Session, id: int, old_password: str, new_password: str
+) -> dict:
+    user = db.get(User, id)
+    if user is None:
+        return {
+            "status": -1,
+            "message": "User not found",
+        }
+    if not user.checkPassword(old_password):
+        return {
+            "status": -2,
+            "message": "Wrong old password",
+        }
+    if old_password == new_password:
+        return {
+            "status": -3,
+            "message": "New password cannot be the same as old password",
+        }
+    user.password = User.hashPassword(new_password)  # type: ignore
+    db.commit()
+    return {
+        "status": 200,
+        "message": "Modify password success",
+    }

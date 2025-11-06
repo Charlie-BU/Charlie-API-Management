@@ -10,6 +10,7 @@ import {
 } from "@cloud-materials/common";
 import { useNavigate } from "react-router-dom";
 import { useUser } from "@/hooks/useUser";
+import type { LoginRequest } from "@/services/user/types";
 
 const Login: React.FC = () => {
     const { t } = useTranslation();
@@ -19,14 +20,13 @@ const Login: React.FC = () => {
     const [loading, setLoading] = useState(false);
     const { login } = useUser();
 
-    const handleSubmit = async () => {
+    const handleSubmit = async (formData: LoginRequest) => {
         try {
             await form.validate();
-            const values = form.getFieldsValue();
             setLoading(true);
             const res = await login({
-                username: values.username,
-                password: values.password,
+                username: formData.username,
+                password: formData.password,
             });
             // 组件层负责提示
             Message.success(res.message || t("login.success"));
@@ -46,20 +46,36 @@ const Login: React.FC = () => {
                     {t("login.title")}
                 </Typography.Title>
             </div>
-            <Form form={form} layout="vertical">
+            <Form form={form} layout="vertical" onSubmit={handleSubmit}>
                 <Form.Item
                     label={t("login.username")}
                     field="username"
-                    rules={[{ required: true, message: t("login.usernameRequired") }]}
+                    rules={[
+                        {
+                            required: true,
+                            message: t("login.usernameRequired"),
+                        },
+                    ]}
                 >
-                    <Input placeholder={t("login.usernamePlaceholder")} allowClear />
+                    <Input
+                        placeholder={t("login.usernamePlaceholder")}
+                        allowClear
+                    />
                 </Form.Item>
                 <Form.Item
                     label={t("login.password")}
                     field="password"
-                    rules={[{ required: true, message: t("login.passwordRequired") }]}
+                    rules={[
+                        {
+                            required: true,
+                            message: t("login.passwordRequired"),
+                        },
+                    ]}
                 >
-                    <Input.Password placeholder={t("login.passwordPlaceholder")} allowClear />
+                    <Input.Password
+                        placeholder={t("login.passwordPlaceholder")}
+                        allowClear
+                    />
                 </Form.Item>
                 <Space
                     style={{
@@ -67,14 +83,10 @@ const Login: React.FC = () => {
                         justifyContent: "space-between",
                     }}
                 >
-                    <Button type="text" onClick={() => form.resetFields()}>
-                        {t("login.reset")}
+                    <Button type="text" onClick={() => navigate("/user/register")}>
+                        {t("login.gotoRegister")}
                     </Button>
-                    <Button
-                        type="primary"
-                        loading={loading}
-                        onClick={handleSubmit}
-                    >
+                    <Button type="primary" loading={loading} htmlType="submit">
                         {t("login.login")}
                     </Button>
                 </Space>

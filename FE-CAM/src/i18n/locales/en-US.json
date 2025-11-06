@@ -18,17 +18,24 @@
     "description": "Description",
     "createTime": "Create Time",
     "updateTime": "Update Time",
-    "changePassword": "Change Password",
-    "logout": "Logout"
+    "modifyPassword": "Change Password",
+    "logout": "Logout",
+    "action": "Action",
+    "view": "View",
+    "more": "More",
+    "copy": "Copy",
+    "loginFirst": "Please login first"
   },
   "api": {
     "title": "API Management",
+    "name": "Name",
     "list": "API List",
     "create": "Create API",
     "edit": "Edit API",
     "delete": "Delete API",
     "method": "Method",
     "path": "Path",
+    "owner": "Owner",
     "parameters": "Parameters",
     "response": "Response",
     "documentation": "Documentation",
@@ -36,7 +43,10 @@
     "mock": "Mock",
     "version": "Version",
     "category": "Category",
-    "tags": "Tags"
+    "tags": "Tags",
+    "createTime": "Create Time",
+    "updateTime": "Update Time",
+    "searchPlaceholder": "Search APIs by name or path"
   },
   "job": {
     "title": "Job Management",
@@ -78,6 +88,48 @@
     "reset": "Reset",
     "login": "Login",
     "success": "Signed in successfully",
-    "failure": "Sign in failed"
+    "failure": "Sign in failed",
+    "gotoRegister": "Go to Register"
+  },
+  "register": {
+    "title": "Sign up for CAM",
+    "username": "Username",
+    "usernamePlaceholder": "Enter username",
+    "usernameRequired": "Please enter username",
+    "nickname": "Nickname",
+    "nicknamePlaceholder": "Enter nickname",
+    "nicknameRequired": "Please enter nickname",
+    "email": "Email",
+    "emailPlaceholder": "Enter email",
+    "emailRequired": "Please enter email",
+    "role": "Role",
+    "rolePlaceholder": "Select role",
+    "roleRequired": "Please select role",
+    "password": "Password",
+    "passwordPlaceholder": "Enter password",
+    "passwordRequired": "Please enter password",
+    "confirmPassword": "Confirm Password",
+    "confirmPasswordPlaceholder": "Re-enter password",
+    "confirmPasswordRequired": "Please confirm password",
+    "reset": "Reset",
+    "submit": "Register",
+    "success": "Registered successfully",
+    "failure": "Registration failed"
+  },
+  "modifyPassword": {
+    "title": "Change Password",
+    "oldPassword": "Current Password",
+    "oldPasswordPlaceholder": "Enter current password",
+    "oldPasswordRequired": "Please enter current password",
+    "newPassword": "New Password",
+    "newPasswordPlaceholder": "Enter new password",
+    "newPasswordRequired": "Please enter new password",
+    "confirmPassword": "Confirm Password",
+    "confirmPasswordPlaceholder": "Re-enter new password",
+    "confirmPasswordRequired": "Please confirm new password",
+    "reset": "Reset",
+    "submit": "Submit",
+    "success": "Password updated successfully",
+    "failure": "Password update failed"
   }
 }

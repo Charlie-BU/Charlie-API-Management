@@ -88,6 +88,7 @@ const Header: React.FC = () => {
                     </Dropdown>
                     <Popover
                         position="br"
+                        // popupVisible={(user)}
                         content={
                             user ? (
                                 <Profile userInfo={user} logout={logout} />

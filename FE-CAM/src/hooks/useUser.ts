@@ -3,11 +3,18 @@ import { create } from "zustand";
 import type {
     LoginRequest,
     LoginResponse,
+    ModifyPasswordRequest,
+    ModifyPasswordResponse,
     RegisterRequest,
     RegisterResponse,
     UserProfile,
 } from "@/services/user/types";
-import { GetMyInfo, UserLogin, UserRegister } from "@/services/user";
+import {
+    GetMyInfo,
+    UserLogin,
+    UserModifyPassword,
+    UserRegister,
+} from "@/services/user";
 import { Message } from "@cloud-materials/common";
 
 const TOKEN_KEY = "cam_access_token";
@@ -27,17 +34,18 @@ const VALID_ROLES = [
 ] as const;
 type RoleCode = (typeof VALID_ROLES)[number];
 
-interface RegisterForm extends RegisterRequest {
-    confirmPassword: string;
-}
-
 interface UserStore {
     user: UserProfile | null;
     loading: boolean;
     fetchUser: () => Promise<void>;
     login: (formData: LoginRequest) => Promise<LoginResponse>;
     logout: () => void;
-    register: (formData: RegisterForm) => Promise<RegisterResponse>;
+    register: (
+        formData: RegisterRequest & { confirmPassword: string }
+    ) => Promise<RegisterResponse>;
+    modifyPassword: (
+        formData: ModifyPasswordRequest & { confirm_new_password: string }
+    ) => Promise<ModifyPasswordResponse>;
 }
 
 export const useUser = create<UserStore>((set, get) => ({
@@ -62,7 +70,8 @@ export const useUser = create<UserStore>((set, get) => ({
             const res = await GetMyInfo();
             if (res.status !== 200) {
                 Message.warning(res.message || "获取用户信息失败");
-                set({ loading: false });
+                set({ loading: false, user: null });
+                localStorage.removeItem(TOKEN_KEY);
                 return;
             }
             set({
@@ -71,7 +80,8 @@ export const useUser = create<UserStore>((set, get) => ({
             });
         } catch (error) {
             // Message.warning("获取用户信息失败");
-            set({ loading: false });
+            set({ loading: false, user: null });
+            localStorage.removeItem(TOKEN_KEY);
         }
     },
 
@@ -92,34 +102,26 @@ export const useUser = create<UserStore>((set, get) => ({
         set({ user: null });
     },
 
-    register: async (formData: RegisterForm) => {
-        if (
-            !formData.username ||
-            !formData.password ||
-            !formData.nickname ||
-            !formData.email ||
-            !formData.role ||
-            !formData.confirmPassword
-        ) {
-            Message.warning("请填写完整信息");
-        }
+    register: async (
+        formData: RegisterRequest & { confirmPassword: string }
+    ) => {
         if (formData.password !== formData.confirmPassword) {
-            Message.warning("两次密码输入不一致");
+            throw new Error("两次密码输入不一致");
         }
         if (!/^[a-zA-Z0-9_]+$/.test(formData.username)) {
-            Message.warning("用户名只能包含字母、数字和下划线");
+            throw new Error("用户名只能包含字母、数字和下划线");
         }
         if (
             !/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(
                 formData.email
             )
         ) {
-            Message.warning("请输入正确的邮箱格式");
+            throw new Error("请输入正确的邮箱格式");
         }
 
         const roleCode = formData.role as RoleCode;
         if (!VALID_ROLES.includes(roleCode)) {
-            Message.warning("请选择正确的角色");
+            throw new Error("请选择正确的角色");
         }
 
         const registerRequest: RegisterRequest = {
@@ -130,6 +132,23 @@ export const useUser = create<UserStore>((set, get) => ({
             role: roleCode,
         };
 
-        return await UserRegister(registerRequest);
+        const res = await UserRegister(registerRequest);
+        if (res.status !== 200) {
+            throw new Error(res.message || "注册失败");
+        }
+        return res;
+    },
+
+    modifyPassword: async (
+        formData: ModifyPasswordRequest & { confirm_new_password: string }
+    ) => {
+        if (formData.new_password !== formData.confirm_new_password) {
+            throw new Error("两次新密码输入不一致");
+        }
+        const res = await UserModifyPassword(formData);
+        if (res.status !== 200) {
+            throw new Error(res.message || "修改密码失败");
+        }
+        return res;
     },
 }));
