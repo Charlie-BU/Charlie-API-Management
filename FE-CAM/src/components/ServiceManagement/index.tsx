@@ -1,6 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
 import {
-    Card,
     Table,
     Input,
     Typography,
@@ -111,22 +110,20 @@ const ServiceManagement: React.FC = () => {
 
             <Divider />
 
-            <Card className={styles.card} bordered>
-                <Title heading={5} style={{ marginBottom: 12 }}>
-                    {t("service.list")}
-                </Title>
-                <Table
-                    loading={loading}
-                    rowKey="id"
-                    columns={columns}
-                    data={filtered}
-                    pagination={{
-                        pageSize: 10,
-                        total: filtered.length,
-                        showTotal: true,
-                    }}
-                />
-            </Card>
+            <Title heading={5} style={{ marginBottom: 12 }}>
+                {t("service.list")}
+            </Title>
+            <Table
+                loading={loading}
+                rowKey="id"
+                columns={columns}
+                data={filtered}
+                pagination={{
+                    pageSize: 10,
+                    total: filtered.length,
+                    showTotal: true,
+                }}
+            />
         </div>
     );
 };
