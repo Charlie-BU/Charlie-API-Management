@@ -42,7 +42,13 @@ const ServiceManagement: React.FC = () => {
     };
 
     useEffect(() => {
-        fetchData();
+        // 未登录时不触发请求，避免控制台网络报错
+        const token = localStorage.getItem("cam_access_token");
+        if (token) {
+            fetchData();
+        } else {
+            setList([]);
+        }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 

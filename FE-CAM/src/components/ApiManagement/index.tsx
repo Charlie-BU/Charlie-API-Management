@@ -1,171 +1,277 @@
-import React, { useState } from 'react';
-import { 
-  Card, 
-  Table, 
-  Button, 
-  Input, 
-  Space, 
-  Tag, 
-  Dropdown, 
-  Menu,
-  Typography,
-  Divider
-} from '@cloud-materials/common';
-import { useTranslation } from 'react-i18next';
-import styles from './index.module.less';
+import React, { useMemo, useState } from "react";
+import {
+    Typography,
+    Button,
+    Tag,
+    Table,
+    Tree,
+    Input,
+    Space,
+    Card,
+    Divider,
+    Avatar,
+} from "@cloud-materials/common";
+import styles from "./index.module.less";
 
-const { Title } = Typography;
+const { Title, Text } = Typography;
 const { Search } = Input;
 
-interface ApiItem {
-  id: string;
-  name: string;
-  method: string;
-  path: string;
-  owner: string;
-  status: string;
-  createTime: string;
-  updateTime: string;
-}
+// 左侧 API 列表（静态）
+const apiTreeData = [
+    {
+        key: "group-user",
+        title: <Text style={{ fontWeight: 600 }}>User</Text>,
+        children: [
+            {
+                key: "post-login",
+                title: (
+                    <Space size={8} align="center">
+                        <Tag color="green">POST</Tag>
+                        <Text>/v1/user/login</Text>
+                        <Tag color="gray">login</Tag>
+                    </Space>
+                ),
+            },
+            {
+                key: "post-register",
+                title: (
+                    <Space size={8} align="center">
+                        <Tag color="green">POST</Tag>
+                        <Text>/v1/user/register</Text>
+                        <Tag color="gray">register</Tag>
+                    </Space>
+                ),
+            },
+            {
+                key: "get-user-by-id",
+                title: (
+                    <Space size={8} align="center">
+                        <Tag color="blue">GET</Tag>
+                        <Text>/v1/user/getUserById</Text>
+                        <Tag color="gray">getUserById</Tag>
+                    </Space>
+                ),
+            },
+        ],
+    },
+    {
+        key: "group-service",
+        title: <Text style={{ fontWeight: 600 }}>Service</Text>,
+        children: [
+            {
+                key: "service-api",
+                title: (
+                    <Space size={8} align="center">
+                        <Tag color="purple">Service</Tag>
+                        <Text>Api</Text>
+                    </Space>
+                ),
+            },
+        ],
+    },
+    {
+        key: "group-uncategorized",
+        title: <Text style={{ fontWeight: 600 }}>未分类</Text>,
+    },
+];
+
+// 请求参数静态数据
+const requestColumns = [
+    { title: "字段名称", dataIndex: "name", width: 160 },
+    { title: "参数类型", dataIndex: "type", width: 120 },
+    { title: "类型格式", dataIndex: "format", width: 120 },
+    {
+        title: "是否必须",
+        dataIndex: "required",
+        width: 120,
+        render: (v: boolean) => (
+            <Tag color={v ? "red" : "gray"}>{v ? "必填" : "可选"}</Tag>
+        ),
+    },
+    { title: "备注", dataIndex: "desc" },
+    { title: "示例值", dataIndex: "example", width: 200 },
+];
+
+const requestData = [
+    {
+        name: "username",
+        type: "string",
+        format: "string",
+        required: true,
+        desc: "",
+        example: "cam_user",
+    },
+    {
+        name: "password",
+        type: "string",
+        format: "string",
+        required: true,
+        desc: "",
+        example: "******",
+    },
+];
+
+// 响应参数静态数据
+const responseColumns = [
+    { title: "字段名称", dataIndex: "name", width: 160 },
+    { title: "参数类型", dataIndex: "type", width: 120 },
+    { title: "类型格式", dataIndex: "format", width: 120 },
+    { title: "备注", dataIndex: "desc" },
+];
+
+const responseData = [
+    { name: "message", type: "string", format: "string", desc: "" },
+    { name: "access_token", type: "string", format: "string", desc: "" },
+];
+
+const tsRequestExample = `interface LoginRequest {\n  username: string;\n  password: string;\n}`;
+const tsResponseExample = `interface LoginResponse {\n  status: number;\n  message: string;\n  access_token: string;\n}`;
 
 const ApiManagement: React.FC = () => {
-  const { t } = useTranslation();
-  const [searchValue, setSearchValue] = useState('');
+    const [expandedReq, setExpandedReq] = useState(true);
+    const [expandedRes, setExpandedRes] = useState(false);
+    const [activeKey, setActiveKey] = useState("post-login");
 
-  // 模拟API数据
-  const mockData: ApiItem[] = [
-    {
-      id: '1',
-      name: 'CreateJob',
-      method: 'POST',
-      path: '/v1/open/CreateJob',
-      owner: '管理员',
-      status: 'P4',
-      createTime: '2024-01-15 10:30:00',
-      updateTime: '2024-01-15 10:30:00'
-    }
-  ];
+    const headerText = useMemo(() => {
+        switch (activeKey) {
+            case "post-login":
+                return (
+                    <Space size={12} align="center">
+                        <Tag color="green">POST</Tag>
+                        <Text code>/v1/user/login</Text>
+                    </Space>
+                );
+            case "post-register":
+                return (
+                    <Space size={12} align="center">
+                        <Tag color="green">POST</Tag>
+                        <Text code>/v1/user/register</Text>
+                    </Space>
+                );
+            case "get-user-by-id":
+                return (
+                    <Space size={12} align="center">
+                        <Tag color="blue">GET</Tag>
+                        <Text code>/v1/user/getUserById</Text>
+                    </Space>
+                );
+            default:
+                return <Text>/</Text>;
+        }
+    }, [activeKey]);
 
-  const columns = [
-    {
-      title: t('api.name'),
-      dataIndex: 'name',
-      key: 'name',
-      width: 150,
-    },
-    {
-      title: t('api.method'),
-      dataIndex: 'method',
-      key: 'method',
-      width: 100,
-      render: (method: string) => {
-        const color = method === 'GET' ? 'blue' : method === 'POST' ? 'green' : 'orange';
-        return <Tag color={color}>{method}</Tag>;
-      },
-    },
-    {
-      title: t('api.path'),
-      dataIndex: 'path',
-      key: 'path',
-      width: 200,
-    },
-    {
-      title: t('api.owner'),
-      dataIndex: 'owner',
-      key: 'owner',
-      width: 120,
-    },
-    {
-      title: t('api.status'),
-      dataIndex: 'status',
-      key: 'status',
-      width: 100,
-      render: (status: string) => {
-        const color = status === 'P4' ? 'red' : status === 'P3' ? 'orange' : 'green';
-        return <Tag color={color}>{status}</Tag>;
-      },
-    },
-    {
-      title: t('api.createTime'),
-      dataIndex: 'createTime',
-      key: 'createTime',
-      width: 180,
-    },
-    {
-      title: t('api.updateTime'),
-      dataIndex: 'updateTime',
-      key: 'updateTime',
-      width: 180,
-    },
-    {
-      title: t('common.action'),
-      key: 'action',
-      width: 150,
-      render: (_: any, _record: ApiItem) => {
-        const menu = (
-          <Menu>
-            <Menu.Item key="edit">{t('common.edit')}</Menu.Item>
-            <Menu.Item key="delete">{t('common.delete')}</Menu.Item>
-            <Menu.Item key="copy">{t('common.copy')}</Menu.Item>
-          </Menu>
-        );
+    return (
+        <div className={styles.apiPage}>
+            {/* 左侧 API 列表 */}
+            <div className={styles.sidebar}>
+                <Search
+                    className={styles.search}
+                    allowClear
+                    placeholder="搜索 API"
+                />
+                <Tree
+                    className={styles.tree}
+                    selectedKeys={[activeKey]}
+                    defaultExpandedKeys={[
+                        "group-user",
+                        "group-service",
+                        "group-uncategorized",
+                    ]}
+                    onSelect={(keys) => setActiveKey(String(keys[0]))}
+                    treeData={apiTreeData as any}
+                />
+            </div>
+            {/* 右侧详情 */}
+            <div className={styles.content}>
+                <div className={styles.header}>
+                    <Title heading={5} className={styles.pathTitle}>
+                        {headerText}
+                    </Title>
+                    <Space>
+                        <Button type="secondary">编辑</Button>
+                        <Button type="secondary">Mock</Button>
+                        <Button type="primary">测试</Button>
+                    </Space>
+                </div>
 
-        return (
-          <Space>
-            <Button type="text" size="small">
-              {t('common.view')}
-            </Button>
-            <Dropdown droplist={menu} trigger="click">
-              <Button type="text" size="small">
-                {t('common.more')}
-              </Button>
-            </Dropdown>
-          </Space>
-        );
-      },
-    },
-  ];
+                <Card className={styles.section} title={"接口信息"} bordered>
+                    <div className={styles.infoGrid}>
+                        <div className={styles.infoItem}>
+                            <Text className={styles.infoLabel}>接口名称中文</Text>
+                            <Text>login</Text>
+                        </div>
+                        <div className={styles.infoItem}>
+                            <Text className={styles.infoLabel}>接口 owner</Text>
+                            <Space>
+                                <Avatar size={24} style={{ backgroundColor: "#e8f3ff" }}>卡</Avatar>
+                                <Avatar size={24} style={{ backgroundColor: "#e8f3ff" }}>乙</Avatar>
+                            </Space>
+                        </div>
+                        <div className={styles.infoItem}>
+                            <Text className={styles.infoLabel}>接口等级</Text>
+                            <Tag color="red">P0</Tag>
+                        </div>
+                        <div className={styles.infoItem}>
+                            <Text className={styles.infoLabel}>接口标签</Text>
+                            <Text>无</Text>
+                        </div>
+                        <div className={styles.infoItem} style={{ gridColumn: "1 / -1" }}>
+                            <Text className={styles.infoLabel}>接口描述</Text>
+                            <Text>无</Text>
+                        </div>
+                    </div>
+                </Card>
 
-  const filteredData = mockData.filter(item =>
-    item.name.toLowerCase().includes(searchValue.toLowerCase()) ||
-    item.path.toLowerCase().includes(searchValue.toLowerCase())
-  );
+                <Card className={styles.section} title={"请求参数"} bordered>
+                    <div className={styles.subHeader}>
+                        <Text>Body 参数</Text>
+                        <Space>
+                            <Button type="text" onClick={() => setExpandedReq((v) => !v)}>
+                                {expandedReq ? "收起示例" : "展开示例"}
+                            </Button>
+                            <Tag color="arcoblue">TypeScript</Tag>
+                        </Space>
+                    </div>
+                    <Table
+                        pagination={false}
+                        columns={requestColumns as any}
+                        data={requestData}
+                        size="small"
+                    />
+                    {expandedReq && (
+                        <Card className={styles.codeCard} bordered={false}>
+                            <pre className={styles.codeBlock}>{tsRequestExample}</pre>
+                        </Card>
+                    )}
+                </Card>
 
-  return (
-    <div className={styles.container}>
-      <div className={styles.header}>
-        <Title heading={4} className={styles.title}>
-          {t('api.title')}
-        </Title>
-        <Space>
-          <Search
-            placeholder={t('api.searchPlaceholder')}
-            value={searchValue}
-            onChange={setSearchValue}
-            style={{ width: 300 }}
-          />
-          <Button type="primary">
-            {t('api.create')}
-          </Button>
-        </Space>
-      </div>
-      
-      <Divider />
-      
-      <Card className={styles.card}>
-        <Table
-          columns={columns}
-          data={filteredData}
-          pagination={{
-            pageSize: 10,
-            total: filteredData.length,
-            showTotal: true,
-          }}
-          rowKey="id"
-        />
-      </Card>
-    </div>
-  );
+                <Divider style={{ margin: "16px 0" }} />
+
+                <Card className={styles.section} title={"响应参数"} bordered>
+                    <div className={styles.subHeader}>
+                        <Text>Body 参数</Text>
+                        <Space>
+                            <Button type="text" onClick={() => setExpandedRes((v) => !v)}>
+                                {expandedRes ? "收起示例" : "展开示例"}
+                            </Button>
+                            <Tag color="arcoblue">TypeScript</Tag>
+                        </Space>
+                    </div>
+                    <Table
+                        pagination={false}
+                        columns={responseColumns as any}
+                        data={responseData}
+                        size="small"
+                    />
+                    {expandedRes && (
+                        <Card className={styles.codeCard} bordered={false}>
+                            <pre className={styles.codeBlock}>{tsResponseExample}</pre>
+                        </Card>
+                    )}
+                </Card>
+            </div>
+        </div>
+    );
 };
 
 export default ApiManagement;
