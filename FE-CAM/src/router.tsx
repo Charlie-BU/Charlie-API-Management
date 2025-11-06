@@ -1,6 +1,7 @@
-import { createBrowserRouter, Navigate, redirect } from "react-router-dom";
+import { createBrowserRouter, redirect } from "react-router-dom";
 import Layout from "@/components/Layout";
 import ApiManagement from "@/components/ApiManagement";
+import ServiceManagement from "@/components/ServiceManagement";
 import ModifyPassword from "@/components/User/ModifyPassword";
 import Register from "@/components/User/Register";
 import { Message } from "@cloud-materials/common";
@@ -22,7 +23,8 @@ export const router = createBrowserRouter([
         children: [
             {
                 index: true,
-                element: <Navigate to="/" replace />,
+                element: <ServiceManagement />,
+                // loader: requireAuthLoader,
             },
             {
                 path: "user/modify-password",

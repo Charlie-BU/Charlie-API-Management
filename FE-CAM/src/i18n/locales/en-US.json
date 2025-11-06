@@ -48,6 +48,17 @@
     "updateTime": "Update Time",
     "searchPlaceholder": "Search APIs by name or path"
   },
+  "service": {
+    "title": "Service Management",
+    "list": "Service List",
+    "serviceUUID": "Service UUID",
+    "latestVersion": "Latest Version",
+    "owner": "Owner",
+    "searchPlaceholder": "Search by service_uuid",
+    "refresh": "Refresh",
+    "welcomeTitle": "Welcome to CAM",
+    "empty": "No services yet. Create or import."
+  },
   "job": {
     "title": "Job Management",
     "list": "Job List",

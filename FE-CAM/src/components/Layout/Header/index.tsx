@@ -10,7 +10,6 @@ import {
     Popover,
     IconLanguage,
     IconUser,
-    IconClose,
 } from "@cloud-materials/common";
 import { useTranslation } from "react-i18next";
 import styles from "./index.module.less";

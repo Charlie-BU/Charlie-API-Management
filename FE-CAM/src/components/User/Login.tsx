@@ -83,7 +83,10 @@ const Login: React.FC = () => {
                         justifyContent: "space-between",
                     }}
                 >
-                    <Button type="text" onClick={() => navigate("/user/register")}>
+                    <Button
+                        type="text"
+                        onClick={() => navigate("/user/register")}
+                    >
                         {t("login.gotoRegister")}
                     </Button>
                     <Button type="primary" loading={loading} htmlType="submit">

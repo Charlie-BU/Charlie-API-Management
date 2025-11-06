@@ -49,6 +49,17 @@
     "updateTime": "更新时间",
     "searchPlaceholder": "按名称或路径搜索 API"
   },
+  "service": {
+    "title": "服务管理",
+    "list": "服务列表",
+    "serviceUUID": "服务UUID",
+    "latestVersion": "最新版本",
+    "owner": "负责人",
+    "searchPlaceholder": "按 service_uuid 搜索服务",
+    "refresh": "刷新",
+    "welcomeTitle": "欢迎来到 API 管理 CAM",
+    "empty": "暂无服务，请创建或导入。"
+  },
   "job": {
     "title": "任务管理",
     "list": "任务列表",
