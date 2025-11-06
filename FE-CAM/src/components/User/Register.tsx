@@ -44,7 +44,13 @@ const Register: React.FC = () => {
     };
 
     return (
-        <div style={{ width: 250, padding: "16px 12px" }}>
+        <div
+            style={{
+                width: "100%",
+                maxWidth: 360,
+                padding: "24px 24px",
+            }}
+        >
             <div style={{ marginBottom: 12 }}>
                 <Typography.Title heading={5} style={{ margin: 0 }}>
                     {t("register.title")}

@@ -90,11 +90,10 @@ const Header: React.FC = () => {
                     </Dropdown>
                     <Popover
                         position="br"
+                        trigger="click"
                         popupVisible={showPopover}
                         onVisibleChange={(visible) => {
-                            if (visible) {
-                                setShowPopover(true);
-                            }
+                            setShowPopover(visible);
                         }}
                         content={
                             user ? (
@@ -103,19 +102,14 @@ const Header: React.FC = () => {
                                 <Login />
                             )
                         }
-                        title={
-                            <div
-                                style={{ cursor: "pointer", textAlign: "end" }}
-                                onClick={() => setShowPopover(false)}
-                            >
-                                <IconClose />
-                            </div>
-                        }
                     >
                         {user ? (
                             <Avatar
                                 size={32}
-                                style={{ backgroundColor: "#ecf2ff" }}
+                                style={{
+                                    backgroundColor: "#ecf2ff",
+                                    cursor: "pointer",
+                                }}
                             >
                                 {user.username[0]}
                             </Avatar>
@@ -125,6 +119,7 @@ const Header: React.FC = () => {
                                 style={{
                                     backgroundColor: "#c9cdd4",
                                     color: "#fff",
+                                    cursor: "pointer",
                                 }}
                             >
                                 <IconUser />
