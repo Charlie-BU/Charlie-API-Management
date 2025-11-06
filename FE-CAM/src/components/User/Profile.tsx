@@ -29,7 +29,7 @@ const Profile: React.FC<UserProfileProps> = ({ userInfo, logout }) => {
 
     return (
         <div style={{ width: 250 }}>
-            <div style={{ padding: "16px 12px" }}>
+            <div style={{ padding: "0 12px 16px 12px" }}>
                 <Layout>
                     <Layout.Sider
                         width={40}

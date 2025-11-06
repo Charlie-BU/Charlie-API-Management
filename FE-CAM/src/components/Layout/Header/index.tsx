@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
     PageHeader,
@@ -10,6 +10,7 @@ import {
     Popover,
     IconLanguage,
     IconUser,
+    IconClose,
 } from "@cloud-materials/common";
 import { useTranslation } from "react-i18next";
 import styles from "./index.module.less";
@@ -21,6 +22,7 @@ import Login from "@/components/User/Login";
 const Header: React.FC = () => {
     const navigate = useNavigate();
     const { i18n } = useTranslation();
+    const [showPopover, setShowPopover] = useState(false);
 
     const currentLanguage = i18n.resolvedLanguage;
     const toggleLanguage = (lang: string) => {
@@ -88,13 +90,26 @@ const Header: React.FC = () => {
                     </Dropdown>
                     <Popover
                         position="br"
-                        // popupVisible={(user)}
+                        popupVisible={showPopover}
+                        onVisibleChange={(visible) => {
+                            if (visible) {
+                                setShowPopover(true);
+                            }
+                        }}
                         content={
                             user ? (
                                 <Profile userInfo={user} logout={logout} />
                             ) : (
                                 <Login />
                             )
+                        }
+                        title={
+                            <div
+                                style={{ cursor: "pointer", textAlign: "end" }}
+                                onClick={() => setShowPopover(false)}
+                            >
+                                <IconClose />
+                            </div>
                         }
                     >
                         {user ? (

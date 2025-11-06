@@ -40,7 +40,7 @@ const Login: React.FC = () => {
     };
 
     return (
-        <div style={{ width: 250, padding: "16px 12px" }}>
+        <div style={{ width: 250, padding: "0 12px 16px 12px" }}>
             <div style={{ marginBottom: 12 }}>
                 <Typography.Title heading={5} style={{ margin: 0 }}>
                     {t("login.title")}
