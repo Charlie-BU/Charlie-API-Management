@@ -48,7 +48,7 @@ const Register: React.FC = () => {
             style={{
                 width: "100%",
                 maxWidth: 360,
-                padding: "24px 24px",
+                padding: "48px 24px",
             }}
         >
             <div style={{ marginBottom: 12 }}>

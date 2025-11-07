@@ -10,6 +10,7 @@ import {
     Card,
     Divider,
     Avatar,
+    Breadcrumb,
 } from "@cloud-materials/common";
 import styles from "./index.module.less";
 
@@ -161,116 +162,182 @@ const ApiManagement: React.FC = () => {
     }, [activeKey]);
 
     return (
-        <div className={styles.apiPage}>
-            {/* 左侧 API 列表 */}
-            <div className={styles.sidebar}>
-                <Search
-                    className={styles.search}
-                    allowClear
-                    placeholder="搜索 API"
-                />
-                <Tree
-                    className={styles.tree}
-                    selectedKeys={[activeKey]}
-                    defaultExpandedKeys={[
-                        "group-user",
-                        "group-service",
-                        "group-uncategorized",
-                    ]}
-                    onSelect={(keys) => setActiveKey(String(keys[0]))}
-                    treeData={apiTreeData as any}
-                />
-            </div>
-            {/* 右侧详情 */}
-            <div className={styles.content}>
-                <div className={styles.header}>
-                    <Title heading={5} className={styles.pathTitle}>
-                        {headerText}
-                    </Title>
-                    <Space>
-                        <Button type="secondary">编辑</Button>
-                        <Button type="secondary">Mock</Button>
-                        <Button type="primary">测试</Button>
-                    </Space>
+        <>
+            {/* 服务header */}
+            <div className={styles.serviceHeader}>
+                <Breadcrumb>
+                    <Breadcrumb.Item href="/">服务列表</Breadcrumb.Item>
+                    <Breadcrumb.Item>服务详情</Breadcrumb.Item>
+                </Breadcrumb>
+                <div className={styles.serviceTitleRow}>
+                    <Text className={styles.serviceName}>
+                        api.virtual.ai4s_backend
+                    </Text>
+                    <Text className={styles.serviceVersion}>1.0.30</Text>
+                    <Tag size="small" color="gray">
+                        master
+                    </Tag>
+                    <Tag size="small" color="green">
+                        最新版本
+                    </Tag>
                 </div>
+            </div>
+            <div className={styles.apiPage}>
+                {/* 左侧 API 列表 */}
+                <div className={styles.sidebar}>
+                    <Search
+                        className={styles.search}
+                        allowClear
+                        placeholder="搜索 API"
+                    />
+                    <Tree
+                        className={styles.tree}
+                        selectedKeys={[activeKey]}
+                        defaultExpandedKeys={[
+                            "group-user",
+                            "group-service",
+                            "group-uncategorized",
+                        ]}
+                        onSelect={(keys) => setActiveKey(String(keys[0]))}
+                        treeData={apiTreeData as any}
+                    />
+                </div>
+                {/* 右侧详情 */}
+                <div className={styles.content}>
+                    <div className={styles.header}>
+                        <Title heading={5} className={styles.pathTitle}>
+                            {headerText}
+                        </Title>
+                        <Space>
+                            <Button type="secondary">编辑</Button>
+                            <Button type="secondary">Mock</Button>
+                            <Button type="primary">测试</Button>
+                        </Space>
+                    </div>
 
-                <Card className={styles.section} title={"接口信息"} bordered>
-                    <div className={styles.infoGrid}>
-                        <div className={styles.infoItem}>
-                            <Text className={styles.infoLabel}>接口名称中文</Text>
-                            <Text>login</Text>
+                    <Card
+                        className={styles.section}
+                        title={"接口信息"}
+                        bordered
+                    >
+                        <div className={styles.infoGrid}>
+                            <div className={styles.infoItem}>
+                                <Text className={styles.infoLabel}>
+                                    接口名称中文
+                                </Text>
+                                <Text>login</Text>
+                            </div>
+                            <div className={styles.infoItem}>
+                                <Text className={styles.infoLabel}>
+                                    接口 owner
+                                </Text>
+                                <Space>
+                                    <Avatar
+                                        size={24}
+                                        style={{ backgroundColor: "#e8f3ff" }}
+                                    >
+                                        卡
+                                    </Avatar>
+                                    <Avatar
+                                        size={24}
+                                        style={{ backgroundColor: "#e8f3ff" }}
+                                    >
+                                        乙
+                                    </Avatar>
+                                </Space>
+                            </div>
+                            <div className={styles.infoItem}>
+                                <Text className={styles.infoLabel}>
+                                    接口等级
+                                </Text>
+                                <Tag color="red">P0</Tag>
+                            </div>
+                            <div className={styles.infoItem}>
+                                <Text className={styles.infoLabel}>
+                                    接口标签
+                                </Text>
+                                <Text>无</Text>
+                            </div>
+                            <div
+                                className={styles.infoItem}
+                                style={{ gridColumn: "1 / -1" }}
+                            >
+                                <Text className={styles.infoLabel}>
+                                    接口描述
+                                </Text>
+                                <Text>无</Text>
+                            </div>
                         </div>
-                        <div className={styles.infoItem}>
-                            <Text className={styles.infoLabel}>接口 owner</Text>
+                    </Card>
+
+                    <Card
+                        className={styles.section}
+                        title={"请求参数"}
+                        bordered
+                    >
+                        <div className={styles.subHeader}>
+                            <Text>Body 参数</Text>
                             <Space>
-                                <Avatar size={24} style={{ backgroundColor: "#e8f3ff" }}>卡</Avatar>
-                                <Avatar size={24} style={{ backgroundColor: "#e8f3ff" }}>乙</Avatar>
+                                <Button
+                                    type="text"
+                                    onClick={() => setExpandedReq((v) => !v)}
+                                >
+                                    {expandedReq ? "收起示例" : "展开示例"}
+                                </Button>
+                                <Tag color="arcoblue">TypeScript</Tag>
                             </Space>
                         </div>
-                        <div className={styles.infoItem}>
-                            <Text className={styles.infoLabel}>接口等级</Text>
-                            <Tag color="red">P0</Tag>
-                        </div>
-                        <div className={styles.infoItem}>
-                            <Text className={styles.infoLabel}>接口标签</Text>
-                            <Text>无</Text>
-                        </div>
-                        <div className={styles.infoItem} style={{ gridColumn: "1 / -1" }}>
-                            <Text className={styles.infoLabel}>接口描述</Text>
-                            <Text>无</Text>
-                        </div>
-                    </div>
-                </Card>
+                        <Table
+                            pagination={false}
+                            columns={requestColumns as any}
+                            data={requestData}
+                            size="small"
+                        />
+                        {expandedReq && (
+                            <Card className={styles.codeCard} bordered={false}>
+                                <pre className={styles.codeBlock}>
+                                    {tsRequestExample}
+                                </pre>
+                            </Card>
+                        )}
+                    </Card>
 
-                <Card className={styles.section} title={"请求参数"} bordered>
-                    <div className={styles.subHeader}>
-                        <Text>Body 参数</Text>
-                        <Space>
-                            <Button type="text" onClick={() => setExpandedReq((v) => !v)}>
-                                {expandedReq ? "收起示例" : "展开示例"}
-                            </Button>
-                            <Tag color="arcoblue">TypeScript</Tag>
-                        </Space>
-                    </div>
-                    <Table
-                        pagination={false}
-                        columns={requestColumns as any}
-                        data={requestData}
-                        size="small"
-                    />
-                    {expandedReq && (
-                        <Card className={styles.codeCard} bordered={false}>
-                            <pre className={styles.codeBlock}>{tsRequestExample}</pre>
-                        </Card>
-                    )}
-                </Card>
+                    <Divider style={{ margin: "16px 0" }} />
 
-                <Divider style={{ margin: "16px 0" }} />
-
-                <Card className={styles.section} title={"响应参数"} bordered>
-                    <div className={styles.subHeader}>
-                        <Text>Body 参数</Text>
-                        <Space>
-                            <Button type="text" onClick={() => setExpandedRes((v) => !v)}>
-                                {expandedRes ? "收起示例" : "展开示例"}
-                            </Button>
-                            <Tag color="arcoblue">TypeScript</Tag>
-                        </Space>
-                    </div>
-                    <Table
-                        pagination={false}
-                        columns={responseColumns as any}
-                        data={responseData}
-                        size="small"
-                    />
-                    {expandedRes && (
-                        <Card className={styles.codeCard} bordered={false}>
-                            <pre className={styles.codeBlock}>{tsResponseExample}</pre>
-                        </Card>
-                    )}
-                </Card>
+                    <Card
+                        className={styles.section}
+                        title={"响应参数"}
+                        bordered
+                    >
+                        <div className={styles.subHeader}>
+                            <Text>Body 参数</Text>
+                            <Space>
+                                <Button
+                                    type="text"
+                                    onClick={() => setExpandedRes((v) => !v)}
+                                >
+                                    {expandedRes ? "收起示例" : "展开示例"}
+                                </Button>
+                                <Tag color="arcoblue">TypeScript</Tag>
+                            </Space>
+                        </div>
+                        <Table
+                            pagination={false}
+                            columns={responseColumns as any}
+                            data={responseData}
+                            size="small"
+                        />
+                        {expandedRes && (
+                            <Card className={styles.codeCard} bordered={false}>
+                                <pre className={styles.codeBlock}>
+                                    {tsResponseExample}
+                                </pre>
+                            </Card>
+                        )}
+                    </Card>
+                </div>
             </div>
-        </div>
+        </>
     );
 };
 
