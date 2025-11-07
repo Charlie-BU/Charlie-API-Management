@@ -36,9 +36,16 @@ def getServiceById(request: Request):
 # 通过用户id获取用户的所有最新版本服务（Service表中）的列表
 @serviceRouterV1.get("/getHisNewestServicesByOwnerId", auth_required=True)
 def getHisNewestServicesByOwnerId(request: Request):
+    page_size = request.query_params.get("page_size", "10")
+    current_page = request.query_params.get("current_page", "1")
     owner_id = userGetUserIdByAccessToken(request=request)
     with session() as db:
-        res = serviceGetHisNewestServicesByOwnerId(db=db, owner_id=owner_id)
+        res = serviceGetHisNewestServicesByOwnerId(
+            db=db,
+            owner_id=owner_id,
+            page_size=int(page_size) if page_size else 10,
+            current_page=int(current_page) if current_page else 1,
+        )
     return res
 
 

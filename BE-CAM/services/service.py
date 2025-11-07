@@ -38,12 +38,21 @@ def serviceGetServiceById(db: Session, id: int, user_id: int) -> dict:
 
 
 # 通过用户id获取用户的所有最新版本服务（Service表中）的列表
-def serviceGetHisNewestServicesByOwnerId(db: Session, owner_id: int) -> dict:
+def serviceGetHisNewestServicesByOwnerId(
+    db: Session, owner_id: int, page_size: int, current_page: int
+) -> dict:
     services = (
         db.query(Service)
         .filter(~Service.is_deleted, Service.owner_id == owner_id)
         .order_by(Service.id)
+        .limit(page_size)
+        .offset((current_page - 1) * page_size)
         .all()
+    )
+    total = (
+        db.query(Service)
+        .filter(~Service.is_deleted, Service.owner_id == owner_id)
+        .count()
     )
     return {
         "status": 200,
@@ -52,6 +61,7 @@ def serviceGetHisNewestServicesByOwnerId(db: Session, owner_id: int) -> dict:
             service.toJson(include=["id", "service_uuid", "version", "description"])
             for service in services
         ],
+        "total": total,
     }
 
 

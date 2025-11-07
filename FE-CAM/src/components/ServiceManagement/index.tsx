@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React from "react";
 import {
     Table,
     Input,
@@ -8,55 +8,99 @@ import {
     Message,
     Tag,
     Avatar,
+    Space,
 } from "@cloud-materials/common";
 import { useTranslation } from "react-i18next";
 import styles from "./index.module.less";
 import { useUser } from "@/hooks/useUser";
-import { GetMyNewestServices } from "@/services/service";
-import type { ServiceItem } from "@/services/service/types";
+import { useService } from "@/hooks/useService";
+import type { UserProfile } from "@/services/user/types";
+import { useNavigate } from "react-router-dom";
 
 const { Title, Text } = Typography;
-const { Search } = Input;
+// const { Search } = Input;
 
-const ServiceManagement: React.FC = () => {
+// 已登录欢迎区块
+const WelcomeLoggedIn: React.FC<{
+    user: UserProfile;
+    onRefresh: () => void;
+    loading?: boolean;
+}> = ({ user, onRefresh, loading }) => {
     const { t } = useTranslation();
-    const { user } = useUser();
-    const [loading, setLoading] = useState(false);
-    const [list, setList] = useState<ServiceItem[]>([]);
-    const [query, setQuery] = useState("");
+    const displayName = user.nickname || user.username;
+    return (
+        <div className={styles.hero}>
+            <Space size={12} align="center">
+                <Avatar size={40} style={{ backgroundColor: "#ecf2ff" }}>
+                    {displayName[0]}
+                </Avatar>
+                <div>
+                    <Title heading={4} className={styles.title}>
+                        {t("service.welcomeTitle")}
+                    </Title>
+                    <Text className={styles.subtitle}>
+                        欢迎回来，{displayName}（{t(`user.${user.role}`)} · L
+                        {user.level}）
+                    </Text>
+                </div>
+            </Space>
+            <div className={styles.actions}>
+                <Space>
+                    <Button type="primary">{t("common.create")}</Button>
+                    <Button
+                        type="secondary"
+                        onClick={onRefresh}
+                        loading={loading}
+                    >
+                        {t("common.refresh")}
+                    </Button>
+                    <Button type="text">了解平台</Button>
+                </Space>
+            </div>
+        </div>
+    );
+};
 
-    const ownerName = user?.nickname || user?.username || "-";
-
-    const fetchData = async () => {
-        try {
-            setLoading(true);
-            const res = await GetMyNewestServices();
-            setList(res.services || []);
-        } catch (err: any) {
-            // 未登录或鉴权失败时提示
-            Message.warning(t("common.loginFirst"));
-            setList([]);
-        } finally {
-            setLoading(false);
-        }
+// 未登录欢迎区块
+const WelcomeGuest: React.FC = () => {
+    const { t } = useTranslation();
+    const navigate = useNavigate();
+    const handleGoRegister = () => {
+        navigate("/user/register");
     };
+    const handleGoLogin = () => {
+        Message.info("请点击右上角头像进行登录");
+    };
+    return (
+        <div className={styles.hero}>
+            <Title heading={3} className={styles.title}>
+                {t("service.welcomeTitle")}
+            </Title>
+            <Text className={styles.subtitle}>
+                登录后即可管理你的 API
+                服务与版本，点击右上角头像进行登录或直接注册。
+            </Text>
+            <div className={styles.actions}>
+                <Space>
+                    <Button type="primary" onClick={handleGoLogin}>
+                        {t("login.login")}
+                    </Button>
+                    <Button type="primary" onClick={handleGoRegister}>
+                        {t("register.submit")}
+                    </Button>
+                    <Button type="text">了解平台</Button>
+                </Space>
+            </div>
+        </div>
+    );
+};
 
-    useEffect(() => {
-        // 未登录时不触发请求，避免控制台网络报错
-        const token = localStorage.getItem("cam_access_token");
-        if (token) {
-            fetchData();
-        } else {
-            setList([]);
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
-
-    const filtered = useMemo(() => {
-        const q = query.trim().toLowerCase();
-        if (!q) return list;
-        return list.filter((s) => s.service_uuid.toLowerCase().includes(q));
-    }, [list, query]);
+// 已登录视图（包含列表）
+const LoggedInView: React.FC<{ user: UserProfile }> = ({ user }) => {
+    const { t } = useTranslation();
+    const { serviceList, pagination, loading, fetchMyNewestServices } =
+        useService();
+    const ownerName = user?.nickname || user?.username || "-";
 
     const columns = [
         {
@@ -92,30 +136,12 @@ const ServiceManagement: React.FC = () => {
 
     return (
         <div className={styles.home}>
-            <div className={styles.hero}>
-                <Title heading={3} className={styles.title}>
-                    {t("service.welcomeTitle")}
-                </Title>
-                <div className={styles.actions}>
-                    <Search
-                        allowClear
-                        placeholder={t("service.searchPlaceholder")}
-                        value={query}
-                        onChange={setQuery}
-                        style={{ width: 360 }}
-                    />
-                    <Button
-                        type="secondary"
-                        onClick={fetchData}
-                        loading={loading}
-                    >
-                        {t("service.refresh")}
-                    </Button>
-                </div>
-            </div>
-
+            <WelcomeLoggedIn
+                user={user}
+                onRefresh={fetchMyNewestServices}
+                loading={loading}
+            />
             <Divider />
-
             <Title heading={5} style={{ marginBottom: 12 }}>
                 {t("service.list")}
             </Title>
@@ -123,15 +149,27 @@ const ServiceManagement: React.FC = () => {
                 loading={loading}
                 rowKey="id"
                 columns={columns}
-                data={filtered}
+                data={serviceList}
                 pagination={{
-                    pageSize: 10,
-                    total: filtered.length,
+                    pageSize: pagination.page_size,
+                    total: pagination.total,
                     showTotal: true,
                 }}
             />
         </div>
     );
+};
+
+const ServiceManagement: React.FC = () => {
+    const { user } = useUser();
+    if (!user) {
+        return (
+            <div className={styles.home}>
+                <WelcomeGuest />
+            </div>
+        );
+    }
+    return <LoggedInView user={user} />;
 };
 
 export default ServiceManagement;
