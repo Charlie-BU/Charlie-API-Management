@@ -33,6 +33,9 @@ export const useService = (range: ServiceRange, ownerId?: number) => {
             pagination.current_page
         );
         if (res.status !== 200) {
+            // 在这里不直接通过Message提示用户的原因是，在组件层一并捕获非200未成功和请求失败错误，一并处理
+            setLoading(false);
+            setServiceList([]);
             throw new Error(res.message || "获取服务失败");
         }
         setServiceList(res.services || []);
@@ -51,6 +54,8 @@ export const useService = (range: ServiceRange, ownerId?: number) => {
             pagination.current_page
         );
         if (res.status !== 200) {
+            setLoading(false);
+            setServiceList([]);
             throw new Error(res.message || "获取服务失败");
         }
         setServiceList(res.services || []);
@@ -68,6 +73,8 @@ export const useService = (range: ServiceRange, ownerId?: number) => {
             pagination.current_page
         );
         if (res.status !== 200) {
+            setLoading(false);
+            setServiceList([]);
             throw new Error(res.message || "获取服务失败");
         }
         setServiceList(res.deleted_services || []);
@@ -85,6 +92,8 @@ export const useService = (range: ServiceRange, ownerId?: number) => {
             pagination.current_page
         );
         if (res.status !== 200) {
+            setLoading(false);
+            setServiceList([]);
             throw new Error(res.message || "获取服务失败");
         }
         setServiceList(res.services || []);

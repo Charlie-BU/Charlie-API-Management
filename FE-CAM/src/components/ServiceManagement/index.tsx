@@ -6,6 +6,8 @@ import {
     Avatar,
     Space,
     Tabs,
+    Popconfirm,
+    Message,
 } from "@cloud-materials/common";
 import { useTranslation } from "react-i18next";
 import styles from "./index.module.less";
@@ -108,18 +110,28 @@ const LoggedInView: React.FC<{ user: UserProfile }> = ({ user }) => {
                 fetchMyNewestServices();
                 break;
             case "MyDeletedServices":
-                fetchMyDeletedServices();
+                fetchMyDeletedServices().catch((err) => {
+                    Message.warning(err.message || "获取服务失败");
+                });
                 break;
             case "HisServices":
-                fetchHisNewestServicesByOwnerId(hisId);
+                fetchHisNewestServicesByOwnerId(hisId).catch((err) => {
+                    Message.warning(err.message || "获取服务失败");
+                });
                 break;
             case "AllServices":
-                fetchAllServices();
+                fetchAllServices().catch((err) => {
+                    Message.warning(err.message || "获取服务失败");
+                });
                 break;
         }
     }, [serviceRange, hisId]);
 
     const handleTabChange = (key: ServiceRange) => {
+        if (key === "HisServices") {
+            // todo
+            console.log("HisServices");
+        }
         setServiceRange(key);
     };
 
