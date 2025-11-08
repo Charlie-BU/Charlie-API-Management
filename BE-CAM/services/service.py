@@ -107,7 +107,14 @@ def serviceGetHisNewestServicesByOwnerId(
         "message": "Get services success",
         "services": [
             service.toJson(
-                include=["id", "service_uuid", "version", "description", "owner_id"]
+                include=[
+                    "id",
+                    "service_uuid",
+                    "version",
+                    "description",
+                    "owner_id",
+                    "created_at",
+                ]
             )
             for service in services
         ],
@@ -274,8 +281,9 @@ def serviceGetAllDeletedServicesByUserId(
                     "service_uuid",
                     "description",
                     "version",
-                    "deleted_at",
                     "owner_id",
+                    "created_at",
+                    "deleted_at",
                 ]
             )
             for service in services

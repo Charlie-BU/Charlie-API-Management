@@ -209,6 +209,7 @@ const LoggedInView: React.FC<{ user: UserProfile }> = ({ user }) => {
             </Tabs>
             <ServiceList
                 serviceList={serviceList}
+                range={serviceRange}
                 pagination={pagination}
                 handlePageChange={handlePageChange}
                 loading={loading}
