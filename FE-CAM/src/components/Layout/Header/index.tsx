@@ -16,7 +16,6 @@ import styles from "./index.module.less";
 import { Logo } from "@/assets/icons";
 import { useUser } from "@/hooks/useUser";
 import Profile from "@/components/User/Profile";
-import Login from "@/components/User/Login";
 
 const Header: React.FC = () => {
     const navigate = useNavigate();
@@ -28,7 +27,7 @@ const Header: React.FC = () => {
         i18n.changeLanguage(lang);
     };
 
-    const { user, logout } = useUser();
+    const { user, logout, openLoginModal } = useUser();
 
     const languageMenu = (
         <Menu>
@@ -87,22 +86,19 @@ const Header: React.FC = () => {
                             </Space>
                         </div>
                     </Dropdown>
-                    <Popover
-                        position="br"
-                        trigger="click"
-                        popupVisible={showPopover}
-                        onVisibleChange={(visible) => {
-                            setShowPopover(visible);
-                        }}
-                        content={
-                            user ? (
+
+                    {user ? (
+                        <Popover
+                            position="br"
+                            trigger="click"
+                            popupVisible={showPopover}
+                            onVisibleChange={(visible) => {
+                                setShowPopover(visible);
+                            }}
+                            content={
                                 <Profile userInfo={user} logout={logout} />
-                            ) : (
-                                <Login />
-                            )
-                        }
-                    >
-                        {user ? (
+                            }
+                        >
                             <Avatar
                                 size={32}
                                 style={{
@@ -112,19 +108,20 @@ const Header: React.FC = () => {
                             >
                                 {user.username[0]}
                             </Avatar>
-                        ) : (
-                            <Avatar
-                                size={32}
-                                style={{
-                                    backgroundColor: "#c9cdd4",
-                                    color: "#fff",
-                                    cursor: "pointer",
-                                }}
-                            >
-                                <IconUser />
-                            </Avatar>
-                        )}
-                    </Popover>
+                        </Popover>
+                    ) : (
+                        <Avatar
+                            size={32}
+                            onClick={() => openLoginModal()}
+                            style={{
+                                backgroundColor: "#c9cdd4",
+                                color: "#fff",
+                                cursor: "pointer",
+                            }}
+                        >
+                            <IconUser />
+                        </Avatar>
+                    )}
                 </Space>
             }
         />

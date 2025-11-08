@@ -16,6 +16,7 @@ import {
     UserModifyPassword,
     UserRegister,
 } from "@/services/user";
+import LoginForm from "@/components/User/LoginForm";
 import ModifyPasswordForm from "@/components/User/ModifyPasswordForm";
 import RegisterForm from "@/components/User/RegisterForm";
 import { Message, CModal } from "@cloud-materials/common";
@@ -53,6 +54,7 @@ interface UserStore {
     modifyPassword: (
         formData: ModifyPasswordRequest & { confirm_new_password: string }
     ) => Promise<ModifyPasswordResponse>;
+    openLoginModal: () => void;
     openRegisterModal: () => void;
     openModifyPasswordModal: () => void;
 }
@@ -180,6 +182,36 @@ export const useUser = create<UserStore>()(
                         throw new Error(res.message || "修改密码失败");
                     }
                     return res;
+                },
+
+                openLoginModal: () => {
+                    const modal = CModal.openArcoForm({
+                        title: t("login.title"),
+                        content: <LoginForm />,
+                        okText: t("login.login"),
+                        onOk: async (values, form) => {
+                            try {
+                                await form.validate();
+                                const res = await get().login({
+                                    username: values.username,
+                                    password: values.password,
+                                });
+                                Message.success(
+                                    res.message || t("login.success")
+                                );
+                                // 显式关闭弹窗，避免依赖隐式行为
+                                modal.close();
+                            } catch (err: unknown) {
+                                const msg =
+                                    err instanceof Error
+                                        ? err.message
+                                        : t("login.failure");
+                                Message.error(msg);
+                                // 抛出错误以阻止弹窗自动关闭（库内有相关处理）
+                                throw err;
+                            }
+                        },
+                    });
                 },
 
                 openRegisterModal: () => {
