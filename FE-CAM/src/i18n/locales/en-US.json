@@ -89,7 +89,7 @@
     "guest": "Guest"
   },
   "login": {
-    "title": "Sign in to CAM",
+    "title": "Login to CAM",
     "username": "Username",
     "usernamePlaceholder": "Enter username",
     "usernameRequired": "Please enter username",
@@ -98,8 +98,8 @@
     "passwordRequired": "Please enter password",
     "reset": "Reset",
     "login": "Login",
-    "success": "Signed in successfully",
-    "failure": "Sign in failed",
+    "success": "Login successfully",
+    "failure": "Login failed",
     "gotoRegister": "Go to Register"
   },
   "register": {

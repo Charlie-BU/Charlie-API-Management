@@ -1,6 +1,9 @@
 import React from "react";
 import { Menu } from "@cloud-materials/common";
-import { IconHouseDashboard, IconExamineeInformation } from "@cloud-materials/common/ve-o-iconbox";
+import {
+    IconHouseDashboard,
+    IconExamineeInformation,
+} from "@cloud-materials/common/ve-o-iconbox";
 
 import { useNavigate, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";

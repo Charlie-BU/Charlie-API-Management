@@ -54,7 +54,6 @@ const WelcomeLoggedIn: React.FC<{
                     >
                         {t("common.refresh")}
                     </Button>
-                    <Button type="text">了解平台</Button>
                 </Space>
             </div>
         </div>
@@ -64,13 +63,13 @@ const WelcomeLoggedIn: React.FC<{
 // 未登录欢迎区块
 const WelcomeGuest: React.FC = () => {
     const { t } = useTranslation();
-    const { openRegisterModal } = useUser();
-    
+    const { openLoginModal, openRegisterModal } = useUser();
+
     const handleGoRegister = () => {
         openRegisterModal();
     };
     const handleGoLogin = () => {
-        Message.info("请点击右上角头像进行登录");
+        openLoginModal();
     };
     return (
         <div className={styles.hero}>
@@ -89,7 +88,6 @@ const WelcomeGuest: React.FC = () => {
                     <Button type="primary" onClick={handleGoRegister}>
                         {t("register.submit")}
                     </Button>
-                    <Button type="text">了解平台</Button>
                 </Space>
             </div>
         </div>

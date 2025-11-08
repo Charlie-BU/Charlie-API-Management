@@ -188,6 +188,7 @@ export const useUser = create<UserStore>()(
                     const modal = CModal.openArcoForm({
                         title: t("login.title"),
                         content: <LoginForm />,
+                        cancelText: t("common.cancel"),
                         okText: t("login.login"),
                         onOk: async (values, form) => {
                             try {
@@ -218,7 +219,9 @@ export const useUser = create<UserStore>()(
                     const modal = CModal.openArcoForm({
                         title: t("register.title"),
                         content: <RegisterForm />,
+                        cancelText: t("common.cancel"),
                         okText: t("register.submit"),
+                        style: { width: 800 },
                         onOk: async (values, form) => {
                             try {
                                 await form.validate();
@@ -252,7 +255,9 @@ export const useUser = create<UserStore>()(
                     const modal = CModal.openArcoForm({
                         title: t("modifyPassword.title"),
                         content: <ModifyPasswordForm />,
+                        cancelText: t("common.cancel"),
                         okText: t("modifyPassword.submit"),
+                        style: { width: 800 },
                         onOk: async (values, form) => {
                             try {
                                 await form.validate();

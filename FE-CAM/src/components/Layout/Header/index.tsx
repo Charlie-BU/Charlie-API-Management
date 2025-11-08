@@ -14,10 +14,17 @@ import {
 import { useTranslation } from "react-i18next";
 import styles from "./index.module.less";
 import { Logo } from "@/assets/icons";
-import { useUser } from "@/hooks/useUser";
 import Profile from "@/components/User/Profile";
+import type { UserProfile } from "@/services/user/types";
 
-const Header: React.FC = () => {
+interface HeaderProps {
+    user?: UserProfile | null;
+    logout: () => void;
+    openLoginModal: () => void;
+}
+
+const Header: React.FC<HeaderProps> = (props: HeaderProps) => {
+    const { user, logout, openLoginModal } = props;
     const navigate = useNavigate();
     const { i18n } = useTranslation();
     const [showPopover, setShowPopover] = useState(false);
@@ -26,8 +33,6 @@ const Header: React.FC = () => {
     const toggleLanguage = (lang: string) => {
         i18n.changeLanguage(lang);
     };
-
-    const { user, logout, openLoginModal } = useUser();
 
     const languageMenu = (
         <Menu>
