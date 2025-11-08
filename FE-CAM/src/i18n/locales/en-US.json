@@ -57,6 +57,7 @@
     "searchPlaceholder": "Search by service_uuid",
     "refresh": "Refresh",
     "welcomeTitle": "Welcome to CAM",
+    "welcomeBack": "Welcome back, ",
     "empty": "No services yet. Create or import."
   },
   "job": {

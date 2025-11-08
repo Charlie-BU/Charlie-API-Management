@@ -36,7 +36,7 @@ const WelcomeLoggedIn: React.FC<{
                         {t("service.welcomeTitle")}
                     </Title>
                     <Text className={styles.subtitle}>
-                        欢迎回来，{displayName}（{t(`user.${user.role}`)} · L
+                        {t("service.welcomeBack")}{displayName}（{t(`user.${user.role}`)} · L
                         {user.level}）
                     </Text>
                 </div>
