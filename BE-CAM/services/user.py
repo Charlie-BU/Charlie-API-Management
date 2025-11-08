@@ -1,4 +1,5 @@
 from robyn.robyn import Request
+from sqlalchemy import or_
 from sqlalchemy.orm import Session
 from jose import jwt
 import os
@@ -89,11 +90,15 @@ def userLogin(db: Session, username: str, password: str) -> dict:
 def userRegister(
     db: Session, username: str, password: str, nickname: str, email: str, role: str
 ) -> dict:
-    existing_user = db.query(User).filter(User.username == username).first()
+    existing_user = (
+        db.query(User)
+        .filter(or_(User.username == username, User.email == email))
+        .first()
+    )
     if existing_user:
         return {
             "status": -1,
-            "message": "Username already registered",
+            "message": "Username or email already registered",
         }
     try:
         user_role = UserRole(role)

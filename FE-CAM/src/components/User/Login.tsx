@@ -18,7 +18,7 @@ const Login: React.FC = () => {
 
     const [form] = Form.useForm();
     const [loading, setLoading] = useState(false);
-    const { login } = useUser();
+    const { login, openRegisterModal } = useUser();
 
     const handleSubmit = async (formData: LoginRequest) => {
         try {
@@ -83,10 +83,7 @@ const Login: React.FC = () => {
                         justifyContent: "space-between",
                     }}
                 >
-                    <Button
-                        type="text"
-                        onClick={() => navigate("/user/register")}
-                    >
+                    <Button type="text" onClick={() => openRegisterModal()}>
                         {t("login.gotoRegister")}
                     </Button>
                     <Button type="primary" loading={loading} htmlType="submit">

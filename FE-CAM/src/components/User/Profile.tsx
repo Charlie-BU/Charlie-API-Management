@@ -13,7 +13,7 @@ import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 
 import type { UserProfile } from "@/services/user/types";
-// import { useUser } from "@/hooks/useUser";
+import { useUser } from "@/hooks/useUser";
 
 interface UserProfileProps {
     userInfo: UserProfile;
@@ -21,13 +21,12 @@ interface UserProfileProps {
 }
 
 const Profile: React.FC<UserProfileProps> = ({ userInfo, logout }) => {
-    const { t } = useTranslation();
     const navigate = useNavigate();
-    // const { openModifyPasswordModal } = useUser();
+    const { t } = useTranslation();
+    const { openModifyPasswordModal } = useUser();
 
     const handleModifyPassword = () => {
-        navigate("/user/modify-password");
-        // openModifyPasswordModal();
+        openModifyPasswordModal();
     };
 
     return (

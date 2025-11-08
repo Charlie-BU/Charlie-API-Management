@@ -64,9 +64,10 @@ const WelcomeLoggedIn: React.FC<{
 // 未登录欢迎区块
 const WelcomeGuest: React.FC = () => {
     const { t } = useTranslation();
-    const navigate = useNavigate();
+    const { openRegisterModal } = useUser();
+    
     const handleGoRegister = () => {
-        navigate("/user/register");
+        openRegisterModal();
     };
     const handleGoLogin = () => {
         Message.info("请点击右上角头像进行登录");

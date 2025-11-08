@@ -16,8 +16,8 @@ import {
     UserModifyPassword,
     UserRegister,
 } from "@/services/user";
-import ModifyPassword from "@/components/User/ModifyPassword";
-import Register from "@/components/User/Register";
+import ModifyPasswordForm from "@/components/User/ModifyPasswordForm";
+import RegisterForm from "@/components/User/RegisterForm";
 import { Message, CModal } from "@cloud-materials/common";
 import { t } from "i18next";
 
@@ -183,12 +183,70 @@ export const useUser = create<UserStore>()(
                 },
 
                 openRegisterModal: () => {
-                    
+                    const modal = CModal.openArcoForm({
+                        title: t("register.title"),
+                        content: <RegisterForm />,
+                        okText: t("register.submit"),
+                        onOk: async (values, form) => {
+                            try {
+                                await form.validate();
+                                const res = await get().register({
+                                    username: values.username,
+                                    password: values.password,
+                                    nickname: values.nickname,
+                                    email: values.email,
+                                    role: values.role,
+                                    confirmPassword: values.confirmPassword,
+                                });
+                                Message.success(
+                                    res.message || t("register.success")
+                                );
+                                // 显式关闭弹窗，避免依赖隐式行为
+                                modal.close();
+                            } catch (err: unknown) {
+                                const msg =
+                                    err instanceof Error
+                                        ? err.message
+                                        : t("register.failure");
+                                Message.error(msg);
+                                // 抛出错误以阻止弹窗自动关闭（库内有相关处理）
+                                throw err;
+                            }
+                        },
+                    });
                 },
-                
+
                 openModifyPasswordModal: () => {
-                    
-                }
+                    const modal = CModal.openArcoForm({
+                        title: t("modifyPassword.title"),
+                        content: <ModifyPasswordForm />,
+                        okText: t("modifyPassword.submit"),
+                        onOk: async (values, form) => {
+                            try {
+                                await form.validate();
+                                const res = await get().modifyPassword({
+                                    old_password: values.old_password,
+                                    new_password: values.new_password,
+                                    confirm_new_password:
+                                        values.confirm_new_password,
+                                });
+                                Message.success(
+                                    res.message || t("modifyPassword.success")
+                                );
+                                // 显式关闭弹窗，避免依赖隐式行为
+                                modal.close();
+                            } catch (err: unknown) {
+                                const msg =
+                                    err instanceof Error
+                                        ? err.message
+                                        : t("modifyPassword.failure");
+                                Message.error(msg);
+                                // 抛出错误以阻止弹窗自动关闭（库内有相关处理）
+                                throw err;
+                            }
+                        },
+                    });
+                },
             };
         },
         {
