@@ -221,7 +221,6 @@ export const useUser = create<UserStore>()(
                         content: <RegisterForm />,
                         cancelText: t("common.cancel"),
                         okText: t("register.submit"),
-                        style: { width: 800 },
                         onOk: async (values, form) => {
                             try {
                                 await form.validate();
@@ -257,7 +256,6 @@ export const useUser = create<UserStore>()(
                         content: <ModifyPasswordForm />,
                         cancelText: t("common.cancel"),
                         okText: t("modifyPassword.submit"),
-                        style: { width: 800 },
                         onOk: async (values, form) => {
                             try {
                                 await form.validate();

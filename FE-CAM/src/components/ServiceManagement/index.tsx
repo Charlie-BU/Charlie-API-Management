@@ -1,11 +1,9 @@
 import React from "react";
 import {
     Table,
-    Input,
     Typography,
     Button,
     Divider,
-    Message,
     Tag,
     Avatar,
     Space,
@@ -15,7 +13,6 @@ import styles from "./index.module.less";
 import { useUser } from "@/hooks/useUser";
 import { useService } from "@/hooks/useService";
 import type { UserProfile } from "@/services/user/types";
-import { useNavigate } from "react-router-dom";
 
 const { Title, Text } = Typography;
 // const { Search } = Input;

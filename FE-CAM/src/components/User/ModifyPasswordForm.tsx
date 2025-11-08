@@ -5,31 +5,12 @@ import { Form, Input } from "@cloud-materials/common";
 const ModifyPasswordForm: React.FC = () => {
     const { t } = useTranslation();
 
-    // const handleSubmit = async (formData: ModifyPasswordRequest & { confirm_new_password: string }) => {
-    //     try {
-    //         await form.validate();
-    //         setLoading(true);
-    //         const res = await modifyPassword(formData);
-    //         if (res.status !== 200) {
-    //             throw new Error(res.message || "修改密码失败");
-    //         }
-    //         Message.success(t("modifyPassword.success"));
-    //         navigate("/");
-    //     } catch (error: unknown) {
-    //         const msg =
-    //             error instanceof Error
-    //                 ? error.message
-    //                 : t("modifyPassword.failure");
-    //         Message.error(msg);
-    //     } finally {
-    //         setLoading(false);
-    //     }
-    // };
-
     return (
         <>
             <Form.Item
                 label={t("modifyPassword.oldPassword")}
+                labelCol={{ span: 7 }}
+                wrapperCol={{ span: 17 }}
                 field="old_password"
                 rules={[
                     {
@@ -45,6 +26,8 @@ const ModifyPasswordForm: React.FC = () => {
             </Form.Item>
             <Form.Item
                 label={t("modifyPassword.newPassword")}
+                labelCol={{ span: 7 }}
+                wrapperCol={{ span: 17 }}
                 field="new_password"
                 rules={[
                     {
@@ -60,6 +43,8 @@ const ModifyPasswordForm: React.FC = () => {
             </Form.Item>
             <Form.Item
                 label={t("modifyPassword.confirmPassword")}
+                labelCol={{ span: 7 }}
+                wrapperCol={{ span: 17 }}
                 field="confirm_new_password"
                 rules={[
                     {

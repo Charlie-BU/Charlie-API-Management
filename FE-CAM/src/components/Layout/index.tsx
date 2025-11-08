@@ -11,7 +11,7 @@ const ArcoSider = ArcoLayout.Sider;
 const ArcoContent = ArcoLayout.Content;
 
 const Layout: React.FC = () => {
-    const { user, logout, openLoginModal } = useUser();
+    const { user, logout, openLoginModal, openModifyPasswordModal } = useUser();
     return (
         <ArcoLayout className={styles.layout}>
             <ArcoHeader>
@@ -19,6 +19,7 @@ const Layout: React.FC = () => {
                     user={user}
                     logout={logout}
                     openLoginModal={openLoginModal}
+                    openModifyPasswordModal={openModifyPasswordModal}
                 />
             </ArcoHeader>
             <ArcoLayout>

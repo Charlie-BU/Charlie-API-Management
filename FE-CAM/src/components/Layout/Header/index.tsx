@@ -21,10 +21,11 @@ interface HeaderProps {
     user?: UserProfile | null;
     logout: () => void;
     openLoginModal: () => void;
+    openModifyPasswordModal: () => void;
 }
 
 const Header: React.FC<HeaderProps> = (props: HeaderProps) => {
-    const { user, logout, openLoginModal } = props;
+    const { user, logout, openLoginModal, openModifyPasswordModal } = props;
     const navigate = useNavigate();
     const { i18n } = useTranslation();
     const [showPopover, setShowPopover] = useState(false);
@@ -101,7 +102,11 @@ const Header: React.FC<HeaderProps> = (props: HeaderProps) => {
                                 setShowPopover(visible);
                             }}
                             content={
-                                <Profile userInfo={user} logout={logout} />
+                                <Profile
+                                    userInfo={user}
+                                    logout={logout}
+                                    openModifyPasswordModal={openModifyPasswordModal}
+                                />
                             }
                         >
                             <Avatar
@@ -111,7 +116,7 @@ const Header: React.FC<HeaderProps> = (props: HeaderProps) => {
                                     cursor: "pointer",
                                 }}
                             >
-                                {user.username[0]}
+                                {user.nickname[0] || user.username[0]}
                             </Avatar>
                         </Popover>
                     ) : (

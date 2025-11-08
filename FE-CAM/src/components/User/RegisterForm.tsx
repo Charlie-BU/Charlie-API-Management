@@ -9,6 +9,8 @@ const RegisterForm: React.FC = () => {
         <>
             <Form.Item
                 label={t("register.username")}
+                labelCol={{ span: 7 }}
+                wrapperCol={{ span: 17 }}
                 field="username"
                 rules={[
                     { required: true, message: t("register.usernameRequired") },
@@ -21,6 +23,8 @@ const RegisterForm: React.FC = () => {
             </Form.Item>
             <Form.Item
                 label={t("register.nickname")}
+                labelCol={{ span: 7 }}
+                wrapperCol={{ span: 17 }}
                 field="nickname"
                 rules={[
                     { required: true, message: t("register.nicknameRequired") },
@@ -33,6 +37,8 @@ const RegisterForm: React.FC = () => {
             </Form.Item>
             <Form.Item
                 label={t("register.email")}
+                labelCol={{ span: 7 }}
+                wrapperCol={{ span: 17 }}   
                 field="email"
                 rules={[
                     { required: true, message: t("register.emailRequired") },
@@ -45,6 +51,8 @@ const RegisterForm: React.FC = () => {
             </Form.Item>
             <Form.Item
                 label={t("register.role")}
+                labelCol={{ span: 7 }}
+                wrapperCol={{ span: 17 }}   
                 field="role"
                 rules={[
                     { required: true, message: t("register.roleRequired") },
@@ -83,6 +91,8 @@ const RegisterForm: React.FC = () => {
             </Form.Item>
             <Form.Item
                 label={t("register.password")}
+                labelCol={{ span: 7 }}
+                wrapperCol={{ span: 17 }}   
                 field="password"
                 rules={[
                     { required: true, message: t("register.passwordRequired") },
@@ -95,6 +105,8 @@ const RegisterForm: React.FC = () => {
             </Form.Item>
             <Form.Item
                 label={t("register.confirmPassword")}
+                labelCol={{ span: 7 }}
+                wrapperCol={{ span: 17 }}   
                 field="confirmPassword"
                 rules={[
                     {

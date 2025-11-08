@@ -7,23 +7,26 @@ import {
     Layout,
     IconLock,
     IconPoweroff,
+    Tooltip,
 } from "@cloud-materials/common";
 import styles from "./index.module.less";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 
 import type { UserProfile } from "@/services/user/types";
-import { useUser } from "@/hooks/useUser";
-
 interface UserProfileProps {
     userInfo: UserProfile;
     logout: () => void;
+    openModifyPasswordModal: () => void;
 }
 
-const Profile: React.FC<UserProfileProps> = ({ userInfo, logout }) => {
+const Profile: React.FC<UserProfileProps> = ({
+    userInfo,
+    logout,
+    openModifyPasswordModal,
+}) => {
     const navigate = useNavigate();
     const { t } = useTranslation();
-    const { openModifyPasswordModal } = useUser();
 
     const handleModifyPassword = () => {
         openModifyPasswordModal();
@@ -44,14 +47,16 @@ const Profile: React.FC<UserProfileProps> = ({ userInfo, logout }) => {
                                 size={40}
                                 style={{ backgroundColor: "#ecf2ff" }}
                             >
-                                {userInfo.username[0]}
+                                {userInfo.nickname[0] || userInfo.username[0]}
                             </Avatar>
                         </div>
                     </Layout.Sider>
                     <Layout.Content style={{ width: "100%", paddingLeft: 12 }}>
-                        <Typography.Text style={{ fontSize: 16 }}>
-                            {userInfo.username}
-                        </Typography.Text>
+                        <Tooltip content={userInfo.username}>
+                            <Typography.Text style={{ fontSize: 16 }}>
+                                {userInfo.nickname || userInfo.username}
+                            </Typography.Text>
+                        </Tooltip>
                         <Typography.Ellipsis
                             rows={1}
                             showTooltip
