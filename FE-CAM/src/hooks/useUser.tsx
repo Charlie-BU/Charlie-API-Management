@@ -1,3 +1,5 @@
+// 需要是tsx：因为react组件包含在了hooks中
+
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 
@@ -16,8 +18,9 @@ import {
     UserModifyPassword,
     UserRegister,
 } from "@/services/user";
-import ModifyPassword from "@/components/User/ModifyPassword";
-import Register from "@/components/User/Register";
+import LoginForm from "@/components/User/LoginForm";
+import ModifyPasswordForm from "@/components/User/ModifyPasswordForm";
+import RegisterForm from "@/components/User/RegisterForm";
 import { Message, CModal } from "@cloud-materials/common";
 import { t } from "i18next";
 
@@ -53,6 +56,7 @@ interface UserStore {
     modifyPassword: (
         formData: ModifyPasswordRequest & { confirm_new_password: string }
     ) => Promise<ModifyPasswordResponse>;
+    openLoginModal: () => void;
     openRegisterModal: () => void;
     openModifyPasswordModal: () => void;
 }
@@ -182,13 +186,104 @@ export const useUser = create<UserStore>()(
                     return res;
                 },
 
-                openRegisterModal: () => {
-                    
+                openLoginModal: () => {
+                    const modal = CModal.openArcoForm({
+                        title: t("login.title"),
+                        content: <LoginForm />,
+                        cancelText: t("common.cancel"),
+                        okText: t("login.login"),
+                        onOk: async (values, form) => {
+                            try {
+                                await form.validate();
+                                const res = await get().login({
+                                    username: values.username,
+                                    password: values.password,
+                                });
+                                Message.success(
+                                    res.message || t("login.success")
+                                );
+                                // 显式关闭弹窗，避免依赖隐式行为
+                                modal.close();
+                            } catch (err: unknown) {
+                                const msg =
+                                    err instanceof Error
+                                        ? err.message
+                                        : t("login.failure");
+                                Message.error(msg);
+                                // 抛出错误以阻止弹窗自动关闭（库内有相关处理）
+                                throw err;
+                            }
+                        },
+                    });
                 },
-                
+
+                openRegisterModal: () => {
+                    const modal = CModal.openArcoForm({
+                        title: t("register.title"),
+                        content: <RegisterForm />,
+                        cancelText: t("common.cancel"),
+                        okText: t("register.submit"),
+                        onOk: async (values, form) => {
+                            try {
+                                await form.validate();
+                                const res = await get().register({
+                                    username: values.username,
+                                    password: values.password,
+                                    nickname: values.nickname,
+                                    email: values.email,
+                                    role: values.role,
+                                    confirmPassword: values.confirmPassword,
+                                });
+                                Message.success(
+                                    res.message || t("register.success")
+                                );
+                                // 显式关闭弹窗，避免依赖隐式行为
+                                modal.close();
+                            } catch (err: unknown) {
+                                const msg =
+                                    err instanceof Error
+                                        ? err.message
+                                        : t("register.failure");
+                                Message.error(msg);
+                                // 抛出错误以阻止弹窗自动关闭（库内有相关处理）
+                                throw err;
+                            }
+                        },
+                    });
+                },
+
                 openModifyPasswordModal: () => {
-                    
-                }
+                    const modal = CModal.openArcoForm({
+                        title: t("modifyPassword.title"),
+                        content: <ModifyPasswordForm />,
+                        cancelText: t("common.cancel"),
+                        okText: t("modifyPassword.submit"),
+                        onOk: async (values, form) => {
+                            try {
+                                await form.validate();
+                                const res = await get().modifyPassword({
+                                    old_password: values.old_password,
+                                    new_password: values.new_password,
+                                    confirm_new_password:
+                                        values.confirm_new_password,
+                                });
+                                Message.success(
+                                    res.message || t("modifyPassword.success")
+                                );
+                                // 显式关闭弹窗，避免依赖隐式行为
+                                modal.close();
+                            } catch (err: unknown) {
+                                const msg =
+                                    err instanceof Error
+                                        ? err.message
+                                        : t("modifyPassword.failure");
+                                Message.error(msg);
+                                // 抛出错误以阻止弹窗自动关闭（库内有相关处理）
+                                throw err;
+                            }
+                        },
+                    });
+                },
             };
         },
         {

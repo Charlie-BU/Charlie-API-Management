@@ -57,6 +57,7 @@
     "searchPlaceholder": "Search by service_uuid",
     "refresh": "Refresh",
     "welcomeTitle": "Welcome to CAM",
+    "welcomeBack": "Welcome back, ",
     "empty": "No services yet. Create or import."
   },
   "job": {
@@ -89,7 +90,7 @@
     "guest": "Guest"
   },
   "login": {
-    "title": "Sign in to CAM",
+    "title": "Login to CAM",
     "username": "Username",
     "usernamePlaceholder": "Enter username",
     "usernameRequired": "Please enter username",
@@ -98,8 +99,8 @@
     "passwordRequired": "Please enter password",
     "reset": "Reset",
     "login": "Login",
-    "success": "Signed in successfully",
-    "failure": "Sign in failed",
+    "success": "Login successfully",
+    "failure": "Login failed",
     "gotoRegister": "Go to Register"
   },
   "register": {

@@ -58,6 +58,7 @@
     "searchPlaceholder": "按 service_uuid 搜索服务",
     "refresh": "刷新",
     "welcomeTitle": "欢迎来到 API 管理 CAM",
+    "welcomeBack": "欢迎回来，",
     "empty": "暂无服务，请创建或导入。"
   },
   "job": {

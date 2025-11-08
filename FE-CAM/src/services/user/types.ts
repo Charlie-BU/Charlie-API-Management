@@ -44,6 +44,6 @@ export interface UserProfile {
     nickname: string;
     email: string;
     role: string;
-    level: string;
+    level: number;
     created_at: string;
 }

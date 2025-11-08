@@ -1,21 +1,20 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
-    Table,
-    Input,
     Typography,
     Button,
     Divider,
-    Message,
-    Tag,
     Avatar,
     Space,
+    Tabs,
+    Message,
 } from "@cloud-materials/common";
 import { useTranslation } from "react-i18next";
 import styles from "./index.module.less";
 import { useUser } from "@/hooks/useUser";
 import { useService } from "@/hooks/useService";
 import type { UserProfile } from "@/services/user/types";
-import { useNavigate } from "react-router-dom";
+import ServiceList from "./ServiceList";
+import type { ServiceRange } from "@/services/service/types";
 
 const { Title, Text } = Typography;
 // const { Search } = Input;
@@ -23,9 +22,8 @@ const { Title, Text } = Typography;
 // 已登录欢迎区块
 const WelcomeLoggedIn: React.FC<{
     user: UserProfile;
-    onRefresh: () => void;
     loading?: boolean;
-}> = ({ user, onRefresh, loading }) => {
+}> = ({ user }) => {
     const { t } = useTranslation();
     const displayName = user.nickname || user.username;
     return (
@@ -39,22 +37,15 @@ const WelcomeLoggedIn: React.FC<{
                         {t("service.welcomeTitle")}
                     </Title>
                     <Text className={styles.subtitle}>
-                        欢迎回来，{displayName}（{t(`user.${user.role}`)} · L
-                        {user.level}）
+                        {t("service.welcomeBack")}
+                        {displayName}（{t(`user.${user.role}`)} · L{user.level}
+                        ）
                     </Text>
                 </div>
             </Space>
             <div className={styles.actions}>
                 <Space>
                     <Button type="primary">{t("common.create")}</Button>
-                    <Button
-                        type="secondary"
-                        onClick={onRefresh}
-                        loading={loading}
-                    >
-                        {t("common.refresh")}
-                    </Button>
-                    <Button type="text">了解平台</Button>
                 </Space>
             </div>
         </div>
@@ -64,12 +55,13 @@ const WelcomeLoggedIn: React.FC<{
 // 未登录欢迎区块
 const WelcomeGuest: React.FC = () => {
     const { t } = useTranslation();
-    const navigate = useNavigate();
+    const { openLoginModal, openRegisterModal } = useUser();
+
     const handleGoRegister = () => {
-        navigate("/user/register");
+        openRegisterModal();
     };
     const handleGoLogin = () => {
-        Message.info("请点击右上角头像进行登录");
+        openLoginModal();
     };
     return (
         <div className={styles.hero}>
@@ -88,7 +80,6 @@ const WelcomeGuest: React.FC = () => {
                     <Button type="primary" onClick={handleGoRegister}>
                         {t("register.submit")}
                     </Button>
-                    <Button type="text">了解平台</Button>
                 </Space>
             </div>
         </div>
@@ -98,63 +89,129 @@ const WelcomeGuest: React.FC = () => {
 // 已登录视图（包含列表）
 const LoggedInView: React.FC<{ user: UserProfile }> = ({ user }) => {
     const { t } = useTranslation();
-    const { serviceList, pagination, loading, fetchMyNewestServices } =
-        useService();
-    const ownerName = user?.nickname || user?.username || "-";
+    const [serviceRange, setServiceRange] =
+        useState<ServiceRange>("MyServices");
+    const {
+        serviceList,
+        loading,
+        fetchMyNewestServices,
+        fetchMyDeletedServices,
+        fetchHisNewestServicesByOwnerId,
+        fetchAllServices,
+    } = useService();
+    const [pagination, setPagination] = useState({
+        page_size: 10,
+        current_page: 1,
+        total: 0,
+    });
 
-    const columns = [
-        {
-            title: t("service.serviceUUID"),
-            dataIndex: "service_uuid",
-            key: "service_uuid",
-            width: 240,
-            render: (uuid: string) => <Text code>{uuid}</Text>,
-        },
-        {
-            title: t("service.latestVersion"),
-            dataIndex: "version",
-            key: "version",
-            width: 140,
-            render: (v: string) => <Tag color="blue">{v}</Tag>,
-        },
-        {
-            title: t("service.owner"),
-            key: "owner",
-            width: 160,
-            render: () => (
-                <Avatar size={30} style={{ backgroundColor: "#ecf2ff" }}>
-                    {ownerName[0]}
-                </Avatar>
-            ),
-        },
-        {
-            title: t("common.description"),
-            dataIndex: "description",
-            key: "description",
-        },
-    ];
+    const handlePageChange = (pageSize: number, currentPage?: number) => {
+        setPagination((prev) => ({
+            ...prev,
+            page_size: pageSize,
+            current_page: currentPage || prev.current_page,
+        }));
+    };
+
+    const [hisId, setHisId] = useState<number>(-1);
+
+    useEffect(() => {
+        switch (serviceRange) {
+            case "MyServices":
+                // 方法是异步的，返回 Promise，但在 useEffect 中不能直接 await，
+                // 所以需要使用 then 方法处理 Promise .resolve 后的结果
+                fetchMyNewestServices(pagination)
+                    .then((total) => {
+                        setPagination((prev) => ({
+                            ...prev,
+                            total,
+                        }));
+                    })
+                    .catch((err) => {
+                        Message.warning(err.message || "获取服务失败");
+                    });
+                break;
+            case "MyDeletedServices":
+                fetchMyDeletedServices(pagination)
+                    .then((total) => {
+                        setPagination((prev) => ({
+                            ...prev,
+                            total,
+                        }));
+                    })
+                    .catch((err) => {
+                        Message.warning(err.message || "获取服务失败");
+                    });
+                break;
+            case "HisServices":
+                fetchHisNewestServicesByOwnerId(hisId, pagination)
+                    .then((total) => {
+                        setPagination((prev) => ({
+                            ...prev,
+                            total,
+                        }));
+                    })
+                    .catch((err) => {
+                        Message.warning(err.message || "获取服务失败");
+                    });
+                break;
+            case "AllServices":
+                fetchAllServices(pagination)
+                    .then((total) => {
+                        setPagination((prev) => ({
+                            ...prev,
+                            total,
+                        }));
+                    })
+                    .catch((err) => {
+                        Message.warning(err.message || "获取服务失败");
+                    });
+                break;
+        }
+    }, [serviceRange, hisId, pagination.page_size, pagination.current_page]);
+
+    const handleTabChange = (key: ServiceRange) => {
+        if (key === "HisServices") {
+            // todo
+            console.log("HisServices");
+        }
+        setServiceRange(key);
+        setPagination({
+            ...pagination,
+            current_page: 1,
+        });
+    };
 
     return (
         <div className={styles.home}>
-            <WelcomeLoggedIn
-                user={user}
-                onRefresh={fetchMyNewestServices}
-                loading={loading}
-            />
+            <WelcomeLoggedIn user={user} />
             <Divider />
             <Title heading={5} style={{ marginBottom: 12 }}>
                 {t("service.list")}
             </Title>
-            <Table
+
+            <Tabs
+                defaultActiveTab={serviceRange}
+                onChange={(key) => handleTabChange(key as ServiceRange)}
+                style={{ marginBottom: 18 }}
+            >
+                <Tabs.TabPane key="MyServices" title={"My Services"} />
+                <Tabs.TabPane
+                    key="MyDeletedServices"
+                    title="My Deleted Services"
+                />
+                {user.level === 0 && (
+                    <Tabs.TabPane key="HisServices" title="His Services" />
+                )}
+                {user.level === 0 && (
+                    <Tabs.TabPane key="AllServices" title="All Services" />
+                )}
+            </Tabs>
+            <ServiceList
+                serviceList={serviceList}
+                pagination={pagination}
+                handlePageChange={handlePageChange}
                 loading={loading}
-                rowKey="id"
-                columns={columns}
-                data={serviceList}
-                pagination={{
-                    pageSize: pagination.page_size,
-                    total: pagination.total,
-                    showTotal: true,
-                }}
             />
         </div>
     );

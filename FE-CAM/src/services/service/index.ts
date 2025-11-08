@@ -20,6 +20,7 @@ import type {
     CommitIterationResponse,
     UpdateDescriptionRequest,
     UpdateDescriptionResponse,
+    GetAllServicesResponse,
 } from "./types";
 
 const prefix = "/v1/service";
@@ -31,7 +32,28 @@ export const GetMyNewestServices = async (
 ) => {
     return api.get<ServiceListResponse>(
         `${prefix}/getHisNewestServicesByOwnerId`,
-        { page_size, current_page }
+        { page_size, current_page, is_my_services: true }
+    );
+};
+
+export const GetAllServices = async (
+    page_size?: number,
+    current_page?: number
+) => {
+    return api.get<GetAllServicesResponse>(`${prefix}/getAllServices`, {
+        page_size,
+        current_page,
+    });
+};
+
+export const GetHisNewestServicesByOwnerId = async (
+    owner_id: number,
+    page_size?: number,
+    current_page?: number
+) => {
+    return api.get<ServiceListResponse>(
+        `${prefix}/getHisNewestServicesByOwnerId`,
+        { page_size, current_page, is_my_services: false, owner_id }
     );
 };
 
@@ -68,9 +90,13 @@ export const CreateNewService = async (data: CreateNewServiceRequest) => {
 };
 
 // 获取当前用户的全部已删除服务
-export const GetAllDeletedServicesByUserId = async () => {
+export const GetAllDeletedServicesByUserId = async (
+    page_size?: number,
+    current_page?: number
+) => {
     return api.get<GetAllDeletedServicesByUserIdResponse>(
-        `${prefix}/getAllDeletedServicesByUserId`
+        `${prefix}/getAllDeletedServicesByUserId`,
+        { page_size, current_page }
     );
 };
 

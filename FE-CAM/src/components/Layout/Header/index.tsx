@@ -14,11 +14,18 @@ import {
 import { useTranslation } from "react-i18next";
 import styles from "./index.module.less";
 import { Logo } from "@/assets/icons";
-import { useUser } from "@/hooks/useUser";
 import Profile from "@/components/User/Profile";
-import Login from "@/components/User/Login";
+import type { UserProfile } from "@/services/user/types";
 
-const Header: React.FC = () => {
+interface HeaderProps {
+    user?: UserProfile | null;
+    logout: () => void;
+    openLoginModal: () => void;
+    openModifyPasswordModal: () => void;
+}
+
+const Header: React.FC<HeaderProps> = (props: HeaderProps) => {
+    const { user, logout, openLoginModal, openModifyPasswordModal } = props;
     const navigate = useNavigate();
     const { i18n } = useTranslation();
     const [showPopover, setShowPopover] = useState(false);
@@ -27,8 +34,6 @@ const Header: React.FC = () => {
     const toggleLanguage = (lang: string) => {
         i18n.changeLanguage(lang);
     };
-
-    const { user, logout } = useUser();
 
     const languageMenu = (
         <Menu>
@@ -87,22 +92,23 @@ const Header: React.FC = () => {
                             </Space>
                         </div>
                     </Dropdown>
-                    <Popover
-                        position="br"
-                        trigger="click"
-                        popupVisible={showPopover}
-                        onVisibleChange={(visible) => {
-                            setShowPopover(visible);
-                        }}
-                        content={
-                            user ? (
-                                <Profile userInfo={user} logout={logout} />
-                            ) : (
-                                <Login />
-                            )
-                        }
-                    >
-                        {user ? (
+
+                    {user ? (
+                        <Popover
+                            position="br"
+                            trigger="click"
+                            popupVisible={showPopover}
+                            onVisibleChange={(visible) => {
+                                setShowPopover(visible);
+                            }}
+                            content={
+                                <Profile
+                                    userInfo={user}
+                                    logout={logout}
+                                    openModifyPasswordModal={openModifyPasswordModal}
+                                />
+                            }
+                        >
                             <Avatar
                                 size={32}
                                 style={{
@@ -110,21 +116,22 @@ const Header: React.FC = () => {
                                     cursor: "pointer",
                                 }}
                             >
-                                {user.username[0]}
+                                {user.nickname[0] || user.username[0]}
                             </Avatar>
-                        ) : (
-                            <Avatar
-                                size={32}
-                                style={{
-                                    backgroundColor: "#c9cdd4",
-                                    color: "#fff",
-                                    cursor: "pointer",
-                                }}
-                            >
-                                <IconUser />
-                            </Avatar>
-                        )}
-                    </Popover>
+                        </Popover>
+                    ) : (
+                        <Avatar
+                            size={32}
+                            onClick={() => openLoginModal()}
+                            style={{
+                                backgroundColor: "#c9cdd4",
+                                color: "#fff",
+                                cursor: "pointer",
+                            }}
+                        >
+                            <IconUser />
+                        </Avatar>
+                    )}
                 </Space>
             }
         />

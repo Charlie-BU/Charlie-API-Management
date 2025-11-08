@@ -1,3 +1,4 @@
+import json
 from robyn import SubRouter
 from robyn.robyn import Request, Response
 from robyn.authentication import BearerGetter
@@ -33,16 +34,45 @@ def getServiceById(request: Request):
     return res
 
 
+# 获取全部服务
+@serviceRouterV1.get("/getAllServices", auth_required=True)
+def getAllServices(request: Request):
+    page_size = request.query_params.get("page_size", "10")
+    current_page = request.query_params.get("current_page", "1")
+    user_id = userGetUserIdByAccessToken(request=request)
+    with session() as db:
+        res = serviceGetAllServices(
+            db=db,
+            user_id=user_id,
+            page_size=int(page_size) if page_size else 10,
+            current_page=int(current_page) if current_page else 1,
+        )
+    return res
+
+
 # 通过用户id获取用户的所有最新版本服务（Service表中）的列表
 @serviceRouterV1.get("/getHisNewestServicesByOwnerId", auth_required=True)
 def getHisNewestServicesByOwnerId(request: Request):
     page_size = request.query_params.get("page_size", "10")
     current_page = request.query_params.get("current_page", "1")
-    owner_id = userGetUserIdByAccessToken(request=request)
+    is_my_services = request.query_params.get("is_my_services", "true")
+    my_id = userGetUserIdByAccessToken(request=request)
+    assert is_my_services is not None
+    if json.loads(is_my_services.lower()):
+        owner_id = my_id
+    else:
+        owner_id = request.query_params.get("owner_id", None)
+        if not owner_id:
+            return Response(
+                status_code=400,
+                description="owner_id is required when is_my_services is false",
+                headers={},
+            )
     with session() as db:
         res = serviceGetHisNewestServicesByOwnerId(
             db=db,
-            owner_id=owner_id,
+            owner_id=int(owner_id),
+            my_id=my_id,
             page_size=int(page_size) if page_size else 10,
             current_page=int(current_page) if current_page else 1,
         )
@@ -111,9 +141,16 @@ def createNewService(request: Request):
 # 通过user_id获取全部删除的服务
 @serviceRouterV1.get("/getAllDeletedServicesByUserId", auth_required=True)
 def getAllDeletedServicesByUserId(request: Request):
+    page_size = request.query_params.get("page_size", "10")
+    current_page = request.query_params.get("current_page", "1")
     user_id = userGetUserIdByAccessToken(request=request)
     with session() as db:
-        res = serviceGetAllDeletedServicesByUserId(db=db, user_id=user_id)
+        res = serviceGetAllDeletedServicesByUserId(
+            db=db,
+            user_id=user_id,
+            page_size=int(page_size) if page_size else 10,
+            current_page=int(current_page) if current_page else 1,
+        )
     return res
 
 

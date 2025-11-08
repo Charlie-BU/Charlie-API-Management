@@ -2,8 +2,6 @@ import { createBrowserRouter, redirect } from "react-router-dom";
 import Layout from "@/components/Layout";
 import ApiManagement from "@/components/ApiManagement";
 import ServiceManagement from "@/components/ServiceManagement";
-import ModifyPassword from "@/components/User/ModifyPassword";
-import Register from "@/components/User/Register";
 import { Message } from "@cloud-materials/common";
 import { t } from "i18next";
 
@@ -24,16 +22,6 @@ export const router = createBrowserRouter([
             {
                 index: true,
                 element: <ServiceManagement />,
-                // loader: requireAuthLoader,
-            },
-            {
-                path: "user/modify-password",
-                element: <ModifyPassword />,
-                loader: requireAuthLoader,
-            },
-            {
-                path: "user/register",
-                element: <Register />,
             },
             {
                 path: "api",
