@@ -8,6 +8,16 @@ export interface ServiceItem {
     service_uuid: string;
     version: string;
     description?: string | null;
+    owner_id: number;
+    owner_name?: string | null;
+}
+
+export interface DeletedServiceItem extends ServiceItem {
+    deleted_at: string;
+}
+
+export interface AllServiceItem extends DeletedServiceItem {
+    is_deleted: boolean;
 }
 
 export interface UserBrief {
@@ -86,11 +96,13 @@ export interface CreateNewServiceResponse extends BaseResponse {
 }
 
 export interface GetAllDeletedServicesByUserIdResponse extends BaseResponse {
-    deleted_services: {
-        id: number;
-        service_uuid: string;
-        description?: string | null;
-    }[];
+    deleted_services: DeletedServiceItem[];
+    total: number;
+}
+
+export interface GetAllServicesResponse extends BaseResponse {
+    services: AllServiceItem[];
+    total: number;
 }
 
 export interface DeleteServiceByIdRequest {
@@ -136,3 +148,15 @@ export interface UpdateDescriptionRequest {
 }
 
 export type UpdateDescriptionResponse = BaseResponse;
+
+export type ServiceRange =
+    | "MyServices"
+    | "HisServices"
+    | "AllServices"
+    | "MyDeletedServices";
+
+export interface Pagination {
+    page_size: number;
+    current_page: number;
+    total: number;
+}

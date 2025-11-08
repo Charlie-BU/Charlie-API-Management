@@ -1,3 +1,5 @@
+// 需要是tsx：因为react组件包含在了hooks中
+
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 

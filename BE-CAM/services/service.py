@@ -15,6 +15,47 @@ from database.models import (
 from services.utils import checkServiceIterationPermission
 
 
+# 获取全部服务
+def serviceGetAllServices(
+    db: Session, user_id: int, page_size: int, current_page: int
+) -> dict:
+    # 非L0用户没有权限查看所有服务
+    user = db.get(User, user_id)
+    if user.level.value != 0:  # type: ignore
+        return {
+            "status": -1,
+            "message": "You don't have permission to view all services",
+        }
+    services = (
+        db.query(Service)
+        .order_by(Service.id)
+        .limit(page_size)
+        .offset((current_page - 1) * page_size)
+        .all()
+    )
+    total = db.query(Service).count()
+    return {
+        "status": 200,
+        "message": "Get services success",
+        "services": [
+            service.toJson(
+                include=[
+                    "id",
+                    "service_uuid",
+                    "version",
+                    "description",
+                    "owner_id",
+                    "created_at",
+                    "is_deleted",
+                    "deleted_at",
+                ]
+            )
+            for service in services
+        ],
+        "total": total,
+    }
+
+
 # 通过id获取服务详情
 def serviceGetServiceById(db: Session, id: int, user_id: int) -> dict:
     service = db.get(Service, id)
@@ -39,8 +80,15 @@ def serviceGetServiceById(db: Session, id: int, user_id: int) -> dict:
 
 # 通过用户id获取用户的所有最新版本服务（Service表中）的列表
 def serviceGetHisNewestServicesByOwnerId(
-    db: Session, owner_id: int, page_size: int, current_page: int
+    db: Session, owner_id: int, my_id: int, page_size: int, current_page: int
 ) -> dict:
+    # 非L0用户只能查看自己的服务
+    user = db.get(User, my_id)
+    if user.level.value != 0 and owner_id != my_id:  # type: ignore
+        return {
+            "status": -1,
+            "message": "You are not the owner of this service",
+        }
     services = (
         db.query(Service)
         .filter(~Service.is_deleted, Service.owner_id == owner_id)
@@ -58,7 +106,9 @@ def serviceGetHisNewestServicesByOwnerId(
         "status": 200,
         "message": "Get services success",
         "services": [
-            service.toJson(include=["id", "service_uuid", "version", "description"])
+            service.toJson(
+                include=["id", "service_uuid", "version", "description", "owner_id"]
+            )
             for service in services
         ],
         "total": total,
@@ -193,11 +243,15 @@ def serviceCreateNewService(
 
 
 # 通过user_id获取全部删除的服务
-def serviceGetAllDeletedServicesByUserId(db: Session, user_id: int) -> dict:
+def serviceGetAllDeletedServicesByUserId(
+    db: Session, user_id: int, page_size: int, current_page: int
+) -> dict:
     services = (
         db.query(Service)
         .filter(Service.is_deleted, Service.owner_id == user_id)
         .order_by(Service.deleted_at.desc())
+        .limit(page_size)
+        .offset((current_page - 1) * page_size)
         .all()
     )
     if not services:
@@ -205,13 +259,28 @@ def serviceGetAllDeletedServicesByUserId(db: Session, user_id: int) -> dict:
             "status": -1,
             "message": "No deleted services found",
         }
+    total = (
+        db.query(Service)
+        .filter(Service.is_deleted, Service.owner_id == user_id)
+        .count()
+    )
     return {
         "status": 200,
         "message": "Get deleted services success",
         "deleted_services": [
-            service.toJson(include=["id", "service_uuid", "description"])
+            service.toJson(
+                include=[
+                    "id",
+                    "service_uuid",
+                    "description",
+                    "version",
+                    "deleted_at",
+                    "owner_id",
+                ]
+            )
             for service in services
         ],
+        "total": total,
     }
 
 
