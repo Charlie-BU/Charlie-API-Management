@@ -11,15 +11,11 @@ import type {
     DeletedServiceItem,
     Pagination,
     ServiceItem,
-    ServiceRange,
 } from "@/services/service/types";
 
 // 服务列表hook
 export const useService = () => {
     const navigate = useNavigate();
-    // 需要储存当前范围，用于分页
-    const [range, setRange] = useState<ServiceRange>("MyServices");
-    const [hisId, setHisId] = useState<number | undefined>(undefined);
 
     const [serviceList, setServiceList] = useState<
         ServiceItem[] | DeletedServiceItem[]
@@ -28,7 +24,6 @@ export const useService = () => {
     const [loading, setLoading] = useState(false);
 
     const fetchMyNewestServices = async (pagination: Pagination) => {
-        setRange("MyServices");
         setLoading(true);
         const res = await GetMyNewestServices(
             pagination.page_size,
@@ -50,8 +45,6 @@ export const useService = () => {
         ownerId: number,
         pagination: Pagination
     ) => {
-        setRange("HisServices");
-        setHisId(ownerId);
         setLoading(true);
         const res = await GetHisNewestServicesByOwnerId(
             ownerId,
@@ -69,7 +62,6 @@ export const useService = () => {
     };
 
     const fetchMyDeletedServices = async (pagination: Pagination) => {
-        setRange("MyDeletedServices");
         setLoading(true);
         const res = await GetAllDeletedServicesByUserId(
             pagination.page_size,
@@ -86,7 +78,6 @@ export const useService = () => {
     };
 
     const fetchAllServices = async (pagination: Pagination) => {
-        setRange("AllServices");
         setLoading(true);
         const res = await GetAllServices(
             pagination.page_size,

@@ -176,6 +176,10 @@ const LoggedInView: React.FC<{ user: UserProfile }> = ({ user }) => {
             console.log("HisServices");
         }
         setServiceRange(key);
+        setPagination({
+            ...pagination,
+            current_page: 1,
+        });
     };
 
     return (

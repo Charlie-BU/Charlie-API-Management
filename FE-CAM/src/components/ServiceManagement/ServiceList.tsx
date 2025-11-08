@@ -33,6 +33,7 @@ const ServiceList: React.FC<{
             title: t("service.owner"),
             key: "owner",
             width: 160,
+            dataIndex: "owner_name",
             render: (owner_name?: string | null) => (
                 <Avatar size={30} style={{ backgroundColor: "#ecf2ff" }}>
                     {owner_name?.[0] || "-"}
