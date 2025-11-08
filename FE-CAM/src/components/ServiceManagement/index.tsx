@@ -6,7 +6,6 @@ import {
     Avatar,
     Space,
     Tabs,
-    Popconfirm,
     Message,
 } from "@cloud-materials/common";
 import { useTranslation } from "react-i18next";
@@ -94,38 +93,82 @@ const LoggedInView: React.FC<{ user: UserProfile }> = ({ user }) => {
         useState<ServiceRange>("MyServices");
     const {
         serviceList,
-        pagination,
         loading,
         fetchMyNewestServices,
         fetchMyDeletedServices,
         fetchHisNewestServicesByOwnerId,
         fetchAllServices,
-    } = useService(serviceRange);
+    } = useService();
+    const [pagination, setPagination] = useState({
+        page_size: 10,
+        current_page: 1,
+        total: 0,
+    });
+
+    const handlePageChange = (pageSize: number, currentPage?: number) => {
+        setPagination((prev) => ({
+            ...prev,
+            page_size: pageSize,
+            current_page: currentPage || prev.current_page,
+        }));
+    };
 
     const [hisId, setHisId] = useState<number>(-1);
 
     useEffect(() => {
         switch (serviceRange) {
             case "MyServices":
-                fetchMyNewestServices();
+                // 方法是异步的，返回 Promise，但在 useEffect 中不能直接 await，
+                // 所以需要使用 then 方法处理 Promise .resolve 后的结果
+                fetchMyNewestServices(pagination)
+                    .then((total) => {
+                        setPagination((prev) => ({
+                            ...prev,
+                            total,
+                        }));
+                    })
+                    .catch((err) => {
+                        Message.warning(err.message || "获取服务失败");
+                    });
                 break;
             case "MyDeletedServices":
-                fetchMyDeletedServices().catch((err) => {
-                    Message.warning(err.message || "获取服务失败");
-                });
+                fetchMyDeletedServices(pagination)
+                    .then((total) => {
+                        setPagination((prev) => ({
+                            ...prev,
+                            total,
+                        }));
+                    })
+                    .catch((err) => {
+                        Message.warning(err.message || "获取服务失败");
+                    });
                 break;
             case "HisServices":
-                fetchHisNewestServicesByOwnerId(hisId).catch((err) => {
-                    Message.warning(err.message || "获取服务失败");
-                });
+                fetchHisNewestServicesByOwnerId(hisId, pagination)
+                    .then((total) => {
+                        setPagination((prev) => ({
+                            ...prev,
+                            total,
+                        }));
+                    })
+                    .catch((err) => {
+                        Message.warning(err.message || "获取服务失败");
+                    });
                 break;
             case "AllServices":
-                fetchAllServices().catch((err) => {
-                    Message.warning(err.message || "获取服务失败");
-                });
+                fetchAllServices(pagination)
+                    .then((total) => {
+                        setPagination((prev) => ({
+                            ...prev,
+                            total,
+                        }));
+                    })
+                    .catch((err) => {
+                        Message.warning(err.message || "获取服务失败");
+                    });
                 break;
         }
-    }, [serviceRange, hisId]);
+    }, [serviceRange, hisId, pagination.page_size, pagination.current_page]);
 
     const handleTabChange = (key: ServiceRange) => {
         if (key === "HisServices") {
@@ -163,6 +206,7 @@ const LoggedInView: React.FC<{ user: UserProfile }> = ({ user }) => {
             <ServiceList
                 serviceList={serviceList}
                 pagination={pagination}
+                handlePageChange={handlePageChange}
                 loading={loading}
             />
         </div>

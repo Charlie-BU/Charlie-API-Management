@@ -8,8 +8,9 @@ const ServiceList: React.FC<{
     serviceList: ServiceItem[];
     pagination: Pagination;
     loading: boolean;
+    handlePageChange: (pageSize: number, currentPage?: number) => void;
 }> = (props) => {
-    const { serviceList, pagination, loading } = props;
+    const { serviceList, pagination, loading, handlePageChange } = props;
 
     const { t } = useTranslation();
 
@@ -55,6 +56,10 @@ const ServiceList: React.FC<{
                 pageSize: pagination.page_size,
                 total: pagination.total,
                 showTotal: true,
+                current: pagination.current_page,
+                onChange: (pageNumber: number, pageSize: number) => {
+                    handlePageChange(pageSize, pageNumber);
+                },
             }}
         />
     );

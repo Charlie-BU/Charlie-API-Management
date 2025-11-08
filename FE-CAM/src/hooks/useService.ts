@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import {
@@ -9,24 +9,26 @@ import {
 } from "@/services/service";
 import type {
     DeletedServiceItem,
+    Pagination,
     ServiceItem,
     ServiceRange,
 } from "@/services/service/types";
 
 // 服务列表hook
-export const useService = (range: ServiceRange, ownerId?: number) => {
+export const useService = () => {
     const navigate = useNavigate();
+    // 需要储存当前范围，用于分页
+    const [range, setRange] = useState<ServiceRange>("MyServices");
+    const [hisId, setHisId] = useState<number | undefined>(undefined);
+
     const [serviceList, setServiceList] = useState<
         ServiceItem[] | DeletedServiceItem[]
     >([]);
-    const [pagination, setPagination] = useState({
-        page_size: 10,
-        current_page: 1,
-        total: 0,
-    });
+
     const [loading, setLoading] = useState(false);
 
-    const fetchMyNewestServices = async () => {
+    const fetchMyNewestServices = async (pagination: Pagination) => {
+        setRange("MyServices");
         setLoading(true);
         const res = await GetMyNewestServices(
             pagination.page_size,
@@ -39,14 +41,17 @@ export const useService = (range: ServiceRange, ownerId?: number) => {
             throw new Error(res.message || "获取服务失败");
         }
         setServiceList(res.services || []);
-        setPagination({
-            ...pagination,
-            total: res.total || 0,
-        });
         setLoading(false);
+        // 返回服务总数，用于分页
+        return res.total || 0;
     };
 
-    const fetchHisNewestServicesByOwnerId = async (ownerId: number) => {
+    const fetchHisNewestServicesByOwnerId = async (
+        ownerId: number,
+        pagination: Pagination
+    ) => {
+        setRange("HisServices");
+        setHisId(ownerId);
         setLoading(true);
         const res = await GetHisNewestServicesByOwnerId(
             ownerId,
@@ -59,14 +64,12 @@ export const useService = (range: ServiceRange, ownerId?: number) => {
             throw new Error(res.message || "获取服务失败");
         }
         setServiceList(res.services || []);
-        setPagination({
-            ...pagination,
-            total: res.total || 0,
-        });
         setLoading(false);
+        return res.total || 0;
     };
 
-    const fetchMyDeletedServices = async () => {
+    const fetchMyDeletedServices = async (pagination: Pagination) => {
+        setRange("MyDeletedServices");
         setLoading(true);
         const res = await GetAllDeletedServicesByUserId(
             pagination.page_size,
@@ -78,14 +81,12 @@ export const useService = (range: ServiceRange, ownerId?: number) => {
             throw new Error(res.message || "获取服务失败");
         }
         setServiceList(res.deleted_services || []);
-        setPagination({
-            ...pagination,
-            total: res.total || 0,
-        });
         setLoading(false);
+        return res.total || 0;
     };
 
-    const fetchAllServices = async () => {
+    const fetchAllServices = async (pagination: Pagination) => {
+        setRange("AllServices");
         setLoading(true);
         const res = await GetAllServices(
             pagination.page_size,
@@ -97,28 +98,42 @@ export const useService = (range: ServiceRange, ownerId?: number) => {
             throw new Error(res.message || "获取服务失败");
         }
         setServiceList(res.services || []);
-        setPagination({
-            ...pagination,
-            total: res.total || 0,
-        });
         setLoading(false);
+        return res.total || 0;
     };
 
     // useEffect(() => {
     //     fetchMyNewestServices();
     // }, [pagination.current_page, pagination.page_size]);
 
-    const handlePageChange = (page_size: number, current_page?: number) => {
-        setPagination((prev) => {
-            const newPagination = {
-                ...prev,
-                current_page: current_page || prev.current_page,
-                page_size: page_size || prev.page_size,
-            };
-            sessionStorage.setItem("pagination", JSON.stringify(newPagination));
-            return newPagination;
-        });
-    };
+    // const handlePageChange = (page_size: number, current_page?: number) => {
+    //     setPagination((prev) => {
+    //         const newPagination = {
+    //             ...prev,
+    //             current_page: current_page || prev.current_page,
+    //             page_size: page_size || prev.page_size,
+    //         };
+    //         sessionStorage.setItem("pagination", JSON.stringify(newPagination));
+    //         return newPagination;
+    //     });
+    //     setTimeout(() => {
+    //         console.log(range, hisId, pagination);
+    //         switch (range) {
+    //             case "MyServices":
+    //                 fetchMyNewestServices();
+    //                 break;
+    //             case "HisServices":
+    //                 fetchHisNewestServicesByOwnerId(hisId || 0);
+    //                 break;
+    //             case "MyDeletedServices":
+    //                 fetchMyDeletedServices();
+    //                 break;
+    //             case "AllServices":
+    //                 fetchAllServices();
+    //                 break;
+    //         }
+    //     }, 1000);
+    // };
 
     // todo
     const handleViewService = (service_uuid: string) => {
@@ -127,13 +142,11 @@ export const useService = (range: ServiceRange, ownerId?: number) => {
 
     return {
         serviceList,
-        pagination,
         loading,
         fetchMyNewestServices,
         fetchHisNewestServicesByOwnerId,
         fetchMyDeletedServices,
         fetchAllServices,
-        handlePageChange,
         handleViewService,
     };
 };
