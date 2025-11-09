@@ -199,7 +199,7 @@ const LoggedInView: React.FC<{
                 setFetching(true);
                 const users = await getUserByUsernameOrNicknameOrEmail(value);
                 const opts = users.map((user) => ({
-                    label: `${user.nickname} (${user.username}) (${user.email})`,
+                    label: `${user.nickname} (${user.username}) - ${user.email}`,
                     value: user.id,
                 }));
                 setOptions(opts);
