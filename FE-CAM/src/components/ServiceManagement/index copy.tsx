@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState } from "react";
 import {
     Typography,
     Button,
@@ -121,8 +121,7 @@ const LoggedInView: React.FC<{
         }));
     };
 
-    // 用 useRef 储存 hisId，在切换服务范围时使用
-    const hisIdRef = useRef<number>(-1);
+    const [hisId, setHisId] = useState<number>(-1);
 
     useEffect(() => {
         switch (serviceRange) {
@@ -153,7 +152,7 @@ const LoggedInView: React.FC<{
                     });
                 break;
             case "HisServices":
-                fetchHisNewestServicesByOwnerId(hisIdRef.current, pagination)
+                fetchHisNewestServicesByOwnerId(hisId, pagination)
                     .then((total) => {
                         setPagination((prev) => ({
                             ...prev,
@@ -233,11 +232,8 @@ const LoggedInView: React.FC<{
                 }
                 onSearch={handleSearch}
                 onChange={(value) => {
-                    const id = Number(value);
-                    if (!Number.isNaN(id)) {
-                        onSelectId(id);
-                    } else {
-                        Message.warning("选择的用户ID异常");
+                    if (typeof value === "number") {
+                        onSelectId(value);
                     }
                 }}
             />
@@ -251,8 +247,10 @@ const LoggedInView: React.FC<{
                 content: (
                     <>
                         <HisUserSelect
+                            // 确保onSelectId是同步的，避免异步问
                             onSelectId={(id) => {
-                                hisIdRef.current = id;
+                                setHisId((prevId) => id);
+                                console.log(hisId);
                             }}
                         />
                     </>
@@ -261,11 +259,11 @@ const LoggedInView: React.FC<{
                 okText: t("common.confirm"),
                 onOk: async () => {
                     try {
-                        const selectedId = hisIdRef.current;
-                        if (selectedId <= 0) {
+                        if (hisId <= 0) {
                             throw new Error("未选择用户");
                         }
-                        setServiceRange("HisServices");
+                        // 需要通过这种方式把set设为同步
+                        setServiceRange((_prev) => "HisServices");
                         setPagination({
                             ...pagination,
                             current_page: 1,
@@ -283,7 +281,7 @@ const LoggedInView: React.FC<{
                     }
                 },
                 onCancel: () => {
-                    hisIdRef.current = -1;
+                    setHisId(-1);
                     modal.close();
                     setServiceRange(key);
                     setPagination({

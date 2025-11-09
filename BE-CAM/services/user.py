@@ -1,3 +1,4 @@
+from urllib.parse import unquote
 from robyn.robyn import Request
 from sqlalchemy import or_
 from sqlalchemy.orm import Session
@@ -75,14 +76,15 @@ def userGetUserByUsernameOrNicknameOrEmail(
             "status": -1,
             "message": "You don't have permission to view other user's information",
         }
-
+    # 把 url 编码的字符串解码，否则是 %20 等格式
+    keyword = unquote(username_or_nickname_or_email).strip()
     search_users = (
         db.query(User)
         .filter(
             or_(
-                User.username.like(f"%{username_or_nickname_or_email}%"),
-                User.nickname.like(f"%{username_or_nickname_or_email}%"),
-                User.email.like(f"%{username_or_nickname_or_email}%"),
+                User.username.ilike(f"%{keyword}%"),
+                User.nickname.ilike(f"%{keyword}%"),
+                User.email.ilike(f"%{keyword}%"),
             )
         )
         .order_by(User.nickname, User.username, User.email)
