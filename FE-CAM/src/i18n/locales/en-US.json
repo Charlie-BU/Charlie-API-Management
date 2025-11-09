@@ -96,9 +96,9 @@
   },
   "login": {
     "title": "Login to CAM",
-    "username": "Username",
-    "usernamePlaceholder": "Enter username",
-    "usernameRequired": "Please enter username",
+    "username": "Username / Email",
+    "usernamePlaceholder": "Enter username or email",
+    "usernameRequired": "Please enter username or email",
     "password": "Password",
     "passwordPlaceholder": "Enter password",
     "passwordRequired": "Please enter password",

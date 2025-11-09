@@ -65,9 +65,43 @@ def userGetUserById(db: Session, id: int) -> dict:
     }
 
 
+# 通过用户名或昵称或邮箱获取用户信息
+def userGetUserByUsernameOrNicknameOrEmail(
+    db: Session, username_or_nickname_or_email: str, user_id: int
+) -> dict:
+    user = db.get(User, user_id)
+    if user.level.value != 0:  # type: ignore
+        return {
+            "status": -1,
+            "message": "You don't have permission to view other user's information",
+        }
+
+    search_users = (
+        db.query(User)
+        .filter(
+            or_(
+                User.username.like(f"%{username_or_nickname_or_email}%"),
+                User.nickname.like(f"%{username_or_nickname_or_email}%"),
+                User.email.like(f"%{username_or_nickname_or_email}%"),
+            )
+        )
+        .order_by(User.nickname, User.username, User.email)
+        .all()
+    )
+    return {
+        "status": 200,
+        "message": "Get users success",
+        "users": [user.toJson() for user in search_users] if search_users else [],
+    }
+
+
 # 用户登录
 def userLogin(db: Session, username: str, password: str) -> dict:
-    user = db.query(User).filter(User.username == username).first()
+    user = (
+        db.query(User)
+        .filter(or_(User.username == username, User.email == username))
+        .first()
+    )
     if user is None:
         return {
             "status": -1,

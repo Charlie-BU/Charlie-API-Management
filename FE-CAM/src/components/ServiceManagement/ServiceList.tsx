@@ -1,11 +1,10 @@
 import type {
-    AllServiceItem,
     Pagination,
     ServiceItem,
     ServiceRange,
 } from "@/services/service/types";
 import { formatDateOrDateTime } from "@/utils";
-import { Avatar, Table, Typography, Tag } from "@cloud-materials/common";
+import { Avatar, Table, Typography, Tag, Button } from "@cloud-materials/common";
 import { useTranslation } from "react-i18next";
 
 const { Text } = Typography;
@@ -95,6 +94,19 @@ const ServiceList: React.FC<{
             }
         );
     }
+    columns.push({
+        title: "操作",
+        key: "actions",
+        width: 100,
+        fixed: "right" as const,
+        // @ts-ignore
+        render: (_: any, record: ServiceItem) => (
+            <div style={{ display: 'flex' }}>
+              <Button type="text" size="small">查看</Button>
+              <Button type="text" status='danger' size="small" color="#FF4D4F">删除</Button>
+            </div>
+        ),
+    });
 
     return (
         <Table

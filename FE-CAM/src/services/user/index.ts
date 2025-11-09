@@ -1,6 +1,7 @@
 // service层：只关心http请求，不关心业务逻辑
 import { api } from "@/api";
 import type {
+    GetUserByUsernameOrNicknameOrEmailResponse,
     LoginRequest,
     LoginResponse,
     ModifyPasswordRequest,
@@ -35,4 +36,14 @@ export const GetUserById = async (id: number) => {
 // 获取当前登录用户信息
 export const GetMyInfo = async () => {
     return api.get<UserResponse>(`${prefix}/getMyInfo`);
+};
+
+// 通过用户名或昵称或邮箱获取用户信息
+export const GetUserByUsernameOrNicknameOrEmail = async (
+    username_or_nickname_or_email: string
+) => {
+    return api.get<GetUserByUsernameOrNicknameOrEmailResponse>(
+        `${prefix}/getUserByUsernameOrNicknameOrEmail`,
+        { username_or_nickname_or_email }
+    );
 };

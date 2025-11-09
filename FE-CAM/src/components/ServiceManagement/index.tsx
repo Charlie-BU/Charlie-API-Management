@@ -7,6 +7,9 @@ import {
     Space,
     Tabs,
     Message,
+    CModal,
+    Select,
+    Spin,
 } from "@cloud-materials/common";
 import { useTranslation } from "react-i18next";
 import styles from "./index.module.less";
@@ -87,7 +90,12 @@ const WelcomeGuest: React.FC = () => {
 };
 
 // 已登录视图（包含列表）
-const LoggedInView: React.FC<{ user: UserProfile }> = ({ user }) => {
+const LoggedInView: React.FC<{
+    user: UserProfile;
+    getUserByUsernameOrNicknameOrEmail: (
+        username_or_nickname_or_email: string
+    ) => Promise<UserProfile[]>;
+}> = ({ user, getUserByUsernameOrNicknameOrEmail }) => {
     const { t } = useTranslation();
     const [serviceRange, setServiceRange] =
         useState<ServiceRange>("MyServices");
@@ -113,7 +121,8 @@ const LoggedInView: React.FC<{ user: UserProfile }> = ({ user }) => {
         }));
     };
 
-    const [hisId, setHisId] = useState<number>(-1);
+    // const [hisId, setHisId] = useState<number>(-1);
+    let hisId: number = -1;
 
     useEffect(() => {
         switch (serviceRange) {
@@ -170,16 +179,119 @@ const LoggedInView: React.FC<{ user: UserProfile }> = ({ user }) => {
         }
     }, [serviceRange, hisId, pagination.page_size, pagination.current_page]);
 
+    // 查看他人service搜索组件
+    const HisUserSelect: React.FC<{
+        onSelectId: (id: number) => void;
+    }> = ({ onSelectId }) => {
+        const [fetching, setFetching] = useState(false);
+        const [options, setOptions] = useState<
+            {
+                label: string;
+                value: number;
+            }[]
+        >([]);
+
+        const handleSearch = async (value: string) => {
+            if (value.length < 2) {
+                return;
+            }
+            try {
+                setFetching(true);
+                const users = await getUserByUsernameOrNicknameOrEmail(value);
+                const opts = users.map((user) => ({
+                    label: `${user.nickname} (${user.username}) (${user.email})`,
+                    value: user.id,
+                }));
+                setOptions(opts);
+            } catch (err: unknown) {
+                const msg =
+                    err instanceof Error ? err.message : t("common.failure");
+                Message.error(msg);
+            } finally {
+                setFetching(false);
+            }
+        };
+
+        return (
+            <Select
+                showSearch
+                options={options}
+                placeholder="Search by username, nickname or email"
+                filterOption={false}
+                notFoundContent={
+                    fetching ? (
+                        <div
+                            style={{
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                            }}
+                        >
+                            <Spin style={{ margin: 12 }} />
+                        </div>
+                    ) : null
+                }
+                onSearch={handleSearch}
+                onChange={(value) => {
+                    if (typeof value === "number") {
+                        onSelectId(value);
+                    }
+                }}
+            />
+        );
+    };
+
     const handleTabChange = (key: ServiceRange) => {
         if (key === "HisServices") {
-            // todo
-            console.log("HisServices");
+            const modal = CModal.openArcoForm({
+                title: "查看他人服务",
+                content: (
+                    <>
+                        <HisUserSelect onSelectId={(id) => hisId = id} />
+                    </>
+                ),
+                cancelText: t("common.cancel"),
+                okText: t("common.confirm"),
+                onOk: async () => {
+                    try {
+                        if (hisId <= 0) {
+                            throw new Error("未选择用户");
+                        }
+                        setServiceRange("HisServices");
+                        setPagination({
+                            ...pagination,
+                            current_page: 1,
+                        });
+                        // 显式关闭弹窗，避免依赖隐式行为
+                        modal.close();
+                    } catch (err: unknown) {
+                        const msg =
+                            err instanceof Error
+                                ? err.message
+                                : t("common.failure");
+                        Message.warning(msg);
+                        // 抛出错误以阻止弹窗自动关闭（库内有相关处理）
+                        throw err;
+                    }
+                },
+                onCancel: () => {
+                    // setHisId(-1);
+                    hisId = -1
+                    modal.close();
+                    setServiceRange(key);
+                    setPagination({
+                        ...pagination,
+                        current_page: 1,
+                    });
+                },
+            });
+        } else {
+            setServiceRange(key);
+            setPagination({
+                ...pagination,
+                current_page: 1,
+            });
         }
-        setServiceRange(key);
-        setPagination({
-            ...pagination,
-            current_page: 1,
-        });
     };
 
     return (
@@ -191,7 +303,7 @@ const LoggedInView: React.FC<{ user: UserProfile }> = ({ user }) => {
             </Title>
 
             <Tabs
-                defaultActiveTab={serviceRange}
+                activeTab={serviceRange}
                 onChange={(key) => handleTabChange(key as ServiceRange)}
                 style={{ marginBottom: 18 }}
             >
@@ -219,7 +331,7 @@ const LoggedInView: React.FC<{ user: UserProfile }> = ({ user }) => {
 };
 
 const ServiceManagement: React.FC = () => {
-    const { user } = useUser();
+    const { user, getUserByUsernameOrNicknameOrEmail } = useUser();
     if (!user) {
         return (
             <div className={styles.home}>
@@ -227,7 +339,14 @@ const ServiceManagement: React.FC = () => {
             </div>
         );
     }
-    return <LoggedInView user={user} />;
+    return (
+        <LoggedInView
+            user={user}
+            getUserByUsernameOrNicknameOrEmail={
+                getUserByUsernameOrNicknameOrEmail
+            }
+        />
+    );
 };
 
 export default ServiceManagement;

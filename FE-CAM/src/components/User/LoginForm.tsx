@@ -9,6 +9,8 @@ const LoginForm: React.FC = () => {
         <>
             <Form.Item
                 label={t("login.username")}
+                labelCol={{ span: 7 }}
+                wrapperCol={{ span: 17 }}
                 field="username"
                 rules={[
                     {
@@ -24,6 +26,8 @@ const LoginForm: React.FC = () => {
             </Form.Item>
             <Form.Item
                 label={t("login.password")}
+                labelCol={{ span: 7 }}
+                wrapperCol={{ span: 17 }}
                 field="password"
                 rules={[
                     {
