@@ -47,3 +47,9 @@ export interface UserProfile {
     level: number;
     created_at: string;
 }
+
+export interface GetUserByUsernameOrNicknameOrEmailResponse {
+    status: number;
+    message: string;
+    users: UserProfile[];
+}

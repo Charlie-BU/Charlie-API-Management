@@ -1,4 +1,4 @@
-from services.user import userModifyPassword
+from services.user import userGetUserByUsernameOrNicknameOrEmail, userModifyPassword
 from robyn import SubRouter
 from robyn.robyn import Request, Response
 from robyn.authentication import BearerGetter
@@ -46,6 +46,28 @@ async def getMyInfo(request: Request):
     user_id = userGetUserIdByAccessToken(request=request)
     with session() as db:
         res = userGetUserById(db=db, id=user_id)
+    return res
+
+
+# 通过用户名或昵称或邮箱获取用户信息
+@userRouterV1.get("/getUserByUsernameOrNicknameOrEmail", auth_required=True)
+async def getUserByUsernameOrNicknameOrEmail(request: Request):
+    username_or_nickname_or_email = request.query_params.get(
+        "username_or_nickname_or_email", None
+    )
+    user_id = userGetUserIdByAccessToken(request=request)
+    if not username_or_nickname_or_email:
+        return Response(
+            status_code=400,
+            description="username_or_nickname_or_email is required",
+            headers={},
+        )
+    with session() as db:
+        res = userGetUserByUsernameOrNicknameOrEmail(
+            db=db,
+            username_or_nickname_or_email=username_or_nickname_or_email,
+            user_id=user_id,
+        )
     return res
 
 

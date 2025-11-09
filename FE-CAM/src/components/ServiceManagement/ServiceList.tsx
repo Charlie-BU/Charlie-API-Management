@@ -1,16 +1,22 @@
-import type { Pagination, ServiceItem } from "@/services/service/types";
-import { Avatar, Table, Typography, Tag } from "@cloud-materials/common";
+import type {
+    Pagination,
+    ServiceItem,
+    ServiceRange,
+} from "@/services/service/types";
+import { formatDateOrDateTime } from "@/utils";
+import { Avatar, Table, Typography, Tag, Button } from "@cloud-materials/common";
 import { useTranslation } from "react-i18next";
 
 const { Text } = Typography;
 
 const ServiceList: React.FC<{
     serviceList: ServiceItem[];
+    range: ServiceRange;
     pagination: Pagination;
     loading: boolean;
     handlePageChange: (pageSize: number, currentPage?: number) => void;
 }> = (props) => {
-    const { serviceList, pagination, loading, handlePageChange } = props;
+    const { serviceList, range, pagination, loading, handlePageChange } = props;
 
     const { t } = useTranslation();
 
@@ -27,7 +33,7 @@ const ServiceList: React.FC<{
             dataIndex: "version",
             key: "version",
             width: 140,
-            render: (v: string) => <Tag color="blue">{v}</Tag>,
+            render: (version: string) => <Tag color="blue">{version}</Tag>,
         },
         {
             title: t("service.owner"),
@@ -45,7 +51,62 @@ const ServiceList: React.FC<{
             dataIndex: "description",
             key: "description",
         },
+        {
+            title: t("service.created_at"),
+            dataIndex: "created_at",
+            key: "created_at",
+            render: (created_at: string) => (
+                <Text>{formatDateOrDateTime(created_at, "minute")}</Text>
+            ),
+        },
     ];
+
+    if (range === "MyDeletedServices") {
+        columns.push({
+            title: t("service.deleted_at"),
+            dataIndex: "deleted_at",
+            key: "deleted_at",
+        });
+    }
+    if (range === "AllServices") {
+        columns.push(
+            {
+                title: t("service.is_deleted"),
+                dataIndex: "is_deleted",
+                key: "is_deleted",
+                width: 120,
+                // @ts-ignore
+                render: (col: boolean) => {
+                    return (
+                        <Tag color={col ? "red" : "green"}>
+                            {col ? t("common.yes") : t("common.no")}
+                        </Tag>
+                    );
+                },
+            },
+            {
+                title: t("service.deleted_at"),
+                dataIndex: "deleted_at",
+                key: "deleted_at",
+                render: (deleted_at: string) => (
+                    <Text>{formatDateOrDateTime(deleted_at, "minute")}</Text>
+                ),
+            }
+        );
+    }
+    columns.push({
+        title: "操作",
+        key: "actions",
+        width: 100,
+        fixed: "right" as const,
+        // @ts-ignore
+        render: (_: any, record: ServiceItem) => (
+            <div style={{ display: 'flex' }}>
+              <Button type="text" size="small">查看</Button>
+              <Button type="text" status='danger' size="small" color="#FF4D4F">删除</Button>
+            </div>
+        ),
+    });
 
     return (
         <Table

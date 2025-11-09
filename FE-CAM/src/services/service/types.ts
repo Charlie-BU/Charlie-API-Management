@@ -9,6 +9,7 @@ export interface ServiceItem {
     version: string;
     description?: string | null;
     owner_id: number;
+    created_at: string;
     owner_name?: string | null;
 }
 
@@ -62,7 +63,7 @@ export interface ServiceDetail extends ServiceItem {
     apis?: ApiBrief[];
     api_categories?: ApiCategory[];
     iterations?: ServiceIteration[];
-    created_at?: string;
+    created_at: string;
     updated_at?: string;
     is_deleted?: boolean;
     deleted_at?: string | null;

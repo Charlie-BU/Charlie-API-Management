@@ -14,6 +14,7 @@ import type {
 } from "@/services/user/types";
 import {
     GetMyInfo,
+    GetUserByUsernameOrNicknameOrEmail,
     UserLogin,
     UserModifyPassword,
     UserRegister,
@@ -48,6 +49,9 @@ interface UserStore {
     user: UserProfile | null;
     loading: boolean;
     fetchUser: () => Promise<void>;
+    getUserByUsernameOrNicknameOrEmail: (
+        username_or_nickname_or_email: string
+    ) => Promise<UserProfile[]>;
     login: (formData: LoginRequest) => Promise<LoginResponse>;
     logout: () => void;
     register: (
@@ -111,6 +115,18 @@ export const useUser = create<UserStore>()(
                         set({ loading: false, user: null });
                         localStorage.removeItem(TOKEN_KEY);
                     }
+                },
+
+                getUserByUsernameOrNicknameOrEmail: async (
+                    username_or_nickname_or_email: string
+                ) => {
+                    const res = await GetUserByUsernameOrNicknameOrEmail(
+                        username_or_nickname_or_email
+                    );
+                    if (res.status !== 200) {
+                        throw new Error(res.message || "获取用户信息失败");
+                    }
+                    return res.users || [];
                 },
 
                 login: async (formData: LoginRequest) => {

@@ -1,5 +1,5 @@
 import axios, { AxiosHeaders } from "axios";
-import type { AxiosInstance, AxiosRequestConfig } from "axios";
+import type { AxiosError, AxiosInstance, AxiosRequestConfig } from "axios";
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:1024";
 
@@ -47,14 +47,15 @@ export class ApiError extends Error {
 // 响应拦截器：统一错误格式
 http.interceptors.response.use(
     (response) => response,
-    (error) => {
+    (error: AxiosError) => {
         const status = error?.response?.status;
         const data = error?.response?.data;
-        const message =
-            data?.description ||
-            data?.message ||
-            error.message ||
-            "Request error";
+        const message = error.message || "Request error";
+        // 处理 401 或网络错误：清除 token 和用户信息缓存
+        if (error.code === "ERR_NETWORK" || status === 401) {
+            localStorage.removeItem("cam_access_token");
+            sessionStorage.removeItem("user-store");
+        }
         return Promise.reject(new ApiError(message, status, data));
     }
 );
