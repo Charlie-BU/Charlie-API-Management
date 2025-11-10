@@ -1,95 +1,23 @@
-import React, { useEffect, useState } from "react";
+import { useState, useRef, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import {
-    Typography,
-    Button,
-    Divider,
-    Avatar,
-    Space,
-    Tabs,
     Message,
     CModal,
-    Select,
-    Spin,
+    Divider,
+    Tabs,
+    Typography,
 } from "@cloud-materials/common";
-import { useTranslation } from "react-i18next";
+
 import styles from "./index.module.less";
-import { useUser } from "@/hooks/useUser";
 import { useService } from "@/hooks/useService";
+import type { ServiceRange } from "@/services/service/types";
 import type { UserProfile } from "@/services/user/types";
 import ServiceList from "./ServiceList";
-import type { ServiceRange } from "@/services/service/types";
+import UserSelect from "./UserSelect";
+import { WelcomeLoggedIn } from "./WelcomeView";
 
-const { Title, Text } = Typography;
-// const { Search } = Input;
+const { Title } = Typography;
 
-// 已登录欢迎区块
-const WelcomeLoggedIn: React.FC<{
-    user: UserProfile;
-    loading?: boolean;
-}> = ({ user }) => {
-    const { t } = useTranslation();
-    const displayName = user.nickname || user.username;
-    return (
-        <div className={styles.hero}>
-            <Space size={12} align="center">
-                <Avatar size={40} style={{ backgroundColor: "#ecf2ff" }}>
-                    {displayName[0]}
-                </Avatar>
-                <div>
-                    <Title heading={4} className={styles.title}>
-                        {t("service.welcomeTitle")}
-                    </Title>
-                    <Text className={styles.subtitle}>
-                        {t("service.welcomeBack")}
-                        {displayName}（{t(`user.${user.role}`)} · L{user.level}
-                        ）
-                    </Text>
-                </div>
-            </Space>
-            <div className={styles.actions}>
-                <Space>
-                    <Button type="primary">{t("common.create")}</Button>
-                </Space>
-            </div>
-        </div>
-    );
-};
-
-// 未登录欢迎区块
-const WelcomeGuest: React.FC = () => {
-    const { t } = useTranslation();
-    const { openLoginModal, openRegisterModal } = useUser();
-
-    const handleGoRegister = () => {
-        openRegisterModal();
-    };
-    const handleGoLogin = () => {
-        openLoginModal();
-    };
-    return (
-        <div className={styles.hero}>
-            <Title heading={3} className={styles.title}>
-                {t("service.welcomeTitle")}
-            </Title>
-            <Text className={styles.subtitle}>
-                登录后即可管理你的 API
-                服务与版本，点击右上角头像进行登录或直接注册。
-            </Text>
-            <div className={styles.actions}>
-                <Space>
-                    <Button type="primary" onClick={handleGoLogin}>
-                        {t("login.login")}
-                    </Button>
-                    <Button type="primary" onClick={handleGoRegister}>
-                        {t("register.submit")}
-                    </Button>
-                </Space>
-            </div>
-        </div>
-    );
-};
-
-// 已登录视图（包含列表）
 const LoggedInView: React.FC<{
     user: UserProfile;
     getUserByUsernameOrNicknameOrEmail: (
@@ -121,7 +49,8 @@ const LoggedInView: React.FC<{
         }));
     };
 
-    const [hisId, setHisId] = useState<number>(-1);
+    // 用 useRef 储存 hisId，在切换服务范围时使用
+    const hisIdRef = useRef<number>(-1);
 
     useEffect(() => {
         switch (serviceRange) {
@@ -152,7 +81,7 @@ const LoggedInView: React.FC<{
                     });
                 break;
             case "HisServices":
-                fetchHisNewestServicesByOwnerId(hisId, pagination)
+                fetchHisNewestServicesByOwnerId(hisIdRef.current, pagination)
                     .then((total) => {
                         setPagination((prev) => ({
                             ...prev,
@@ -178,79 +107,18 @@ const LoggedInView: React.FC<{
         }
     }, [serviceRange, pagination.page_size, pagination.current_page]);
 
-    // 查看他人service搜索组件
-    const HisUserSelect: React.FC<{
-        onSelectId: (id: number) => void;
-    }> = ({ onSelectId }) => {
-        const [fetching, setFetching] = useState(false);
-        const [options, setOptions] = useState<
-            {
-                label: string;
-                value: number;
-            }[]
-        >([]);
-
-        const handleSearch = async (value: string) => {
-            if (value.length < 2) {
-                return;
-            }
-            try {
-                setFetching(true);
-                const users = await getUserByUsernameOrNicknameOrEmail(value);
-                const opts = users.map((user) => ({
-                    label: `${user.nickname} (${user.username}) (${user.email})`,
-                    value: user.id,
-                }));
-                setOptions(opts);
-            } catch (err: unknown) {
-                const msg =
-                    err instanceof Error ? err.message : t("common.failure");
-                Message.error(msg);
-            } finally {
-                setFetching(false);
-            }
-        };
-
-        return (
-            <Select
-                showSearch
-                options={options}
-                placeholder="Search by username, nickname or email"
-                filterOption={false}
-                notFoundContent={
-                    fetching ? (
-                        <div
-                            style={{
-                                display: "flex",
-                                alignItems: "center",
-                                justifyContent: "center",
-                            }}
-                        >
-                            <Spin style={{ margin: 12 }} />
-                        </div>
-                    ) : null
-                }
-                onSearch={handleSearch}
-                onChange={(value) => {
-                    if (typeof value === "number") {
-                        onSelectId(value);
-                    }
-                }}
-            />
-        );
-    };
-
     const handleTabChange = (key: ServiceRange) => {
         if (key === "HisServices") {
             const modal = CModal.openArcoForm({
                 title: "查看他人服务",
                 content: (
                     <>
-                        <HisUserSelect
-                            // 确保onSelectId是同步的，避免异步问
+                        <UserSelect
+                            getUserByUsernameOrNicknameOrEmail={
+                                getUserByUsernameOrNicknameOrEmail
+                            }
                             onSelectId={(id) => {
-                                setHisId((prevId) => id);
-                                console.log(hisId);
+                                hisIdRef.current = id;
                             }}
                         />
                     </>
@@ -259,11 +127,11 @@ const LoggedInView: React.FC<{
                 okText: t("common.confirm"),
                 onOk: async () => {
                     try {
-                        if (hisId <= 0) {
+                        const selectedId = hisIdRef.current;
+                        if (selectedId <= 0) {
                             throw new Error("未选择用户");
                         }
-                        // 需要通过这种方式把set设为同步
-                        setServiceRange((_prev) => "HisServices");
+                        setServiceRange("HisServices");
                         setPagination({
                             ...pagination,
                             current_page: 1,
@@ -281,7 +149,7 @@ const LoggedInView: React.FC<{
                     }
                 },
                 onCancel: () => {
-                    setHisId(-1);
+                    hisIdRef.current = -1;
                     modal.close();
                     setServiceRange(key);
                     setPagination({
@@ -335,23 +203,4 @@ const LoggedInView: React.FC<{
     );
 };
 
-const ServiceManagement: React.FC = () => {
-    const { user, getUserByUsernameOrNicknameOrEmail } = useUser();
-    if (!user) {
-        return (
-            <div className={styles.home}>
-                <WelcomeGuest />
-            </div>
-        );
-    }
-    return (
-        <LoggedInView
-            user={user}
-            getUserByUsernameOrNicknameOrEmail={
-                getUserByUsernameOrNicknameOrEmail
-            }
-        />
-    );
-};
-
-export default ServiceManagement;
+export default LoggedInView;
