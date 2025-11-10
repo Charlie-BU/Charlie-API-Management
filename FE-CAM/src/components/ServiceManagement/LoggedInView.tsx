@@ -198,6 +198,7 @@ const LoggedInView: React.FC<{
                 pagination={pagination}
                 handlePageChange={handlePageChange}
                 loading={loading}
+                user={user}
             />
         </div>
     );

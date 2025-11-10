@@ -45,6 +45,7 @@ def serviceGetAllServices(
                     "version",
                     "description",
                     "owner_id",
+                    "owner",
                     "created_at",
                     "is_deleted",
                     "deleted_at",
@@ -102,10 +103,9 @@ def serviceGetHisNewestServicesByOwnerId(
         .filter(~Service.is_deleted, Service.owner_id == owner_id)
         .count()
     )
-    return {
-        "status": 200,
-        "message": "Get services success",
-        "services": [
+    # 查询自己的服务想：无需包含owner
+    if owner_id == my_id:
+        services = [
             service.toJson(
                 include=[
                     "id",
@@ -114,10 +114,31 @@ def serviceGetHisNewestServicesByOwnerId(
                     "description",
                     "owner_id",
                     "created_at",
+                    "is_deleted",
                 ]
             )
             for service in services
-        ],
+        ]
+    else:
+        services = [
+            service.toJson(
+                include=[
+                    "id",
+                    "service_uuid",
+                    "version",
+                    "description",
+                    "owner_id",
+                    "owner",
+                    "created_at",
+                    "is_deleted",
+                ]
+            )
+            for service in services
+        ]
+    return {
+        "status": 200,
+        "message": "Get services success",
+        "services": services,
         "total": total,
     }
 
@@ -283,6 +304,7 @@ def serviceGetAllDeletedServicesByUserId(
                     "version",
                     "owner_id",
                     "created_at",
+                    "is_deleted",
                     "deleted_at",
                 ]
             )

@@ -93,39 +93,6 @@ export const useService = () => {
         return res.total || 0;
     };
 
-    // useEffect(() => {
-    //     fetchMyNewestServices();
-    // }, [pagination.current_page, pagination.page_size]);
-
-    // const handlePageChange = (page_size: number, current_page?: number) => {
-    //     setPagination((prev) => {
-    //         const newPagination = {
-    //             ...prev,
-    //             current_page: current_page || prev.current_page,
-    //             page_size: page_size || prev.page_size,
-    //         };
-    //         sessionStorage.setItem("pagination", JSON.stringify(newPagination));
-    //         return newPagination;
-    //     });
-    //     setTimeout(() => {
-    //         console.log(range, hisId, pagination);
-    //         switch (range) {
-    //             case "MyServices":
-    //                 fetchMyNewestServices();
-    //                 break;
-    //             case "HisServices":
-    //                 fetchHisNewestServicesByOwnerId(hisId || 0);
-    //                 break;
-    //             case "MyDeletedServices":
-    //                 fetchMyDeletedServices();
-    //                 break;
-    //             case "AllServices":
-    //                 fetchAllServices();
-    //                 break;
-    //         }
-    //     }, 1000);
-    // };
-
     // todo
     const handleViewService = (service_uuid: string) => {
         navigate(`/service/${service_uuid}`);

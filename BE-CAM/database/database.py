@@ -8,7 +8,7 @@ load_dotenv()
 
 engine = create_engine(
     url=os.getenv("DATABASE_URI") or "",
-    echo=True,  # 关闭SQL语句输出
+    echo=False,  # 关闭SQL语句输出
     pool_size=20,  # 默认连接池大小
     max_overflow=30,  # 最大溢出连接数
     pool_timeout=60,  # 连接超时时间

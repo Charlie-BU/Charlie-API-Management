@@ -1,3 +1,6 @@
+import type { UserBrief } from "../api/types";
+import type { UserProfile } from "../user/types";
+
 export interface BaseResponse {
     status: number;
     message: string;
@@ -10,24 +13,15 @@ export interface ServiceItem {
     description?: string | null;
     owner_id: number;
     created_at: string;
-    owner_name?: string | null;
+    is_deleted: boolean;
+    owner?: UserProfile | null;
 }
 
 export interface DeletedServiceItem extends ServiceItem {
     deleted_at: string;
 }
 
-export interface AllServiceItem extends DeletedServiceItem {
-    is_deleted: boolean;
-}
-
-export interface UserBrief {
-    id: number;
-    username: string;
-    nickname?: string | null;
-    role?: string;
-    level?: string;
-}
+export interface AllServiceItem extends DeletedServiceItem {}
 
 export interface ApiBrief {
     id: number;
@@ -58,14 +52,14 @@ export interface ServiceIteration {
 
 export interface ServiceDetail extends ServiceItem {
     owner_id: number;
-    owner?: UserBrief | null;
+    owner?: UserProfile | null;
     maintainers?: UserBrief[];
     apis?: ApiBrief[];
     api_categories?: ApiCategory[];
     iterations?: ServiceIteration[];
     created_at: string;
     updated_at?: string;
-    is_deleted?: boolean;
+    is_deleted: boolean;
     deleted_at?: string | null;
 }
 
