@@ -1,3 +1,6 @@
+import { Modal, Space } from "@cloud-materials/common";
+import { t } from "i18next";
+
 const pad = (n: number, length = 2) => String(n).padStart(length, "0");
 
 const parseToDate = (input: string | number | Date): Date | null => {
@@ -60,4 +63,25 @@ export const formatDateOrDateTime = (
     if (granularity === "minute")
         return `${year}-${month}-${day} ${hours}:${minutes}`;
     return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+};
+
+export const handleConfirm = (
+    onOk: () => void | Promise<void>,
+    action?: string,
+    confirmText?: string
+) => {
+    const modal = Modal.confirm({
+        title: `确认${action || "操作"}`,
+        content: confirmText || `是否确认${action || "执行此操作"}？`,
+        cancelText: t("common.cancel"),
+        okText: t("common.confirm"),
+        onOk: async () => {
+            try {
+                await onOk();
+            } catch (error: any) {
+                modal.close();
+            }
+        },
+        closable: true,
+    });
 };

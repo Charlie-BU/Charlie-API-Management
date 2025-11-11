@@ -36,6 +36,7 @@ export const GetMyNewestServices = async (
     );
 };
 
+// 获取所有服务（包含已删除服务）
 export const GetAllServices = async (
     page_size?: number,
     current_page?: number
@@ -46,6 +47,8 @@ export const GetAllServices = async (
     });
 };
 
+
+// 通过 owner_id 获取所有最新版本服务
 export const GetHisNewestServicesByOwnerId = async (
     owner_id: number,
     page_size?: number,

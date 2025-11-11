@@ -1,17 +1,20 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import {
+    DeleteServiceById,
     GetAllDeletedServicesByUserId,
     GetAllServices,
     GetHisNewestServicesByOwnerId,
     GetMyNewestServices,
+    RestoreServiceById,
 } from "@/services/service";
 import type {
     DeletedServiceItem,
     Pagination,
     ServiceItem,
 } from "@/services/service/types";
+import { Message } from "@cloud-materials/common";
 
 // 服务列表hook
 export const useService = () => {
@@ -20,10 +23,14 @@ export const useService = () => {
     const [serviceList, setServiceList] = useState<
         ServiceItem[] | DeletedServiceItem[]
     >([]);
-
     const [loading, setLoading] = useState(false);
+    // 记录最近一次触发的获取服务操作，用于在删除或还原服务后刷新列表
+    const refetchRef = useRef<(() => Promise<number>) | null>(null);
 
     const fetchMyNewestServices = async (pagination: Pagination) => {
+        // 记录最近一次触发的获取服务操作，用于在删除或还原服务后刷新列表
+        refetchRef.current = () => fetchMyNewestServices(pagination);
+
         setLoading(true);
         const res = await GetMyNewestServices(
             pagination.page_size,
@@ -45,6 +52,10 @@ export const useService = () => {
         ownerId: number,
         pagination: Pagination
     ) => {
+        // 记录最近一次触发的获取服务操作，用于在删除或还原服务后刷新列表
+        refetchRef.current = () =>
+            fetchHisNewestServicesByOwnerId(ownerId, pagination);
+
         setLoading(true);
         const res = await GetHisNewestServicesByOwnerId(
             ownerId,
@@ -62,6 +73,9 @@ export const useService = () => {
     };
 
     const fetchMyDeletedServices = async (pagination: Pagination) => {
+        // 记录最近一次触发的获取服务操作，用于在删除或还原服务后刷新列表
+        refetchRef.current = () => fetchMyDeletedServices(pagination);
+
         setLoading(true);
         const res = await GetAllDeletedServicesByUserId(
             pagination.page_size,
@@ -78,6 +92,9 @@ export const useService = () => {
     };
 
     const fetchAllServices = async (pagination: Pagination) => {
+        // 记录最近一次触发的获取服务操作，用于在删除或还原服务后刷新列表
+        refetchRef.current = () => fetchAllServices(pagination);
+
         setLoading(true);
         const res = await GetAllServices(
             pagination.page_size,
@@ -98,6 +115,38 @@ export const useService = () => {
         navigate(`/service/${service_uuid}`);
     };
 
+    const handleDeleteService = async (id: number) => {
+        setLoading(true);
+        const res = await DeleteServiceById({ id });
+        if (res.status !== 200) {
+            setLoading(false);
+            throw new Error(res.message || "删除服务失败");
+        }
+        // 刷新服务列表
+        try {
+            await refetchRef.current?.();
+        } catch (error: any) {
+            Message.warning(error.message || "获取服务失败");
+        }
+        setLoading(false);
+    };
+
+    const handleRestoreService = async (id: number) => {
+        setLoading(true);
+        const res = await RestoreServiceById({ id });
+        if (res.status !== 200) {
+            setLoading(false);
+            throw new Error(res.message || "还原服务失败");
+        }
+        // 刷新服务列表
+        try {
+            await refetchRef.current?.();
+        } catch (error: any) {
+            Message.warning(error.message || "获取服务失败");
+        }
+        setLoading(false);
+    };
+
     return {
         serviceList,
         loading,
@@ -106,6 +155,8 @@ export const useService = () => {
         fetchMyDeletedServices,
         fetchAllServices,
         handleViewService,
+        handleDeleteService,
+        handleRestoreService,
     };
 };
 

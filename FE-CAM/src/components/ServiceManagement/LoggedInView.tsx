@@ -34,6 +34,8 @@ const LoggedInView: React.FC<{
         fetchMyDeletedServices,
         fetchHisNewestServicesByOwnerId,
         fetchAllServices,
+        handleDeleteService,
+        handleRestoreService,
     } = useService();
     const [pagination, setPagination] = useState({
         page_size: 10,
@@ -197,6 +199,8 @@ const LoggedInView: React.FC<{
                 range={serviceRange}
                 pagination={pagination}
                 handlePageChange={handlePageChange}
+                handleDeleteService={handleDeleteService}
+                handleRestoreService={handleRestoreService}
                 loading={loading}
                 user={user}
             />

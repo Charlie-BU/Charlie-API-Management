@@ -3,7 +3,7 @@ import type {
     ServiceItem,
     ServiceRange,
 } from "@/services/service/types";
-import { formatDateOrDateTime } from "@/utils";
+import { formatDateOrDateTime, handleConfirm } from "@/utils";
 import {
     Avatar,
     Table,
@@ -27,9 +27,19 @@ const ServiceList: React.FC<{
     loading: boolean;
     user: UserProfile | null;
     handlePageChange: (pageSize: number, currentPage?: number) => void;
+    handleDeleteService: (id: number) => Promise<void>;
+    handleRestoreService: (id: number) => Promise<void>;
 }> = (props) => {
-    const { serviceList, range, pagination, loading, user, handlePageChange } =
-        props;
+    const {
+        serviceList,
+        range,
+        pagination,
+        loading,
+        user,
+        handlePageChange,
+        handleDeleteService,
+        handleRestoreService,
+    } = props;
 
     const { t } = useTranslation();
 
@@ -134,7 +144,9 @@ const ServiceList: React.FC<{
                 key: "deleted_at",
                 align: "center" as const,
                 render: (deleted_at: string) => (
-                    <Text>{formatDateOrDateTime(deleted_at, "minute")}</Text>
+                    <Text>
+                        {formatDateOrDateTime(deleted_at, "minute") || "-"}
+                    </Text>
                 ),
             }
         );
@@ -147,15 +159,25 @@ const ServiceList: React.FC<{
         align: "center" as const,
 
         render: (_: any, item: ServiceItem) => (
-            <div className={styles["custom-action-btn"]} style={{ display: "flex" }}>
+            <div
+                className={styles["custom-action-btn"]}
+                style={{ display: "flex" }}
+            >
                 <Button type="text" size="small">
                     查看
                 </Button>
-                {(!item.is_deleted ? (
+                {!item.is_deleted ? (
                     <Button
                         type="text"
                         status="danger"
                         size="small"
+                        onClick={() =>
+                            handleConfirm(
+                                () => handleDeleteService(item.id),
+                                "删除",
+                                "确认删除当前服务？"
+                            )
+                        }
                     >
                         删除
                     </Button>
@@ -164,10 +186,17 @@ const ServiceList: React.FC<{
                         type="text"
                         status="success"
                         size="small"
+                        onClick={() =>
+                            handleConfirm(
+                                () => handleRestoreService(item.id),
+                                "恢复",
+                                "确认恢复当前服务？"
+                            )
+                        }
                     >
                         恢复
                     </Button>
-                ))}
+                )}
             </div>
         ),
     });
