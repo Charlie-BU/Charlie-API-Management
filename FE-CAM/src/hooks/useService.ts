@@ -125,8 +125,9 @@ export const useService = () => {
         // 刷新服务列表
         try {
             await refetchRef.current?.();
-        } catch (error: any) {
-            Message.warning(error.message || "获取服务失败");
+        } catch (err) {
+            const msg = err instanceof Error ? err.message : String(err);
+            Message.warning(msg || "获取服务失败");
         }
         setLoading(false);
     };
@@ -141,8 +142,9 @@ export const useService = () => {
         // 刷新服务列表
         try {
             await refetchRef.current?.();
-        } catch (error: any) {
-            Message.warning(error.message || "获取服务失败");
+        } catch (err) {
+            const msg = err instanceof Error ? err.message : String(err);
+            Message.warning(msg || "获取服务失败");
         }
         setLoading(false);
     };
