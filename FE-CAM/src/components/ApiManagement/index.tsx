@@ -11,6 +11,8 @@ import {
     Divider,
     Avatar,
     Breadcrumb,
+    Select,
+    Message,
 } from "@cloud-materials/common";
 import styles from "./index.module.less";
 
@@ -165,22 +167,33 @@ const ApiManagement: React.FC = () => {
         <>
             {/* 服务header */}
             <div className={styles.serviceHeader}>
-                <Breadcrumb>
-                    <Breadcrumb.Item href="/">服务列表</Breadcrumb.Item>
-                    <Breadcrumb.Item>服务详情</Breadcrumb.Item>
-                </Breadcrumb>
-                <div className={styles.serviceTitleRow}>
-                    <Text className={styles.serviceName}>
-                        api.virtual.ai4s_backend
-                    </Text>
+                <div>
+                    <Breadcrumb>
+                        <Breadcrumb.Item href="/">服务列表</Breadcrumb.Item>
+                        <Breadcrumb.Item>服务详情</Breadcrumb.Item>
+                    </Breadcrumb>
+                </div>
+                <Space size={0} split={<Divider type="vertical" />}>
+                    <Select
+                        bordered={false}
+                        defaultValue={"api.virtual.ai4s_backend"}
+                        onChange={(value) =>
+                            console.log(value)
+                        }
+                        style={{
+                            color: "#000",
+                            fontWeight: 600,
+                        }}
+                    >
+                        <Select.Option key={"option"} value={"option"}>
+                            test
+                        </Select.Option>
+                    </Select>
                     <Text className={styles.serviceVersion}>1.0.30</Text>
-                    <Tag size="small" color="gray">
-                        master
-                    </Tag>
                     <Tag size="small" color="green">
                         最新版本
                     </Tag>
-                </div>
+                </Space>
             </div>
             <div className={styles.apiPage}>
                 {/* 左侧 API 列表 */}

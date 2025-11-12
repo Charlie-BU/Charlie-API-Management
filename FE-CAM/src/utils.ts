@@ -1,4 +1,4 @@
-import { Modal, Space } from "@cloud-materials/common";
+import { Modal } from "@cloud-materials/common";
 import { t } from "i18next";
 
 const pad = (n: number, length = 2) => String(n).padStart(length, "0");
