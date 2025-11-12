@@ -257,7 +257,7 @@ def serviceCreateNewService(
     service = Service(
         service_uuid=service_uuid,
         owner_id=owner_id,
-        version="1.0.0",
+        version="0.0.1",
         description=description,
     )
     db.add(service)

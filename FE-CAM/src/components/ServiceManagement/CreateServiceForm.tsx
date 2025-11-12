@@ -21,6 +21,10 @@ const CreateServiceForm: React.FC<{ owner?: UserProfile }> = ({ owner }) => {
                         required: true,
                         message: t("service.serviceUUIDRequired"),
                     },
+                    {
+                        match: /^[a-zA-Z0-9-]+\/[a-zA-Z0-9-]+\/[a-zA-Z0-9-]+$/,
+                        message: t("service.serviceUUIDInvalid"),
+                    }
                 ]}
             >
                 <Input

@@ -68,6 +68,7 @@
     "submit": "Submit",
     "serviceUUIDPlaceholder": "Enter Service UUID, must be in a/b/c format",
     "serviceUUIDRequired": "Please enter service UUID",
+    "serviceUUIDInvalid": "Service UUID must be in a/b/c format",
     "initVersion": "Initial Version",
     "ownerName": "Owner",
     "description": "Description",

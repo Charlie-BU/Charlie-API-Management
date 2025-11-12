@@ -69,6 +69,7 @@
     "submit": "提交",
     "serviceUUIDPlaceholder": "请输入服务UUID，须为 a/b/c 格式",
     "serviceUUIDRequired": "请输入服务UUID",
+    "serviceUUIDInvalid": "服务UUID格式必须为 a/b/c",
     "initVersion": "初始版本",
     "ownerName": "负责人",
     "description": "描述",

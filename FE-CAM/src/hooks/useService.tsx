@@ -4,6 +4,7 @@ import { CModal, Message } from "@cloud-materials/common";
 import { t } from "i18next";
 
 import {
+    CreateNewService,
     DeleteServiceById,
     GetAllDeletedServicesByUserId,
     GetAllServices,
@@ -12,6 +13,7 @@ import {
     RestoreServiceById,
 } from "@/services/service";
 import type {
+    CreateNewServiceRequest,
     DeletedServiceItem,
     Pagination,
     ServiceItem,
@@ -113,6 +115,14 @@ export const useService = () => {
         return res.total || 0;
     };
 
+    const createNewService = async (formData: CreateNewServiceRequest) => {
+        const res = await CreateNewService(formData);
+        if (res.status !== 200) {
+            throw new Error(res.message || "创建服务失败");
+        }
+        return res;
+    };
+
     // todo
     const handleViewService = (service_uuid: string) => {
         navigate(`/service/${service_uuid}`);
@@ -161,25 +171,24 @@ export const useService = () => {
             cancelText: t("common.cancel"),
             okText: t("service.submit"),
             onOk: async (values, form) => {
-                // try {
-                //     await form.validate();
-                //     const res = await get().modifyPassword({
-                //         old_password: values.old_password,
-                //         new_password: values.new_password,
-                //         confirm_new_password: values.confirm_new_password,
-                //     });
-                //     Message.success(res.message || t("modifyPassword.success"));
-                //     // 显式关闭弹窗，避免依赖隐式行为
-                //     modal.close();
-                // } catch (err: unknown) {
-                //     const msg =
-                //         err instanceof Error
-                //             ? err.message
-                //             : t("modifyPassword.failure");
-                //     Message.error(msg);
-                //     // 抛出错误以阻止弹窗自动关闭（库内有相关处理）
-                //     throw err;
-                // }
+                try {
+                    await form.validate();
+                    const res = await createNewService({
+                        service_uuid: values.service_uuid,
+                        description: values.description,
+                    });
+                    Message.success(res.message || t("service.success"));
+                    // 显式关闭弹窗，避免依赖隐式行为
+                    modal.close();
+                } catch (err: unknown) {
+                    const msg =
+                        err instanceof Error
+                            ? err.message
+                            : t("service.failure");
+                    Message.error(msg);
+                    // 抛出错误以阻止弹窗自动关闭（库内有相关处理）
+                    throw err;
+                }
             },
         });
     };
@@ -191,6 +200,7 @@ export const useService = () => {
         fetchHisNewestServicesByOwnerId,
         fetchMyDeletedServices,
         fetchAllServices,
+        createNewService,
         handleViewService,
         handleDeleteService,
         handleRestoreService,

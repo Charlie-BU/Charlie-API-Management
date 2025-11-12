@@ -141,7 +141,7 @@ CAM 采用基于 **ServiceIteration（服务迭代）** 的版本控制机制：
 #### 3.4 版本号命名规则
 
 -   语义化版本：`X.Y.Z`（主版本.次版本.修订版本）
--   所有服务初始版本为 `1.0.0`
+-   所有服务初始版本为 `0.0.1`
 -   支持版本历史查询和版本间差异对比
 
 ---
@@ -464,7 +464,7 @@ API权限验证：
 1. 团队负责人注册并创建服务
    POST /register → POST /login → POST /service/create
 
-2. 开始用户服务v1.0.0开发
+2. 开始用户服务v0.0.1开发
    POST /service/{service_id}/startIteration
 
 3. 创建用户相关API
@@ -479,7 +479,7 @@ API权限验证：
 5. 完成开发并提交
    POST /service/{service_id}/commitIteration
 
-6. 服务版本更新为v1.0.0，API正式生效
+6. 服务版本更新为v0.0.1，API正式生效
 ```
 
 ---
