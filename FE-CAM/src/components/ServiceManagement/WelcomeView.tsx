@@ -31,11 +31,6 @@ const WelcomeLoggedIn: React.FC<{
                     </Text>
                 </div>
             </Space>
-            <div className={styles.actions}>
-                <Space>
-                    <Button type="primary">{t("common.create")}</Button>
-                </Space>
-            </div>
         </div>
     );
 };

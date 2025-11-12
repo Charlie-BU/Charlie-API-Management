@@ -1,5 +1,7 @@
 import { useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { CModal, Message } from "@cloud-materials/common";
+import { t } from "i18next";
 
 import {
     DeleteServiceById,
@@ -14,7 +16,7 @@ import type {
     Pagination,
     ServiceItem,
 } from "@/services/service/types";
-import { Message } from "@cloud-materials/common";
+import CreateServiceForm from "@/components/ServiceManagement/CreateServiceForm";
 
 // 服务列表hook
 export const useService = () => {
@@ -122,6 +124,7 @@ export const useService = () => {
             setLoading(false);
             throw new Error(res.message || "删除服务失败");
         }
+        Message.success("删除服务成功");
         // 刷新服务列表
         try {
             await refetchRef.current?.();
@@ -139,6 +142,7 @@ export const useService = () => {
             setLoading(false);
             throw new Error(res.message || "还原服务失败");
         }
+        Message.success("还原服务成功");
         // 刷新服务列表
         try {
             await refetchRef.current?.();
@@ -147,6 +151,36 @@ export const useService = () => {
             Message.warning(msg || "获取服务失败");
         }
         setLoading(false);
+    };
+
+    const handleCreateService = () => {
+        const modal = CModal.openArcoForm({
+            title: t("service.create"),
+            content: <CreateServiceForm />,
+            cancelText: t("common.cancel"),
+            okText: t("service.submit"),
+            onOk: async (values, form) => {
+                // try {
+                //     await form.validate();
+                //     const res = await get().modifyPassword({
+                //         old_password: values.old_password,
+                //         new_password: values.new_password,
+                //         confirm_new_password: values.confirm_new_password,
+                //     });
+                //     Message.success(res.message || t("modifyPassword.success"));
+                //     // 显式关闭弹窗，避免依赖隐式行为
+                //     modal.close();
+                // } catch (err: unknown) {
+                //     const msg =
+                //         err instanceof Error
+                //             ? err.message
+                //             : t("modifyPassword.failure");
+                //     Message.error(msg);
+                //     // 抛出错误以阻止弹窗自动关闭（库内有相关处理）
+                //     throw err;
+                // }
+            },
+        });
     };
 
     return {
@@ -159,6 +193,7 @@ export const useService = () => {
         handleViewService,
         handleDeleteService,
         handleRestoreService,
+        handleCreateService,
     };
 };
 

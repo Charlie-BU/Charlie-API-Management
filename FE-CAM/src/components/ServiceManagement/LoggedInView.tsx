@@ -6,6 +6,8 @@ import {
     Divider,
     Tabs,
     Typography,
+    Button,
+    Space,
 } from "@cloud-materials/common";
 
 import styles from "./index.module.less";
@@ -36,12 +38,73 @@ const LoggedInView: React.FC<{
         fetchAllServices,
         handleDeleteService,
         handleRestoreService,
+        handleCreateService,
     } = useService();
     const [pagination, setPagination] = useState({
         page_size: 10,
         current_page: 1,
         total: 0,
     });
+
+    const handleTabChange = (key: ServiceRange) => {
+        if (key === "HisServices") {
+            const modal = CModal.openArcoForm({
+                title: "查看他人服务",
+                content: (
+                    <>
+                        <UserSelect
+                            getUserByUsernameOrNicknameOrEmail={
+                                getUserByUsernameOrNicknameOrEmail
+                            }
+                            onSelectId={(id) => {
+                                hisIdRef.current = id;
+                            }}
+                        />
+                    </>
+                ),
+                cancelText: t("common.cancel"),
+                okText: t("common.confirm"),
+                onOk: async () => {
+                    try {
+                        const selectedId = hisIdRef.current;
+                        if (selectedId <= 0) {
+                            throw new Error("未选择用户");
+                        }
+                        setServiceRange("HisServices");
+                        setPagination({
+                            ...pagination,
+                            current_page: 1,
+                        });
+                        // 显式关闭弹窗，避免依赖隐式行为
+                        modal.close();
+                    } catch (err: unknown) {
+                        const msg =
+                            err instanceof Error
+                                ? err.message
+                                : t("common.failure");
+                        Message.warning(msg);
+                        // 抛出错误以阻止弹窗自动关闭（库内有相关处理）
+                        throw err;
+                    }
+                },
+                onCancel: () => {
+                    hisIdRef.current = -1;
+                    modal.close();
+                    setServiceRange(key);
+                    setPagination({
+                        ...pagination,
+                        current_page: 1,
+                    });
+                },
+            });
+        } else {
+            setServiceRange(key);
+            setPagination({
+                ...pagination,
+                current_page: 1,
+            });
+        }
+    };
 
     const handlePageChange = (pageSize: number, currentPage?: number) => {
         setPagination((prev) => ({
@@ -109,73 +172,25 @@ const LoggedInView: React.FC<{
         }
     }, [serviceRange, pagination.page_size, pagination.current_page]);
 
-    const handleTabChange = (key: ServiceRange) => {
-        if (key === "HisServices") {
-            const modal = CModal.openArcoForm({
-                title: "查看他人服务",
-                content: (
-                    <>
-                        <UserSelect
-                            getUserByUsernameOrNicknameOrEmail={
-                                getUserByUsernameOrNicknameOrEmail
-                            }
-                            onSelectId={(id) => {
-                                hisIdRef.current = id;
-                            }}
-                        />
-                    </>
-                ),
-                cancelText: t("common.cancel"),
-                okText: t("common.confirm"),
-                onOk: async () => {
-                    try {
-                        const selectedId = hisIdRef.current;
-                        if (selectedId <= 0) {
-                            throw new Error("未选择用户");
-                        }
-                        setServiceRange("HisServices");
-                        setPagination({
-                            ...pagination,
-                            current_page: 1,
-                        });
-                        // 显式关闭弹窗，避免依赖隐式行为
-                        modal.close();
-                    } catch (err: unknown) {
-                        const msg =
-                            err instanceof Error
-                                ? err.message
-                                : t("common.failure");
-                        Message.warning(msg);
-                        // 抛出错误以阻止弹窗自动关闭（库内有相关处理）
-                        throw err;
-                    }
-                },
-                onCancel: () => {
-                    hisIdRef.current = -1;
-                    modal.close();
-                    setServiceRange(key);
-                    setPagination({
-                        ...pagination,
-                        current_page: 1,
-                    });
-                },
-            });
-        } else {
-            setServiceRange(key);
-            setPagination({
-                ...pagination,
-                current_page: 1,
-            });
-        }
-    };
-
     return (
         <div className={styles.home}>
             <WelcomeLoggedIn user={user} />
             <Divider />
-            <Title heading={5} style={{ marginBottom: 12 }}>
-                {t("service.list")}
-            </Title>
+            <div
+                style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    marginBottom: 12,
+                }}
+            >
+                <Title heading={5} style={{ margin: 0 }}>
+                    {t("service.list")}
+                </Title>
+                <Button type="primary" onClick={handleCreateService}>
+                    {t("service.create")}
+                </Button>
+            </div>
 
             <Tabs
                 activeTab={serviceRange}

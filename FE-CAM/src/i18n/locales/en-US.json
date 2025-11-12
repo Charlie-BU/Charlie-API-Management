@@ -63,7 +63,16 @@
     "empty": "No services yet. Create or import.",
     "created_at": "Created At",
     "deleted_at": "Deleted At",
-    "is_deleted": "Is Deleted"
+    "is_deleted": "Is Deleted",
+    "create": "Create Service",
+    "submit": "Submit",
+    "serviceUUIDPlaceholder": "Enter Service UUID",
+    "serviceUUIDRequired": "Please enter service UUID",
+    "initVersion": "Initial Version",
+    "ownerName": "Owner",
+    "description": "Description",
+    "descriptionRequired": "Please enter description",
+    "descriptionPlaceholder": "Enter description"
   },
   "job": {
     "title": "Job Management",

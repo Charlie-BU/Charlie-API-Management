@@ -12,7 +12,6 @@ import {
     Avatar,
     Breadcrumb,
     Select,
-    Message,
 } from "@cloud-materials/common";
 import styles from "./index.module.less";
 
@@ -31,7 +30,6 @@ const apiTreeData = [
                     <Space size={8} align="center">
                         <Tag color="green">POST</Tag>
                         <Text>/v1/user/login</Text>
-                        <Tag color="gray">login</Tag>
                     </Space>
                 ),
             },
@@ -41,7 +39,6 @@ const apiTreeData = [
                     <Space size={8} align="center">
                         <Tag color="green">POST</Tag>
                         <Text>/v1/user/register</Text>
-                        <Tag color="gray">register</Tag>
                     </Space>
                 ),
             },
@@ -51,7 +48,6 @@ const apiTreeData = [
                     <Space size={8} align="center">
                         <Tag color="blue">GET</Tag>
                         <Text>/v1/user/getUserById</Text>
-                        <Tag color="gray">getUserById</Tag>
                     </Space>
                 ),
             },
@@ -163,6 +159,23 @@ const ApiManagement: React.FC = () => {
         }
     }, [activeKey]);
 
+    const mockOptions = [{
+        version: "1.0.30",
+        isNewest: true,
+    }, {
+        version: "1.0.29",
+        isNewest: false,
+    }, {
+        version: "1.0.28",
+        isNewest: false,
+    }, {
+        version: "1.0.27",
+        isNewest: false,
+    }, {
+        version: "1.0.0",
+        isNewest: false,
+    }]
+
     return (
         <>
             {/* 服务header */}
@@ -174,25 +187,43 @@ const ApiManagement: React.FC = () => {
                     </Breadcrumb>
                 </div>
                 <Space size={0} split={<Divider type="vertical" />}>
+                    <Text bold style={{ fontSize: 16 }}>
+                        api.virtual.ai4s_backend
+                    </Text>
                     <Select
                         bordered={false}
-                        defaultValue={"api.virtual.ai4s_backend"}
-                        onChange={(value) =>
-                            console.log(value)
-                        }
+                        size="large"
+                        defaultValue={mockOptions[0].version}
+                        onChange={(value) => console.log(value)}
+                        triggerProps={{
+                            autoAlignPopupWidth: false,
+                            autoAlignPopupMinWidth: true,
+                            position: "bl"
+                        }}
                         style={{
                             color: "#000",
                             fontWeight: 600,
                         }}
                     >
-                        <Select.Option key={"option"} value={"option"}>
-                            test
-                        </Select.Option>
+                        {mockOptions.map((item) => (
+                            <Select.Option key={item.version} value={item.version}>
+                                <Space>
+                                    <Text className={styles.serviceVersion}>
+                                        {item.version}
+                                    </Text>
+                                    {item.isNewest ? (
+                                        <Tag size="small" color="green">
+                                            最新版本
+                                        </Tag>
+                                    ) : (
+                                        <Tag size="small" color="red">
+                                            非最新版本
+                                        </Tag>
+                                    )}
+                                </Space>
+                            </Select.Option>
+                        ))}
                     </Select>
-                    <Text className={styles.serviceVersion}>1.0.30</Text>
-                    <Tag size="small" color="green">
-                        最新版本
-                    </Tag>
                 </Space>
             </div>
             <div className={styles.apiPage}>

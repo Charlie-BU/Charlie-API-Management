@@ -282,11 +282,6 @@ def serviceGetAllDeletedServicesByUserId(
         .offset((current_page - 1) * page_size)
         .all()
     )
-    if not services:
-        return {
-            "status": -1,
-            "message": "No deleted services found",
-        }
     total = (
         db.query(Service)
         .filter(Service.is_deleted, Service.owner_id == user_id)
