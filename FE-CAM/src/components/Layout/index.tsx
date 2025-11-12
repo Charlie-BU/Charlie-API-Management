@@ -14,7 +14,7 @@ const Layout: React.FC = () => {
     const { user, logout, openLoginModal, openModifyPasswordModal } = useUser();
     return (
         <ArcoLayout className={styles.layout}>
-            <ArcoHeader>
+            <ArcoHeader style={{ position: "sticky", top: 0, zIndex: 1000 }}>
                 <Header
                     user={user}
                     logout={logout}
