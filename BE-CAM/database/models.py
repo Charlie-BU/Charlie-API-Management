@@ -49,8 +49,15 @@ class SerializableMixin:
         data = {}
         for column in mapper.columns:
             name = column.key
-            if include and name not in include:
-                continue
+            if include:
+                if name not in include:
+                    continue
+                # 若有 include，则要检查关系是否在 include 中
+                for rel in mapper.relationships:
+                    if rel.key in include:
+                        value = getattr(self, rel.key)
+                        data[rel.key] = value.toJson() if value else None
+                        continue
             if name in exclude:
                 continue
             value = getattr(self, name)

@@ -63,7 +63,17 @@
     "empty": "No services yet. Create or import.",
     "created_at": "Created At",
     "deleted_at": "Deleted At",
-    "is_deleted": "Is Deleted"
+    "is_deleted": "Is Deleted",
+    "create": "Create Service",
+    "submit": "Submit",
+    "serviceUUIDPlaceholder": "Enter Service UUID, must be in a/b/c format",
+    "serviceUUIDRequired": "Please enter service UUID",
+    "serviceUUIDInvalid": "Service UUID must be in a/b/c format",
+    "initVersion": "Initial Version",
+    "ownerName": "Owner",
+    "description": "Description",
+    "descriptionRequired": "Please enter description",
+    "descriptionPlaceholder": "Enter description"
   },
   "job": {
     "title": "Job Management",

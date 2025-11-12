@@ -2,7 +2,16 @@
 
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
+import { Message, CModal } from "@cloud-materials/common";
+import { t } from "i18next";
 
+import {
+    GetMyInfo,
+    GetUserByUsernameOrNicknameOrEmail,
+    UserLogin,
+    UserModifyPassword,
+    UserRegister,
+} from "@/services/user";
 import type {
     LoginRequest,
     LoginResponse,
@@ -12,18 +21,9 @@ import type {
     RegisterResponse,
     UserProfile,
 } from "@/services/user/types";
-import {
-    GetMyInfo,
-    GetUserByUsernameOrNicknameOrEmail,
-    UserLogin,
-    UserModifyPassword,
-    UserRegister,
-} from "@/services/user";
 import LoginForm from "@/components/User/LoginForm";
 import ModifyPasswordForm from "@/components/User/ModifyPasswordForm";
 import RegisterForm from "@/components/User/RegisterForm";
-import { Message, CModal } from "@cloud-materials/common";
-import { t } from "i18next";
 
 const TOKEN_KEY = "cam_access_token";
 const USER_STORE_KEY = "user-store";

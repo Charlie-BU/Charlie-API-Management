@@ -11,6 +11,7 @@ import {
     Divider,
     Avatar,
     Breadcrumb,
+    Select,
 } from "@cloud-materials/common";
 import styles from "./index.module.less";
 
@@ -29,7 +30,6 @@ const apiTreeData = [
                     <Space size={8} align="center">
                         <Tag color="green">POST</Tag>
                         <Text>/v1/user/login</Text>
-                        <Tag color="gray">login</Tag>
                     </Space>
                 ),
             },
@@ -39,7 +39,6 @@ const apiTreeData = [
                     <Space size={8} align="center">
                         <Tag color="green">POST</Tag>
                         <Text>/v1/user/register</Text>
-                        <Tag color="gray">register</Tag>
                     </Space>
                 ),
             },
@@ -49,7 +48,6 @@ const apiTreeData = [
                     <Space size={8} align="center">
                         <Tag color="blue">GET</Tag>
                         <Text>/v1/user/getUserById</Text>
-                        <Tag color="gray">getUserById</Tag>
                     </Space>
                 ),
             },
@@ -161,26 +159,72 @@ const ApiManagement: React.FC = () => {
         }
     }, [activeKey]);
 
+    const mockOptions = [{
+        version: "1.0.30",
+        isNewest: true,
+    }, {
+        version: "1.0.29",
+        isNewest: false,
+    }, {
+        version: "1.0.28",
+        isNewest: false,
+    }, {
+        version: "1.0.27",
+        isNewest: false,
+    }, {
+        version: "1.0.0",
+        isNewest: false,
+    }]
+
     return (
         <>
             {/* 服务header */}
             <div className={styles.serviceHeader}>
-                <Breadcrumb>
-                    <Breadcrumb.Item href="/">服务列表</Breadcrumb.Item>
-                    <Breadcrumb.Item>服务详情</Breadcrumb.Item>
-                </Breadcrumb>
-                <div className={styles.serviceTitleRow}>
-                    <Text className={styles.serviceName}>
+                <div>
+                    <Breadcrumb>
+                        <Breadcrumb.Item href="/">服务列表</Breadcrumb.Item>
+                        <Breadcrumb.Item>服务详情</Breadcrumb.Item>
+                    </Breadcrumb>
+                </div>
+                <Space size={0} split={<Divider type="vertical" />}>
+                    <Text bold style={{ fontSize: 16 }}>
                         api.virtual.ai4s_backend
                     </Text>
-                    <Text className={styles.serviceVersion}>1.0.30</Text>
-                    <Tag size="small" color="gray">
-                        master
-                    </Tag>
-                    <Tag size="small" color="green">
-                        最新版本
-                    </Tag>
-                </div>
+                    <Select
+                        bordered={false}
+                        size="large"
+                        defaultValue={mockOptions[0].version}
+                        onChange={(value) => console.log(value)}
+                        triggerProps={{
+                            autoAlignPopupWidth: false,
+                            autoAlignPopupMinWidth: true,
+                            position: "bl"
+                        }}
+                        style={{
+                            color: "#000",
+                            fontWeight: 600,
+                        }}
+                    >
+                        {mockOptions.map((item) => (
+                            <Select.Option key={item.version} value={item.version}>
+                                <Space>
+                                    <Text className={styles.serviceVersion}>
+                                        {item.version}
+                                    </Text>
+                                    {item.isNewest ? (
+                                        <Tag size="small" color="green">
+                                            最新版本
+                                        </Tag>
+                                    ) : (
+                                        <Tag size="small" color="red">
+                                            非最新版本
+                                        </Tag>
+                                    )}
+                                </Space>
+                            </Select.Option>
+                        ))}
+                    </Select>
+                </Space>
             </div>
             <div className={styles.apiPage}>
                 {/* 左侧 API 列表 */}

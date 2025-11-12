@@ -64,7 +64,17 @@
     "empty": "暂无服务，请创建或导入。",
     "created_at": "创建时间",
     "deleted_at": "删除时间",
-    "is_deleted": "是否已删除"
+    "is_deleted": "是否已删除",
+    "create": "创建服务",
+    "submit": "提交",
+    "serviceUUIDPlaceholder": "请输入服务UUID，须为 a/b/c 格式",
+    "serviceUUIDRequired": "请输入服务UUID",
+    "serviceUUIDInvalid": "服务UUID格式必须为 a/b/c",
+    "initVersion": "初始版本",
+    "ownerName": "负责人",
+    "description": "描述",
+    "descriptionRequired": "请输入描述",
+    "descriptionPlaceholder": "请输入描述"
   },
   "job": {
     "title": "任务管理",

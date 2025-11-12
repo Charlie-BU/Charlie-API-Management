@@ -45,6 +45,7 @@ def serviceGetAllServices(
                     "version",
                     "description",
                     "owner_id",
+                    "owner",
                     "created_at",
                     "is_deleted",
                     "deleted_at",
@@ -102,10 +103,9 @@ def serviceGetHisNewestServicesByOwnerId(
         .filter(~Service.is_deleted, Service.owner_id == owner_id)
         .count()
     )
-    return {
-        "status": 200,
-        "message": "Get services success",
-        "services": [
+    # 查询自己的服务想：无需包含owner
+    if owner_id == my_id:
+        services = [
             service.toJson(
                 include=[
                     "id",
@@ -114,10 +114,31 @@ def serviceGetHisNewestServicesByOwnerId(
                     "description",
                     "owner_id",
                     "created_at",
+                    "is_deleted",
                 ]
             )
             for service in services
-        ],
+        ]
+    else:
+        services = [
+            service.toJson(
+                include=[
+                    "id",
+                    "service_uuid",
+                    "version",
+                    "description",
+                    "owner_id",
+                    "owner",
+                    "created_at",
+                    "is_deleted",
+                ]
+            )
+            for service in services
+        ]
+    return {
+        "status": 200,
+        "message": "Get services success",
+        "services": services,
         "total": total,
     }
 
@@ -236,7 +257,7 @@ def serviceCreateNewService(
     service = Service(
         service_uuid=service_uuid,
         owner_id=owner_id,
-        version="1.0.0",
+        version="0.0.1",
         description=description,
     )
     db.add(service)
@@ -261,11 +282,6 @@ def serviceGetAllDeletedServicesByUserId(
         .offset((current_page - 1) * page_size)
         .all()
     )
-    if not services:
-        return {
-            "status": -1,
-            "message": "No deleted services found",
-        }
     total = (
         db.query(Service)
         .filter(Service.is_deleted, Service.owner_id == user_id)
@@ -283,6 +299,7 @@ def serviceGetAllDeletedServicesByUserId(
                     "version",
                     "owner_id",
                     "created_at",
+                    "is_deleted",
                     "deleted_at",
                 ]
             )

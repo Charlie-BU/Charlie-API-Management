@@ -3,14 +3,17 @@ import { useTranslation } from "react-i18next";
 import { Form, Input } from "@cloud-materials/common";
 
 const LoginForm: React.FC = () => {
-    const { t } = useTranslation();
+    const { i18n, t } = useTranslation();
+    const currentLanguage = i18n.resolvedLanguage;
 
     return (
         <>
             <Form.Item
                 label={t("login.username")}
-                labelCol={{ span: 7 }}
-                wrapperCol={{ span: 17 }}
+                labelCol={currentLanguage === "en-US" ? { span: 7 } : undefined}
+                wrapperCol={
+                    currentLanguage === "en-US" ? { span: 17 } : undefined
+                }
                 field="username"
                 rules={[
                     {
@@ -26,8 +29,10 @@ const LoginForm: React.FC = () => {
             </Form.Item>
             <Form.Item
                 label={t("login.password")}
-                labelCol={{ span: 7 }}
-                wrapperCol={{ span: 17 }}
+                labelCol={currentLanguage === "en-US" ? { span: 7 } : undefined}
+                wrapperCol={
+                    currentLanguage === "en-US" ? { span: 17 } : undefined
+                }
                 field="password"
                 rules={[
                     {
