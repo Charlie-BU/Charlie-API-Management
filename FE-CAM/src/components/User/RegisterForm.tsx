@@ -3,14 +3,15 @@ import { useTranslation } from "react-i18next";
 import { Form, Input, Select } from "@cloud-materials/common";
 
 const RegisterForm: React.FC = () => {
-    const { t } = useTranslation();
+    const { i18n, t } = useTranslation();
+    const currentLanguage = i18n.resolvedLanguage;
 
     return (
         <>
             <Form.Item
                 label={t("register.username")}
-                labelCol={{ span: 7 }}
-                wrapperCol={{ span: 17 }}
+                labelCol={currentLanguage === "en-US" ? { span: 7 } : undefined}
+                wrapperCol={currentLanguage === "en-US" ? { span: 17 } : undefined}
                 field="username"
                 rules={[
                     { required: true, message: t("register.usernameRequired") },
@@ -23,8 +24,8 @@ const RegisterForm: React.FC = () => {
             </Form.Item>
             <Form.Item
                 label={t("register.nickname")}
-                labelCol={{ span: 7 }}
-                wrapperCol={{ span: 17 }}
+                labelCol={currentLanguage === "en-US" ? { span: 7 } : undefined}
+                wrapperCol={currentLanguage === "en-US" ? { span: 17 } : undefined}
                 field="nickname"
                 rules={[
                     { required: true, message: t("register.nicknameRequired") },
@@ -37,8 +38,8 @@ const RegisterForm: React.FC = () => {
             </Form.Item>
             <Form.Item
                 label={t("register.email")}
-                labelCol={{ span: 7 }}
-                wrapperCol={{ span: 17 }}   
+                labelCol={currentLanguage === "en-US" ? { span: 7 } : undefined}
+                wrapperCol={currentLanguage === "en-US" ? { span: 17 } : undefined}   
                 field="email"
                 rules={[
                     { required: true, message: t("register.emailRequired") },
@@ -51,8 +52,8 @@ const RegisterForm: React.FC = () => {
             </Form.Item>
             <Form.Item
                 label={t("register.role")}
-                labelCol={{ span: 7 }}
-                wrapperCol={{ span: 17 }}   
+                labelCol={currentLanguage === "en-US" ? { span: 7 } : undefined}
+                wrapperCol={currentLanguage === "en-US" ? { span: 17 } : undefined}   
                 field="role"
                 rules={[
                     { required: true, message: t("register.roleRequired") },
@@ -91,8 +92,8 @@ const RegisterForm: React.FC = () => {
             </Form.Item>
             <Form.Item
                 label={t("register.password")}
-                labelCol={{ span: 7 }}
-                wrapperCol={{ span: 17 }}   
+                labelCol={currentLanguage === "en-US" ? { span: 7 } : undefined}
+                wrapperCol={currentLanguage === "en-US" ? { span: 17 } : undefined}   
                 field="password"
                 rules={[
                     { required: true, message: t("register.passwordRequired") },
@@ -105,8 +106,8 @@ const RegisterForm: React.FC = () => {
             </Form.Item>
             <Form.Item
                 label={t("register.confirmPassword")}
-                labelCol={{ span: 7 }}
-                wrapperCol={{ span: 17 }}   
+                labelCol={currentLanguage === "en-US" ? { span: 7 } : undefined}
+                wrapperCol={currentLanguage === "en-US" ? { span: 17 } : undefined}   
                 field="confirmPassword"
                 rules={[
                     {

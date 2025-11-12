@@ -17,6 +17,7 @@ import type {
     ServiceItem,
 } from "@/services/service/types";
 import CreateServiceForm from "@/components/ServiceManagement/CreateServiceForm";
+import type { UserProfile } from "@/services/user/types";
 
 // 服务列表hook
 export const useService = () => {
@@ -153,10 +154,10 @@ export const useService = () => {
         setLoading(false);
     };
 
-    const handleCreateService = () => {
+    const handleCreateService = (owner?: UserProfile) => {
         const modal = CModal.openArcoForm({
             title: t("service.create"),
-            content: <CreateServiceForm />,
+            content: <CreateServiceForm owner={owner} />,
             cancelText: t("common.cancel"),
             okText: t("service.submit"),
             onOk: async (values, form) => {

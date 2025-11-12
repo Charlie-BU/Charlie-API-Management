@@ -187,7 +187,10 @@ const LoggedInView: React.FC<{
                 <Title heading={5} style={{ margin: 0 }}>
                     {t("service.list")}
                 </Title>
-                <Button type="primary" onClick={handleCreateService}>
+                <Button
+                    type="primary"
+                    onClick={() => handleCreateService(user)}
+                >
                     {t("service.create")}
                 </Button>
             </div>

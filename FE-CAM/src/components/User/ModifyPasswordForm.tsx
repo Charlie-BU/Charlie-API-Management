@@ -3,14 +3,15 @@ import { useTranslation } from "react-i18next";
 import { Form, Input } from "@cloud-materials/common";
 
 const ModifyPasswordForm: React.FC = () => {
-    const { t } = useTranslation();
+    const { i18n, t } = useTranslation();
+    const currentLanguage = i18n.resolvedLanguage;
 
     return (
         <>
             <Form.Item
                 label={t("modifyPassword.oldPassword")}
-                labelCol={{ span: 7 }}
-                wrapperCol={{ span: 17 }}
+                labelCol={currentLanguage === "en-US" ? { span: 7 } : undefined}
+                wrapperCol={currentLanguage === "en-US" ? { span: 17 } : undefined}
                 field="old_password"
                 rules={[
                     {
@@ -26,8 +27,8 @@ const ModifyPasswordForm: React.FC = () => {
             </Form.Item>
             <Form.Item
                 label={t("modifyPassword.newPassword")}
-                labelCol={{ span: 7 }}
-                wrapperCol={{ span: 17 }}
+                labelCol={currentLanguage === "en-US" ? { span: 7 } : undefined}
+                wrapperCol={currentLanguage === "en-US" ? { span: 17 } : undefined}
                 field="new_password"
                 rules={[
                     {
@@ -43,8 +44,8 @@ const ModifyPasswordForm: React.FC = () => {
             </Form.Item>
             <Form.Item
                 label={t("modifyPassword.confirmPassword")}
-                labelCol={{ span: 7 }}
-                wrapperCol={{ span: 17 }}
+                labelCol={currentLanguage === "en-US" ? { span: 7 } : undefined}
+                wrapperCol={currentLanguage === "en-US" ? { span: 17 } : undefined}
                 field="confirm_new_password"
                 rules={[
                     {
