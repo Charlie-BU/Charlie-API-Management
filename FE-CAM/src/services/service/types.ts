@@ -60,7 +60,13 @@ export interface ServiceDetail extends ServiceItem {
     created_at: string;
     updated_at?: string;
     is_deleted: boolean;
-    deleted_at?: string | null;
+    deleted_at?: string;
+}
+
+export interface ServiceIterationDetail extends ServiceIteration {
+    service?: ServiceItem;
+    creator: UserBrief;
+    api_drafts?: ApiBrief[];
 }
 
 export interface ServiceListResponse extends BaseResponse {
@@ -73,7 +79,7 @@ export interface GetServiceByIdResponse extends BaseResponse {
 }
 
 export interface GetServiceByUuidAndVersionResponse extends BaseResponse {
-    service: ServiceDetail;
+    service: ServiceDetail | ServiceIterationDetail;
     is_latest: boolean;
 }
 

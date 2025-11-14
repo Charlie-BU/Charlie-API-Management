@@ -20,6 +20,7 @@ import type {
     Pagination,
     ServiceDetail,
     ServiceItem,
+    ServiceIterationDetail,
 } from "@/services/service/types";
 import CreateServiceForm from "@/components/ServiceManagement/CreateServiceForm";
 import type { UserProfile } from "@/services/user/types";
@@ -221,9 +222,10 @@ export const useThisService = (service_uuid: string) => {
         }[]
     >([]);
     const [currentVersion, setCurrentVersion] = useState<string>("");
-    const [serviceDetail, setServiceDetail] = useState<ServiceDetail>(
-        {} as ServiceDetail
-    );
+    const [isLatest, setIsLatest] = useState<boolean>(true);
+    const [serviceDetail, setServiceDetail] = useState<
+        ServiceDetail | ServiceIterationDetail
+    >({} as ServiceDetail);
 
     const initHook = async () => {
         setLoading(true);
@@ -255,7 +257,8 @@ export const useThisService = (service_uuid: string) => {
             setLoading(false);
             return;
         }
-        setServiceDetail(res.service || ({} as ServiceDetail));
+        setServiceDetail(res.service || {});
+        setIsLatest(res.is_latest || true);
         setLoading(false);
     };
 
@@ -269,10 +272,81 @@ export const useThisService = (service_uuid: string) => {
         }
     }, [currentVersion]);
 
+    // const genTreeData = () => {
+    //     if (!serviceDetail) {
+    //         return [];
+    //     }
+    //     const apiCategories
+    //     const apis =
+    //         "apis" in serviceDetail
+    //             ? serviceDetail.apis
+    //             : "api_drafts" in serviceDetail
+    //             ? serviceDetail.api_drafts
+    //             : [];
+    //     const treeData = {
+
+    //     }
+    // };
+
+    // const apiTreeData = [
+    //     {
+    //         key: "group-user",
+    //         title: <Text style={{ fontWeight: 600 }}>User</Text>,
+    //         children: [
+    //             {
+    //                 key: "post-login",
+    //                 title: (
+    //                     <Space size={8} align="center">
+    //                         <Tag color="green">POST</Tag>
+    //                         <Text>/v1/user/login</Text>
+    //                     </Space>
+    //                 ),
+    //             },
+    //             {
+    //                 key: "post-register",
+    //                 title: (
+    //                     <Space size={8} align="center">
+    //                         <Tag color="green">POST</Tag>
+    //                         <Text>/v1/user/register</Text>
+    //                     </Space>
+    //                 ),
+    //             },
+    //             {
+    //                 key: "get-user-by-id",
+    //                 title: (
+    //                     <Space size={8} align="center">
+    //                         <Tag color="blue">GET</Tag>
+    //                         <Text>/v1/user/getUserById</Text>
+    //                     </Space>
+    //                 ),
+    //             },
+    //         ],
+    //     },
+    //     {
+    //         key: "group-service",
+    //         title: <Text style={{ fontWeight: 600 }}>Service</Text>,
+    //         children: [
+    //             {
+    //                 key: "service-api",
+    //                 title: (
+    //                     <Space size={8} align="center">
+    //                         <Tag color="purple">Service</Tag>
+    //                         <Text>Api</Text>
+    //                     </Space>
+    //                 ),
+    //             },
+    //         ],
+    //     },
+    //     {
+    //         key: "group-uncategorized",
+    //         title: <Text style={{ fontWeight: 600 }}>未分类</Text>,
+    //     },
+    // ];
     return {
         loading,
         versions,
         currentVersion,
+        isLatest,
         serviceDetail,
         setCurrentVersion,
     };

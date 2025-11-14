@@ -83,7 +83,7 @@ const requestColumns = [
     { title: "参数类型", dataIndex: "type", width: 120 },
     { title: "类型格式", dataIndex: "format", width: 120 },
     {
-        title: "是否必须",
+        title: "是否必填",
         dataIndex: "required",
         width: 120,
         render: (v: boolean) => (
@@ -136,9 +136,16 @@ const ApiManagement: React.FC = () => {
         loading,
         versions,
         currentVersion,
+        isLatest,
         serviceDetail,
         setCurrentVersion,
     } = useThisService(uuid);
+
+    const serviceUuid = useMemo(() => {
+        return "service_uuid" in serviceDetail
+            ? serviceDetail.service_uuid
+            : serviceDetail?.service?.service_uuid;
+    }, [serviceDetail]);
 
     const [expandedReq, setExpandedReq] = useState(true);
     const [expandedRes, setExpandedRes] = useState(false);
@@ -190,8 +197,8 @@ const ApiManagement: React.FC = () => {
                     </Breadcrumb>
                 </div>
                 <Space size={0} split={<Divider type="vertical" />}>
-                    <Text bold style={{ fontSize: 16 }}>
-                        {serviceDetail?.service_uuid}
+                    <Text style={{ fontSize: 16, fontWeight: 600 }}>
+                        {serviceUuid}
                     </Text>
                     <Select
                         bordered={false}
