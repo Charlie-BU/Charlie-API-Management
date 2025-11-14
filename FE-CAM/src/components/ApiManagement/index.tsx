@@ -12,7 +12,6 @@ import {
     Avatar,
     Breadcrumb,
     Select,
-    IconLoading,
     Spin,
 } from "@cloud-materials/common";
 import styles from "./index.module.less";
@@ -174,7 +173,11 @@ const ApiManagement: React.FC = () => {
     }, [activeKey]);
 
     if (loading) {
-        return <Spin dot />;
+        return (
+            <div className={styles.loadingCenter}>
+                <Spin dot />
+            </div>
+        );
     }
 
     return (
@@ -336,6 +339,7 @@ const ApiManagement: React.FC = () => {
                         <Table
                             pagination={false}
                             columns={requestColumns as any}
+                            rowKey="name"
                             data={requestData}
                             size="small"
                         />
@@ -370,6 +374,7 @@ const ApiManagement: React.FC = () => {
                         <Table
                             pagination={false}
                             columns={responseColumns as any}
+                            rowKey="name"
                             data={responseData}
                             size="small"
                         />

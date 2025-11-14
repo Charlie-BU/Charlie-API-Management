@@ -7,7 +7,6 @@ import {
     Tabs,
     Typography,
     Button,
-    Space,
 } from "@cloud-materials/common";
 
 import styles from "./index.module.less";

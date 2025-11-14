@@ -211,6 +211,8 @@ export const useService = () => {
 };
 
 export const useThisService = (service_uuid: string) => {
+    const navigate = useNavigate();
+
     const [loading, setLoading] = useState(false);
     const [versions, setVersions] = useState<
         {
@@ -238,7 +240,7 @@ export const useThisService = (service_uuid: string) => {
             const msg =
                 err instanceof Error ? err.message : t("service.failure");
             Message.warning(msg || "获取版本失败");
-            throw err;
+            navigate("/");
         } finally {
             setLoading(false);
         }
