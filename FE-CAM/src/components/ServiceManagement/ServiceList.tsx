@@ -27,6 +27,7 @@ const ServiceList: React.FC<{
     loading: boolean;
     user: UserProfile | null;
     handlePageChange: (pageSize: number, currentPage?: number) => void;
+    handleViewService: (service_uuid: string) => void;
     handleDeleteService: (id: number) => Promise<void>;
     handleRestoreService: (id: number) => Promise<void>;
 }> = (props) => {
@@ -37,6 +38,7 @@ const ServiceList: React.FC<{
         loading,
         user,
         handlePageChange,
+        handleViewService,
         handleDeleteService,
         handleRestoreService,
     } = props;
@@ -55,6 +57,7 @@ const ServiceList: React.FC<{
                     type="text"
                     size="small"
                     className={styles["hover-underline"]}
+                    onClick={() => handleViewService(uuid)}
                 >
                     {uuid}
                 </Button>
@@ -120,6 +123,9 @@ const ServiceList: React.FC<{
             dataIndex: "deleted_at",
             key: "deleted_at",
             align: "center" as const,
+            render: (deleted_at: string) => (
+                <Text>{formatDateOrDateTime(deleted_at, "minute") || "-"}</Text>
+            ),
         });
     }
     if (range === "AllServices") {
@@ -163,7 +169,7 @@ const ServiceList: React.FC<{
                 className={styles["custom-action-btn"]}
                 style={{ display: "flex" }}
             >
-                <Button type="text" size="small">
+                <Button type="text" size="small" onClick={() => handleViewService(item.service_uuid)}>
                     查看
                 </Button>
                 {!item.is_deleted ? (

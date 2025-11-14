@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
     Typography,
     Button,
@@ -14,6 +14,8 @@ import {
     Select,
 } from "@cloud-materials/common";
 import styles from "./index.module.less";
+import { useSearchParams } from "react-router-dom";
+import { useThisService } from "@/hooks/useService";
 
 const { Title, Text } = Typography;
 const { Search } = Input;
@@ -127,6 +129,14 @@ const tsRequestExample = `interface LoginRequest {\n  username: string;\n  passw
 const tsResponseExample = `interface LoginResponse {\n  status: number;\n  message: string;\n  access_token: string;\n}`;
 
 const ApiManagement: React.FC = () => {
+    const [searchParams] = useSearchParams();
+    const uuid = searchParams.get("uuid") || "";
+    const { versions } = useThisService(uuid);
+    const [currentVersion, setCurrentVersion] = useState("");
+    useEffect(() => {
+        setCurrentVersion(versions[0]?.version || "");
+    }, [versions]);
+    
     const [expandedReq, setExpandedReq] = useState(true);
     const [expandedRes, setExpandedRes] = useState(false);
     const [activeKey, setActiveKey] = useState("post-login");
@@ -159,26 +169,8 @@ const ApiManagement: React.FC = () => {
         }
     }, [activeKey]);
 
-    const mockOptions = [{
-        version: "1.0.30",
-        isNewest: true,
-    }, {
-        version: "1.0.29",
-        isNewest: false,
-    }, {
-        version: "1.0.28",
-        isNewest: false,
-    }, {
-        version: "1.0.27",
-        isNewest: false,
-    }, {
-        version: "1.0.0",
-        isNewest: false,
-    }]
-
     return (
         <>
-            {/* 服务header */}
             <div className={styles.serviceHeader}>
                 <div>
                     <Breadcrumb>
@@ -188,41 +180,43 @@ const ApiManagement: React.FC = () => {
                 </div>
                 <Space size={0} split={<Divider type="vertical" />}>
                     <Text bold style={{ fontSize: 16 }}>
-                        api.virtual.ai4s_backend
+                        {uuid}
                     </Text>
                     <Select
                         bordered={false}
                         size="large"
-                        defaultValue={mockOptions[0].version}
-                        onChange={(value) => console.log(value)}
+                        value={currentVersion}
+                        onChange={(value) => {
+                            setCurrentVersion(value);
+                        }}
                         triggerProps={{
                             autoAlignPopupWidth: false,
                             autoAlignPopupMinWidth: true,
-                            position: "bl"
+                            position: "bl",
                         }}
                         style={{
                             color: "#000",
                             fontWeight: 600,
                         }}
                     >
-                        {mockOptions.map((item) => (
-                            <Select.Option key={item.version} value={item.version}>
-                                <Space>
-                                    <Text className={styles.serviceVersion}>
-                                        {item.version}
-                                    </Text>
-                                    {item.isNewest ? (
-                                        <Tag size="small" color="green">
-                                            最新版本
-                                        </Tag>
-                                    ) : (
-                                        <Tag size="small" color="red">
-                                            非最新版本
-                                        </Tag>
-                                    )}
-                                </Space>
-                            </Select.Option>
-                        ))}
+                        {versions &&
+                            versions.map((item) => (
+                                <Select.Option
+                                    key={item.version}
+                                    value={item.version}
+                                >
+                                    <Space>
+                                        <Text className={styles.serviceVersion}>
+                                            {item.version}
+                                        </Text>
+                                        {item.is_latest && (
+                                            <Tag size="small" color="green">
+                                                最新版本
+                                            </Tag>
+                                        )}
+                                    </Space>
+                                </Select.Option>
+                            ))}
                     </Select>
                 </Space>
             </div>

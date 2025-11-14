@@ -78,7 +78,10 @@ export interface GetServiceByUuidAndVersionResponse extends BaseResponse {
 }
 
 export interface GetAllVersionsByUuidResponse extends BaseResponse {
-    versions: string[];
+    versions: {
+        version: string;
+        is_latest: boolean;
+    }[];
 }
 
 export interface CreateNewServiceRequest {

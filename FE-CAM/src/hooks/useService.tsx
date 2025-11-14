@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { CModal, Message } from "@cloud-materials/common";
 import { t } from "i18next";
@@ -8,6 +8,7 @@ import {
     DeleteServiceById,
     GetAllDeletedServicesByUserId,
     GetAllServices,
+    GetAllVersionsByUuid,
     GetHisNewestServicesByOwnerId,
     GetMyNewestServices,
     RestoreServiceById,
@@ -123,10 +124,11 @@ export const useService = () => {
         return res;
     };
 
-    // todo
     const handleViewService = (service_uuid: string) => {
-        navigate(`/service/${service_uuid}`);
+        navigate(`/service?uuid=${service_uuid}`);
     };
+
+
 
     const handleDeleteService = async (id: number) => {
         setLoading(true);
@@ -208,8 +210,31 @@ export const useService = () => {
     };
 };
 
-// todo：单一服务hook
 export const useThisService = (service_uuid: string) => {
-    // const { serviceList } = useService();
-    // return serviceList.find((item) => item.service_uuid === service_uuid);
+    const [loading, setLoading] = useState(true);
+    const [versions, setVersions] = useState<{
+        version: string;
+        is_latest: boolean;
+    }[]>([]);
+
+    const fetchVersions = async () => {
+        setLoading(true);
+        const res = await GetAllVersionsByUuid(service_uuid);
+        if (res.status !== 200) {
+            setLoading(false);
+            setVersions([]);
+            throw new Error(res.message || "获取版本失败");
+        }
+        setVersions(res.versions || []);
+        setLoading(false);
+    };
+
+    useEffect(() => {
+        fetchVersions();
+    }, [service_uuid]);
+
+    return {
+        loading,
+        versions,
+    };
 };

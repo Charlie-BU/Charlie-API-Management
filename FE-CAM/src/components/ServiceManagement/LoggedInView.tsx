@@ -36,6 +36,7 @@ const LoggedInView: React.FC<{
         fetchMyDeletedServices,
         fetchHisNewestServicesByOwnerId,
         fetchAllServices,
+        handleViewService,
         handleDeleteService,
         handleRestoreService,
         handleCreateService,
@@ -217,6 +218,7 @@ const LoggedInView: React.FC<{
                 range={serviceRange}
                 pagination={pagination}
                 handlePageChange={handlePageChange}
+                handleViewService={handleViewService}
                 handleDeleteService={handleDeleteService}
                 handleRestoreService={handleRestoreService}
                 loading={loading}
