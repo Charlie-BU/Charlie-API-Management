@@ -148,6 +148,8 @@ def serviceGetHisNewestServicesByOwnerId(
 def serviceGetServiceByUuidAndVersion(
     db: Session, service_uuid: str, version: str, user_id: int
 ) -> dict:
+    # 把 url 编码的字符串解码，否则 / 是 %2F
+    service_uuid = unquote(service_uuid).strip()
     curr_service = (
         db.query(Service)
         .filter(

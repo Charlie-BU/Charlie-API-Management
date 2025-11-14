@@ -11,12 +11,14 @@ import {
     GetAllVersionsByUuid,
     GetHisNewestServicesByOwnerId,
     GetMyNewestServices,
+    GetServiceByUuidAndVersion,
     RestoreServiceById,
 } from "@/services/service";
 import type {
     CreateNewServiceRequest,
     DeletedServiceItem,
     Pagination,
+    ServiceDetail,
     ServiceItem,
 } from "@/services/service/types";
 import CreateServiceForm from "@/components/ServiceManagement/CreateServiceForm";
@@ -128,8 +130,6 @@ export const useService = () => {
         navigate(`/service?uuid=${service_uuid}`);
     };
 
-
-
     const handleDeleteService = async (id: number) => {
         setLoading(true);
         const res = await DeleteServiceById({ id });
@@ -211,30 +211,67 @@ export const useService = () => {
 };
 
 export const useThisService = (service_uuid: string) => {
-    const [loading, setLoading] = useState(true);
-    const [versions, setVersions] = useState<{
-        version: string;
-        is_latest: boolean;
-    }[]>([]);
+    const [loading, setLoading] = useState(false);
+    const [versions, setVersions] = useState<
+        {
+            version: string;
+            is_latest: boolean;
+        }[]
+    >([]);
+    const [currentVersion, setCurrentVersion] = useState<string>("");
+    const [serviceDetail, setServiceDetail] = useState<ServiceDetail>(
+        {} as ServiceDetail
+    );
 
-    const fetchVersions = async () => {
+    const initHook = async () => {
         setLoading(true);
-        const res = await GetAllVersionsByUuid(service_uuid);
-        if (res.status !== 200) {
+        try {
+            const res = await GetAllVersionsByUuid(service_uuid);
+            if (res.status !== 200) {
+                setLoading(false);
+                setVersions([]);
+                throw new Error(res.message || "获取版本失败");
+            }
+            setVersions(res.versions || []);
+            setCurrentVersion(res.versions?.[0]?.version || "");
+        } catch (err: unknown) {
+            const msg =
+                err instanceof Error ? err.message : t("service.failure");
+            Message.warning(msg || "获取版本失败");
+            throw err;
+        } finally {
             setLoading(false);
-            setVersions([]);
-            throw new Error(res.message || "获取版本失败");
         }
-        setVersions(res.versions || []);
+    };
+
+    const fetchServiceDetail = async (version: string) => {
+        setLoading(true);
+        const res = await GetServiceByUuidAndVersion(service_uuid, version);
+        if (res.status !== 200) {
+            setServiceDetail({} as ServiceDetail);
+            Message.warning(res.message || "获取服务详情失败");
+            setLoading(false);
+            return;
+        }
+        setServiceDetail(res.service || ({} as ServiceDetail));
         setLoading(false);
     };
 
     useEffect(() => {
-        fetchVersions();
+        initHook();
     }, [service_uuid]);
+
+    useEffect(() => {
+        if (currentVersion) {
+            fetchServiceDetail(currentVersion);
+        }
+    }, [currentVersion]);
 
     return {
         loading,
         versions,
+        currentVersion,
+        serviceDetail,
+        setCurrentVersion,
     };
 };

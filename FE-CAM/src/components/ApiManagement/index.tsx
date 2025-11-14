@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useMemo, useState } from "react";
 import {
     Typography,
     Button,
@@ -12,6 +12,8 @@ import {
     Avatar,
     Breadcrumb,
     Select,
+    IconLoading,
+    Spin,
 } from "@cloud-materials/common";
 import styles from "./index.module.less";
 import { useSearchParams } from "react-router-dom";
@@ -131,12 +133,14 @@ const tsResponseExample = `interface LoginResponse {\n  status: number;\n  messa
 const ApiManagement: React.FC = () => {
     const [searchParams] = useSearchParams();
     const uuid = searchParams.get("uuid") || "";
-    const { versions } = useThisService(uuid);
-    const [currentVersion, setCurrentVersion] = useState("");
-    useEffect(() => {
-        setCurrentVersion(versions[0]?.version || "");
-    }, [versions]);
-    
+    const {
+        loading,
+        versions,
+        currentVersion,
+        serviceDetail,
+        setCurrentVersion,
+    } = useThisService(uuid);
+
     const [expandedReq, setExpandedReq] = useState(true);
     const [expandedRes, setExpandedRes] = useState(false);
     const [activeKey, setActiveKey] = useState("post-login");
@@ -169,6 +173,10 @@ const ApiManagement: React.FC = () => {
         }
     }, [activeKey]);
 
+    if (loading) {
+        return <Spin dot />;
+    }
+
     return (
         <>
             <div className={styles.serviceHeader}>
@@ -180,7 +188,7 @@ const ApiManagement: React.FC = () => {
                 </div>
                 <Space size={0} split={<Divider type="vertical" />}>
                     <Text bold style={{ fontSize: 16 }}>
-                        {uuid}
+                        {serviceDetail?.service_uuid}
                     </Text>
                     <Select
                         bordered={false}
