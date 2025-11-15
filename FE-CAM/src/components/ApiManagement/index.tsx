@@ -12,75 +12,78 @@ import {
     Avatar,
     Breadcrumb,
     Select,
+    Spin,
 } from "@cloud-materials/common";
 import styles from "./index.module.less";
+import { useSearchParams } from "react-router-dom";
+import { useThisService } from "@/hooks/useService";
 
 const { Title, Text } = Typography;
 const { Search } = Input;
 
-// 左侧 API 列表（静态）
-const apiTreeData = [
-    {
-        key: "group-user",
-        title: <Text style={{ fontWeight: 600 }}>User</Text>,
-        children: [
-            {
-                key: "post-login",
-                title: (
-                    <Space size={8} align="center">
-                        <Tag color="green">POST</Tag>
-                        <Text>/v1/user/login</Text>
-                    </Space>
-                ),
-            },
-            {
-                key: "post-register",
-                title: (
-                    <Space size={8} align="center">
-                        <Tag color="green">POST</Tag>
-                        <Text>/v1/user/register</Text>
-                    </Space>
-                ),
-            },
-            {
-                key: "get-user-by-id",
-                title: (
-                    <Space size={8} align="center">
-                        <Tag color="blue">GET</Tag>
-                        <Text>/v1/user/getUserById</Text>
-                    </Space>
-                ),
-            },
-        ],
-    },
-    {
-        key: "group-service",
-        title: <Text style={{ fontWeight: 600 }}>Service</Text>,
-        children: [
-            {
-                key: "service-api",
-                title: (
-                    <Space size={8} align="center">
-                        <Tag color="purple">Service</Tag>
-                        <Text>Api</Text>
-                    </Space>
-                ),
-            },
-        ],
-    },
-    {
-        key: "group-uncategorized",
-        title: <Text style={{ fontWeight: 600 }}>未分类</Text>,
-    },
-];
+// const apiTreeData = [
+//     {
+//         key: "group-user",
+//         title: <Text style={{ fontWeight: 600 }}>User</Text>,
+//         children: [
+//             {
+//                 key: "post-login",
+//                 title: (
+//                     <Space size={8} align="center">
+//                         <Tag color="green">POST1</Tag>
+//                         <Text>/v1/user/login</Text>
+//                     </Space>
+//                 ),
+//             },
+//             {
+//                 key: "post-register",
+//                 title: (
+//                     <Space size={8} align="center">
+//                         <Tag color="green">POST</Tag>
+//                         <Text>/v1/user/register</Text>
+//                     </Space>
+//                 ),
+//             },
+//             {
+//                 key: "get-user-by-id",
+//                 title: (
+//                     <Space size={8} align="center">
+//                         <Tag color="blue">GET</Tag>
+//                         <Text>/v1/user/getUserById</Text>
+//                     </Space>
+//                 ),
+//             },
+//         ],
+//     },
+//     {
+//         key: "group-service",
+//         title: <Text style={{ fontWeight: 600 }}>Service</Text>,
+//         children: [
+//             {
+//                 key: "service-api",
+//                 title: (
+//                     <Space size={8} align="center">
+//                         <Tag color="purple">Service</Tag>
+//                         <Text>Api</Text>
+//                     </Space>
+//                 ),
+//             },
+//         ],
+//     },
+//     {
+//         key: "group-uncategorized",
+//         title: <Text style={{ fontWeight: 600 }}>未分类</Text>,
+//     },
+// ];
 
 // 请求参数静态数据
+
 const requestColumns = [
     { title: "字段名称", dataIndex: "name", width: 160 },
     { title: "参数类型", dataIndex: "type", width: 120 },
     { title: "类型格式", dataIndex: "format", width: 120 },
     {
-        title: "是否必须",
+        title: "是否必填",
         dataIndex: "required",
         width: 120,
         render: (v: boolean) => (
@@ -127,6 +130,24 @@ const tsRequestExample = `interface LoginRequest {\n  username: string;\n  passw
 const tsResponseExample = `interface LoginResponse {\n  status: number;\n  message: string;\n  access_token: string;\n}`;
 
 const ApiManagement: React.FC = () => {
+    const [searchParams] = useSearchParams();
+    const uuid = searchParams.get("uuid") || "";
+    const {
+        loading,
+        versions,
+        currentVersion,
+        isLatest,
+        serviceDetail,
+        treeData,
+        setCurrentVersion,
+    } = useThisService(uuid);
+
+    const serviceUuid = useMemo(() => {
+        return "service_uuid" in serviceDetail
+            ? serviceDetail.service_uuid
+            : serviceDetail?.service?.service_uuid;
+    }, [serviceDetail]);
+
     const [expandedReq, setExpandedReq] = useState(true);
     const [expandedRes, setExpandedRes] = useState(false);
     const [activeKey, setActiveKey] = useState("post-login");
@@ -159,26 +180,16 @@ const ApiManagement: React.FC = () => {
         }
     }, [activeKey]);
 
-    const mockOptions = [{
-        version: "1.0.30",
-        isNewest: true,
-    }, {
-        version: "1.0.29",
-        isNewest: false,
-    }, {
-        version: "1.0.28",
-        isNewest: false,
-    }, {
-        version: "1.0.27",
-        isNewest: false,
-    }, {
-        version: "1.0.0",
-        isNewest: false,
-    }]
+    if (loading) {
+        return (
+            <div className={styles.loadingCenter}>
+                <Spin dot />
+            </div>
+        );
+    }
 
     return (
         <>
-            {/* 服务header */}
             <div className={styles.serviceHeader}>
                 <div>
                     <Breadcrumb>
@@ -187,42 +198,44 @@ const ApiManagement: React.FC = () => {
                     </Breadcrumb>
                 </div>
                 <Space size={0} split={<Divider type="vertical" />}>
-                    <Text bold style={{ fontSize: 16 }}>
-                        api.virtual.ai4s_backend
+                    <Text style={{ fontSize: 16, fontWeight: 600 }}>
+                        {serviceUuid}
                     </Text>
                     <Select
                         bordered={false}
                         size="large"
-                        defaultValue={mockOptions[0].version}
-                        onChange={(value) => console.log(value)}
+                        value={currentVersion}
+                        onChange={(value) => {
+                            setCurrentVersion(value);
+                        }}
                         triggerProps={{
                             autoAlignPopupWidth: false,
                             autoAlignPopupMinWidth: true,
-                            position: "bl"
+                            position: "bl",
                         }}
                         style={{
                             color: "#000",
                             fontWeight: 600,
                         }}
                     >
-                        {mockOptions.map((item) => (
-                            <Select.Option key={item.version} value={item.version}>
-                                <Space>
-                                    <Text className={styles.serviceVersion}>
-                                        {item.version}
-                                    </Text>
-                                    {item.isNewest ? (
-                                        <Tag size="small" color="green">
-                                            最新版本
-                                        </Tag>
-                                    ) : (
-                                        <Tag size="small" color="red">
-                                            非最新版本
-                                        </Tag>
-                                    )}
-                                </Space>
-                            </Select.Option>
-                        ))}
+                        {versions &&
+                            versions.map((item) => (
+                                <Select.Option
+                                    key={item.version}
+                                    value={item.version}
+                                >
+                                    <Space>
+                                        <Text className={styles.serviceVersion}>
+                                            {item.version}
+                                        </Text>
+                                        {item.is_latest && (
+                                            <Tag size="small" color="green">
+                                                最新版本
+                                            </Tag>
+                                        )}
+                                    </Space>
+                                </Select.Option>
+                            ))}
                     </Select>
                 </Space>
             </div>
@@ -234,17 +247,16 @@ const ApiManagement: React.FC = () => {
                         allowClear
                         placeholder="搜索 API"
                     />
-                    <Tree
-                        className={styles.tree}
-                        selectedKeys={[activeKey]}
-                        defaultExpandedKeys={[
-                            "group-user",
-                            "group-service",
-                            "group-uncategorized",
-                        ]}
-                        onSelect={(keys) => setActiveKey(String(keys[0]))}
-                        treeData={apiTreeData as any}
-                    />
+                    {/* autoExpandParent只有在Tree初次挂载时生效，所以要在treeData计算完成后再渲染 */}
+                    {treeData.length > 0 && (
+                        <Tree
+                            className={styles.tree}
+                            selectedKeys={[activeKey]}
+                            autoExpandParent={true}
+                            onSelect={(keys) => setActiveKey(String(keys[0]))}
+                            treeData={treeData}
+                        />
+                    )}
                 </div>
                 {/* 右侧详情 */}
                 <div className={styles.content}>
@@ -334,6 +346,7 @@ const ApiManagement: React.FC = () => {
                         <Table
                             pagination={false}
                             columns={requestColumns as any}
+                            rowKey="name"
                             data={requestData}
                             size="small"
                         />
@@ -368,6 +381,7 @@ const ApiManagement: React.FC = () => {
                         <Table
                             pagination={false}
                             columns={responseColumns as any}
+                            rowKey="name"
                             data={responseData}
                             size="small"
                         />

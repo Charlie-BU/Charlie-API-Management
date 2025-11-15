@@ -1,5 +1,6 @@
 from datetime import datetime
 from sqlalchemy.orm import Session
+from urllib.parse import unquote
 
 from database.models import (
     User,
@@ -28,7 +29,7 @@ def serviceGetAllServices(
         }
     services = (
         db.query(Service)
-        .order_by(Service.id)
+        .order_by(Service.id.desc())
         .limit(page_size)
         .offset((current_page - 1) * page_size)
         .all()
@@ -93,7 +94,7 @@ def serviceGetHisNewestServicesByOwnerId(
     services = (
         db.query(Service)
         .filter(~Service.is_deleted, Service.owner_id == owner_id)
-        .order_by(Service.id)
+        .order_by(Service.id.desc())
         .limit(page_size)
         .offset((current_page - 1) * page_size)
         .all()
@@ -147,6 +148,8 @@ def serviceGetHisNewestServicesByOwnerId(
 def serviceGetServiceByUuidAndVersion(
     db: Session, service_uuid: str, version: str, user_id: int
 ) -> dict:
+    # 把 url 编码的字符串解码，否则 / 是 %2F
+    service_uuid = unquote(service_uuid).strip()
     curr_service = (
         db.query(Service)
         .filter(
@@ -205,6 +208,8 @@ def serviceGetServiceByUuidAndVersion(
 
 # 通过service_uuid获取全部版本号
 def serviceGetAllVersionsByUuid(db: Session, service_uuid: str, user_id: int) -> dict:
+    # 把 url 编码的字符串解码，否则 / 是 %2F
+    service_uuid = unquote(service_uuid).strip()
     curr_service = (
         db.query(Service)
         .filter(
@@ -233,10 +238,20 @@ def serviceGetAllVersionsByUuid(db: Session, service_uuid: str, user_id: int) ->
             "status": -2,
             "message": "You are not the owner of this service",
         }
+    versions = [{
+        "version": curr_service.version,
+        "is_latest": True,
+    }]
+    for service in service_iterations:
+        if service.version != versions[0]["version"]:
+            versions.append({
+                "version": service.version,
+                "is_latest": False,
+            })
     return {
         "status": 200,
         "message": "Get service versions success",
-        "versions": [service.version for service in service_iterations],
+        "versions": versions,
     }
 
 

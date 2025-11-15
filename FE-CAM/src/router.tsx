@@ -24,7 +24,7 @@ export const router = createBrowserRouter([
                 element: <ServiceManagement />,
             },
             {
-                path: "api",
+                path: "service",
                 element: <ApiManagement />,
                 loader: requireAuthLoader,
             },

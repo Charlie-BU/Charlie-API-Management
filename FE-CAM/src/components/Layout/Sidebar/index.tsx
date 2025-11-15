@@ -22,7 +22,7 @@ const Sidebar: React.FC = () => {
             title: t("nav.home"),
         },
         {
-            key: "/api",
+            key: "/service",
             icon: <IconExamineeInformation style={{ width: 18, height: 18 }} />,
             title: t("nav.apiDefinition"),
         },

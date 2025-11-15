@@ -1,6 +1,11 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { CModal, Message } from "@cloud-materials/common";
+import {
+    CModal,
+    Message,
+    Typography,
+    Space,
+} from "@cloud-materials/common";
 import { t } from "i18next";
 
 import {
@@ -8,18 +13,27 @@ import {
     DeleteServiceById,
     GetAllDeletedServicesByUserId,
     GetAllServices,
+    GetAllVersionsByUuid,
     GetHisNewestServicesByOwnerId,
     GetMyNewestServices,
+    GetServiceByUuidAndVersion,
     RestoreServiceById,
 } from "@/services/service";
 import type {
+    ApiBrief,
+    ApiCategory,
     CreateNewServiceRequest,
     DeletedServiceItem,
     Pagination,
+    ServiceDetail,
     ServiceItem,
+    ServiceIterationDetail,
 } from "@/services/service/types";
 import CreateServiceForm from "@/components/ServiceManagement/CreateServiceForm";
 import type { UserProfile } from "@/services/user/types";
+import { genApiMethodTag } from "@/utils";
+
+const { Text } = Typography;
 
 // 服务列表hook
 export const useService = () => {
@@ -123,9 +137,8 @@ export const useService = () => {
         return res;
     };
 
-    // todo
     const handleViewService = (service_uuid: string) => {
-        navigate(`/service/${service_uuid}`);
+        navigate(`/service?uuid=${service_uuid}`);
     };
 
     const handleDeleteService = async (id: number) => {
@@ -208,8 +221,134 @@ export const useService = () => {
     };
 };
 
-// todo：单一服务hook
 export const useThisService = (service_uuid: string) => {
-    // const { serviceList } = useService();
-    // return serviceList.find((item) => item.service_uuid === service_uuid);
+    const navigate = useNavigate();
+
+    const [loading, setLoading] = useState(false);
+    const [versions, setVersions] = useState<
+        {
+            version: string;
+            is_latest: boolean;
+        }[]
+    >([]);
+    const [currentVersion, setCurrentVersion] = useState<string>("");
+    const [isLatest, setIsLatest] = useState<boolean>(true);
+    const [serviceDetail, setServiceDetail] = useState<
+        ServiceDetail | ServiceIterationDetail
+    >({} as ServiceDetail);
+    const [apiCategories, setApiCategories] = useState<ApiCategory[]>([]);
+    const [apis, setApis] = useState<ApiBrief[]>([]);
+
+    const initHook = async () => {
+        setLoading(true);
+        try {
+            const res = await GetAllVersionsByUuid(service_uuid);
+            if (res.status !== 200) {
+                setLoading(false);
+                setVersions([]);
+                throw new Error(res.message || "获取版本失败");
+            }
+            setVersions(res.versions || []);
+            setCurrentVersion(res.versions?.[0]?.version || "");
+        } catch (err: unknown) {
+            const msg =
+                err instanceof Error ? err.message : t("service.failure");
+            Message.warning(msg || "获取版本失败");
+            navigate("/");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const fetchServiceDetail = async (version: string) => {
+        setLoading(true);
+        const res = await GetServiceByUuidAndVersion(service_uuid, version);
+        if (res.status !== 200) {
+            setServiceDetail({} as ServiceDetail);
+            Message.warning(res.message || "获取服务详情失败");
+            setLoading(false);
+            return;
+        }
+        setServiceDetail(res.service || {});
+        setIsLatest(res.is_latest || true);
+        if ("api_categories" in res.service) {
+            setApiCategories(res.service.api_categories || []);
+        }
+        if ("apis" in res.service || "api_drafts" in res.service) {
+            setApis(
+                ("apis" in res.service
+                    ? res.service.apis
+                    : "api_drafts" in res.service
+                    ? res.service.api_drafts
+                    : []) || []
+            );
+        }
+        setLoading(false);
+    };
+
+    useEffect(() => {
+        initHook();
+    }, [service_uuid]);
+
+    useEffect(() => {
+        if (currentVersion) {
+            fetchServiceDetail(currentVersion);
+        }
+    }, [currentVersion]);
+
+    const genTreeData = () => {
+        if (!apiCategories || !apis) {
+            return [];
+        }
+        const categoryMap = new Map<number, any>();
+        apiCategories.forEach((cat) => {
+            categoryMap.set(cat.id, {
+                key: `category-${cat.id}`,
+                title: <Text>{cat.name}</Text>,
+                children: [],
+            });
+        });
+
+        const uncategorized: any[] = [];
+
+        apis.forEach((api) => {
+            const node = {
+                key: `${api.method}-${api.path}`,
+                title: (
+                    <Space align="center">
+                        {genApiMethodTag(api.method)}
+                        <Text>{api.path}</Text>
+                    </Space>
+                ),
+            };
+            if (api.category_id == null) {
+                uncategorized.push(node);
+            } else {
+                const group = categoryMap.get(api.category_id);
+                if (group) {
+                    group.children.push(node);
+                } else {
+                    uncategorized.push(node);
+                }
+            }
+        });
+
+        const treeData = [
+            ...Array.from(categoryMap.values()),
+            ...uncategorized,
+        ];
+        return treeData;
+    };
+
+    return {
+        loading,
+        versions,
+        currentVersion,
+        isLatest,
+        serviceDetail,
+        apiCategories,
+        apis,
+        treeData: genTreeData(),
+        setCurrentVersion,
+    };
 };

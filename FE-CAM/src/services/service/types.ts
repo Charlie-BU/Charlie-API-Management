@@ -26,13 +26,15 @@ export interface AllServiceItem extends DeletedServiceItem {}
 export interface ApiBrief {
     id: number;
     name: string;
-    method: string;
+    method: ApiMethod;
     path: string;
     description?: string | null;
     level?: string;
     is_enabled?: boolean;
     category_id?: number | null;
 }
+
+export type ApiMethod = "GET" | "POST" | "PUT" | "DELETE" | "PATCH";
 
 export interface ApiCategory {
     id: number;
@@ -60,7 +62,13 @@ export interface ServiceDetail extends ServiceItem {
     created_at: string;
     updated_at?: string;
     is_deleted: boolean;
-    deleted_at?: string | null;
+    deleted_at?: string;
+}
+
+export interface ServiceIterationDetail extends ServiceIteration {
+    service?: ServiceItem;
+    creator: UserBrief;
+    api_drafts?: ApiBrief[];
 }
 
 export interface ServiceListResponse extends BaseResponse {
@@ -73,12 +81,15 @@ export interface GetServiceByIdResponse extends BaseResponse {
 }
 
 export interface GetServiceByUuidAndVersionResponse extends BaseResponse {
-    service: ServiceDetail;
+    service: ServiceDetail | ServiceIterationDetail;
     is_latest: boolean;
 }
 
 export interface GetAllVersionsByUuidResponse extends BaseResponse {
-    versions: string[];
+    versions: {
+        version: string;
+        is_latest: boolean;
+    }[];
 }
 
 export interface CreateNewServiceRequest {
