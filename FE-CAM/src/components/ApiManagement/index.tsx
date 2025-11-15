@@ -17,6 +17,8 @@ import {
 import styles from "./index.module.less";
 import { useSearchParams } from "react-router-dom";
 import { useThisService } from "@/hooks/useService";
+import useApi from "@/hooks/useApi";
+import { genApiMethodTag } from "@/utils";
 
 const { Title, Text } = Typography;
 const { Search } = Input;
@@ -156,8 +158,11 @@ const ApiManagement: React.FC = () => {
 
     const [expandedReq, setExpandedReq] = useState(true);
     const [expandedRes, setExpandedRes] = useState(false);
-    const [selectedApiId, setSelectedApiId] = useState<number>(-1);
+
     const [selectedKeys, setSelectedKeys] = useState<string[]>([]);
+    const [selectedApiId, setSelectedApiId] = useState<number>(-1);
+    const { apiDetail } = useApi(selectedApiId, isLatest);
+    console.log(apiDetail);
 
     if (loading) {
         return (
@@ -242,7 +247,10 @@ const ApiManagement: React.FC = () => {
                 <div className={styles.content}>
                     <div className={styles.header}>
                         <Title heading={5} className={styles.pathTitle}>
-                            {/* {headerText} */}
+                            <Space>
+                                {genApiMethodTag(apiDetail?.method)}
+                                {apiDetail?.path}
+                            </Space>
                         </Title>
                         <Space>
                             <Button type="secondary">编辑</Button>

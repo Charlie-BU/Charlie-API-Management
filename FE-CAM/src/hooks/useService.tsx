@@ -309,11 +309,11 @@ export const useThisService = (service_uuid: string) => {
 
         apis.forEach((api) => {
             const node = {
-                key: api.id,
+                key: api.id.toString(),
                 title: (
                     <Space align="center">
                         {genApiMethodTag(api.method)}
-                        <Text>{api.path}</Text>
+                        {api.path}
                     </Space>
                 ),
             };

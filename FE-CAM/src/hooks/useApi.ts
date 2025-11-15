@@ -30,6 +30,10 @@ const useApi = (apiId: number, isLatest: boolean) => {
     };
 
     useEffect(() => {
+        if (!apiId || apiId <= 0) {
+            setApiDetail({} as ApiDetail);
+            return;
+        }
         fetchApiDetail();
     }, [apiId, isLatest]);
 
@@ -38,3 +42,5 @@ const useApi = (apiId: number, isLatest: boolean) => {
         apiDetail,
     };
 };
+
+export default useApi;

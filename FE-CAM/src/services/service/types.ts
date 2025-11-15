@@ -1,4 +1,4 @@
-import type { UserBrief } from "../api/types";
+import type { HttpMethod, UserBrief } from "../api/types";
 import type { UserProfile } from "../user/types";
 
 export interface BaseResponse {
@@ -26,15 +26,13 @@ export interface AllServiceItem extends DeletedServiceItem {}
 export interface ApiBrief {
     id: number;
     name: string;
-    method: ApiMethod;
+    method: HttpMethod;
     path: string;
     description?: string | null;
     level?: string;
     is_enabled?: boolean;
     category_id?: number | null;
 }
-
-export type ApiMethod = "GET" | "POST" | "PUT" | "DELETE" | "PATCH";
 
 export interface ApiCategory {
     id: number;
