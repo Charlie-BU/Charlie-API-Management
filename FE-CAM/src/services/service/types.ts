@@ -26,13 +26,15 @@ export interface AllServiceItem extends DeletedServiceItem {}
 export interface ApiBrief {
     id: number;
     name: string;
-    method: string;
+    method: ApiMethod;
     path: string;
     description?: string | null;
     level?: string;
     is_enabled?: boolean;
     category_id?: number | null;
 }
+
+export type ApiMethod = "GET" | "POST" | "PUT" | "DELETE" | "PATCH";
 
 export interface ApiCategory {
     id: number;

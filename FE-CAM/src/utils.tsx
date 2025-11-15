@@ -1,5 +1,6 @@
-import { Modal } from "@cloud-materials/common";
+import { Modal, Tag } from "@cloud-materials/common";
 import { t } from "i18next";
+import type { ApiMethod } from "./services/service/types";
 
 const pad = (n: number, length = 2) => String(n).padStart(length, "0");
 
@@ -84,4 +85,21 @@ export const handleConfirm = (
         },
         closable: true,
     });
+};
+
+export const genApiMethodTag = (method: ApiMethod) => {
+    switch (method) {
+        case "GET":
+            return <Tag color="blue">{method}</Tag>;
+        case "POST":
+            return <Tag color="green">{method}</Tag>;
+        case "PUT":
+            return <Tag color="orangered">{method}</Tag>;
+        case "DELETE":
+            return <Tag color="red">{method}</Tag>;
+        case "PATCH":
+            return <Tag color="orange">{method}</Tag>;
+        default:
+            return null;
+    }
 };

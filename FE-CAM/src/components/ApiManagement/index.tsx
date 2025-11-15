@@ -21,63 +21,63 @@ import { useThisService } from "@/hooks/useService";
 const { Title, Text } = Typography;
 const { Search } = Input;
 
-// 左侧 API 列表（静态）
-const apiTreeData = [
-    {
-        key: "group-user",
-        title: <Text style={{ fontWeight: 600 }}>User</Text>,
-        children: [
-            {
-                key: "post-login",
-                title: (
-                    <Space size={8} align="center">
-                        <Tag color="green">POST</Tag>
-                        <Text>/v1/user/login</Text>
-                    </Space>
-                ),
-            },
-            {
-                key: "post-register",
-                title: (
-                    <Space size={8} align="center">
-                        <Tag color="green">POST</Tag>
-                        <Text>/v1/user/register</Text>
-                    </Space>
-                ),
-            },
-            {
-                key: "get-user-by-id",
-                title: (
-                    <Space size={8} align="center">
-                        <Tag color="blue">GET</Tag>
-                        <Text>/v1/user/getUserById</Text>
-                    </Space>
-                ),
-            },
-        ],
-    },
-    {
-        key: "group-service",
-        title: <Text style={{ fontWeight: 600 }}>Service</Text>,
-        children: [
-            {
-                key: "service-api",
-                title: (
-                    <Space size={8} align="center">
-                        <Tag color="purple">Service</Tag>
-                        <Text>Api</Text>
-                    </Space>
-                ),
-            },
-        ],
-    },
-    {
-        key: "group-uncategorized",
-        title: <Text style={{ fontWeight: 600 }}>未分类</Text>,
-    },
-];
+// const apiTreeData = [
+//     {
+//         key: "group-user",
+//         title: <Text style={{ fontWeight: 600 }}>User</Text>,
+//         children: [
+//             {
+//                 key: "post-login",
+//                 title: (
+//                     <Space size={8} align="center">
+//                         <Tag color="green">POST1</Tag>
+//                         <Text>/v1/user/login</Text>
+//                     </Space>
+//                 ),
+//             },
+//             {
+//                 key: "post-register",
+//                 title: (
+//                     <Space size={8} align="center">
+//                         <Tag color="green">POST</Tag>
+//                         <Text>/v1/user/register</Text>
+//                     </Space>
+//                 ),
+//             },
+//             {
+//                 key: "get-user-by-id",
+//                 title: (
+//                     <Space size={8} align="center">
+//                         <Tag color="blue">GET</Tag>
+//                         <Text>/v1/user/getUserById</Text>
+//                     </Space>
+//                 ),
+//             },
+//         ],
+//     },
+//     {
+//         key: "group-service",
+//         title: <Text style={{ fontWeight: 600 }}>Service</Text>,
+//         children: [
+//             {
+//                 key: "service-api",
+//                 title: (
+//                     <Space size={8} align="center">
+//                         <Tag color="purple">Service</Tag>
+//                         <Text>Api</Text>
+//                     </Space>
+//                 ),
+//             },
+//         ],
+//     },
+//     {
+//         key: "group-uncategorized",
+//         title: <Text style={{ fontWeight: 600 }}>未分类</Text>,
+//     },
+// ];
 
 // 请求参数静态数据
+
 const requestColumns = [
     { title: "字段名称", dataIndex: "name", width: 160 },
     { title: "参数类型", dataIndex: "type", width: 120 },
@@ -138,6 +138,7 @@ const ApiManagement: React.FC = () => {
         currentVersion,
         isLatest,
         serviceDetail,
+        treeData,
         setCurrentVersion,
     } = useThisService(uuid);
 
@@ -246,17 +247,16 @@ const ApiManagement: React.FC = () => {
                         allowClear
                         placeholder="搜索 API"
                     />
-                    <Tree
-                        className={styles.tree}
-                        selectedKeys={[activeKey]}
-                        defaultExpandedKeys={[
-                            "group-user",
-                            "group-service",
-                            "group-uncategorized",
-                        ]}
-                        onSelect={(keys) => setActiveKey(String(keys[0]))}
-                        treeData={apiTreeData as any}
-                    />
+                    {/* autoExpandParent只有在Tree初次挂载时生效，所以要在treeData计算完成后再渲染 */}
+                    {treeData.length > 0 && (
+                        <Tree
+                            className={styles.tree}
+                            selectedKeys={[activeKey]}
+                            autoExpandParent={true}
+                            onSelect={(keys) => setActiveKey(String(keys[0]))}
+                            treeData={treeData}
+                        />
+                    )}
                 </div>
                 {/* 右侧详情 */}
                 <div className={styles.content}>

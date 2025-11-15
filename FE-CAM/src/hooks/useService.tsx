@@ -1,6 +1,11 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { CModal, Message } from "@cloud-materials/common";
+import {
+    CModal,
+    Message,
+    Typography,
+    Space,
+} from "@cloud-materials/common";
 import { t } from "i18next";
 
 import {
@@ -15,6 +20,8 @@ import {
     RestoreServiceById,
 } from "@/services/service";
 import type {
+    ApiBrief,
+    ApiCategory,
     CreateNewServiceRequest,
     DeletedServiceItem,
     Pagination,
@@ -24,6 +31,9 @@ import type {
 } from "@/services/service/types";
 import CreateServiceForm from "@/components/ServiceManagement/CreateServiceForm";
 import type { UserProfile } from "@/services/user/types";
+import { genApiMethodTag } from "@/utils";
+
+const { Text } = Typography;
 
 // 服务列表hook
 export const useService = () => {
@@ -226,6 +236,8 @@ export const useThisService = (service_uuid: string) => {
     const [serviceDetail, setServiceDetail] = useState<
         ServiceDetail | ServiceIterationDetail
     >({} as ServiceDetail);
+    const [apiCategories, setApiCategories] = useState<ApiCategory[]>([]);
+    const [apis, setApis] = useState<ApiBrief[]>([]);
 
     const initHook = async () => {
         setLoading(true);
@@ -259,6 +271,18 @@ export const useThisService = (service_uuid: string) => {
         }
         setServiceDetail(res.service || {});
         setIsLatest(res.is_latest || true);
+        if ("api_categories" in res.service) {
+            setApiCategories(res.service.api_categories || []);
+        }
+        if ("apis" in res.service || "api_drafts" in res.service) {
+            setApis(
+                ("apis" in res.service
+                    ? res.service.apis
+                    : "api_drafts" in res.service
+                    ? res.service.api_drafts
+                    : []) || []
+            );
+        }
         setLoading(false);
     };
 
@@ -272,82 +296,59 @@ export const useThisService = (service_uuid: string) => {
         }
     }, [currentVersion]);
 
-    // const genTreeData = () => {
-    //     if (!serviceDetail) {
-    //         return [];
-    //     }
-    //     const apiCategories
-    //     const apis =
-    //         "apis" in serviceDetail
-    //             ? serviceDetail.apis
-    //             : "api_drafts" in serviceDetail
-    //             ? serviceDetail.api_drafts
-    //             : [];
-    //     const treeData = {
+    const genTreeData = () => {
+        if (!apiCategories || !apis) {
+            return [];
+        }
+        const categoryMap = new Map<number, any>();
+        apiCategories.forEach((cat) => {
+            categoryMap.set(cat.id, {
+                key: `category-${cat.id}`,
+                title: <Text>{cat.name}</Text>,
+                children: [],
+            });
+        });
 
-    //     }
-    // };
+        const uncategorized: any[] = [];
 
-    // const apiTreeData = [
-    //     {
-    //         key: "group-user",
-    //         title: <Text style={{ fontWeight: 600 }}>User</Text>,
-    //         children: [
-    //             {
-    //                 key: "post-login",
-    //                 title: (
-    //                     <Space size={8} align="center">
-    //                         <Tag color="green">POST</Tag>
-    //                         <Text>/v1/user/login</Text>
-    //                     </Space>
-    //                 ),
-    //             },
-    //             {
-    //                 key: "post-register",
-    //                 title: (
-    //                     <Space size={8} align="center">
-    //                         <Tag color="green">POST</Tag>
-    //                         <Text>/v1/user/register</Text>
-    //                     </Space>
-    //                 ),
-    //             },
-    //             {
-    //                 key: "get-user-by-id",
-    //                 title: (
-    //                     <Space size={8} align="center">
-    //                         <Tag color="blue">GET</Tag>
-    //                         <Text>/v1/user/getUserById</Text>
-    //                     </Space>
-    //                 ),
-    //             },
-    //         ],
-    //     },
-    //     {
-    //         key: "group-service",
-    //         title: <Text style={{ fontWeight: 600 }}>Service</Text>,
-    //         children: [
-    //             {
-    //                 key: "service-api",
-    //                 title: (
-    //                     <Space size={8} align="center">
-    //                         <Tag color="purple">Service</Tag>
-    //                         <Text>Api</Text>
-    //                     </Space>
-    //                 ),
-    //             },
-    //         ],
-    //     },
-    //     {
-    //         key: "group-uncategorized",
-    //         title: <Text style={{ fontWeight: 600 }}>未分类</Text>,
-    //     },
-    // ];
+        apis.forEach((api) => {
+            const node = {
+                key: `${api.method}-${api.path}`,
+                title: (
+                    <Space align="center">
+                        {genApiMethodTag(api.method)}
+                        <Text>{api.path}</Text>
+                    </Space>
+                ),
+            };
+            if (api.category_id == null) {
+                uncategorized.push(node);
+            } else {
+                const group = categoryMap.get(api.category_id);
+                if (group) {
+                    group.children.push(node);
+                } else {
+                    uncategorized.push(node);
+                }
+            }
+        });
+
+        const treeData = [
+            ...Array.from(categoryMap.values()),
+            ...uncategorized,
+        ];
+        return treeData;
+    };
+
     return {
         loading,
         versions,
         currentVersion,
         isLatest,
         serviceDetail,
+        apiCategories,
+        apis,
+        treeData: genTreeData(),
         setCurrentVersion,
     };
 };
