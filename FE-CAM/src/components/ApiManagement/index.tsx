@@ -148,37 +148,16 @@ const ApiManagement: React.FC = () => {
             : serviceDetail?.service?.service_uuid;
     }, [serviceDetail]);
 
+    const handleSelectApi = (keys: string[]) => {
+        const apiId = Number(keys[0]);
+        setSelectedApiId(apiId);
+        setSelectedKeys(keys);
+    };
+
     const [expandedReq, setExpandedReq] = useState(true);
     const [expandedRes, setExpandedRes] = useState(false);
-    const [activeKey, setActiveKey] = useState("post-login");
-
-    const headerText = useMemo(() => {
-        switch (activeKey) {
-            case "post-login":
-                return (
-                    <Space size={12} align="center">
-                        <Tag color="green">POST</Tag>
-                        <Text code>/v1/user/login</Text>
-                    </Space>
-                );
-            case "post-register":
-                return (
-                    <Space size={12} align="center">
-                        <Tag color="green">POST</Tag>
-                        <Text code>/v1/user/register</Text>
-                    </Space>
-                );
-            case "get-user-by-id":
-                return (
-                    <Space size={12} align="center">
-                        <Tag color="blue">GET</Tag>
-                        <Text code>/v1/user/getUserById</Text>
-                    </Space>
-                );
-            default:
-                return <Text>/</Text>;
-        }
-    }, [activeKey]);
+    const [selectedApiId, setSelectedApiId] = useState<number>(-1);
+    const [selectedKeys, setSelectedKeys] = useState<string[]>([]);
 
     if (loading) {
         return (
@@ -251,9 +230,10 @@ const ApiManagement: React.FC = () => {
                     {treeData.length > 0 && (
                         <Tree
                             className={styles.tree}
-                            selectedKeys={[activeKey]}
+                            selectedKeys={selectedKeys}
                             autoExpandParent={true}
-                            onSelect={(keys) => setActiveKey(String(keys[0]))}
+                            blockNode={true}
+                            onSelect={handleSelectApi}
                             treeData={treeData}
                         />
                     )}
@@ -262,7 +242,7 @@ const ApiManagement: React.FC = () => {
                 <div className={styles.content}>
                     <div className={styles.header}>
                         <Title heading={5} className={styles.pathTitle}>
-                            {headerText}
+                            {/* {headerText} */}
                         </Title>
                         <Space>
                             <Button type="secondary">编辑</Button>
