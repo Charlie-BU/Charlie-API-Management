@@ -7,6 +7,7 @@ from authentication import AuthHandler
 from database.database import session
 from services.user import userGetUserIdByAccessToken
 from services.api import *  # type: ignore
+from utils import string2Bool
 
 
 apiRouterV1 = SubRouter(__file__, prefix="/v1/api")
@@ -66,14 +67,14 @@ def getApiById(request: Request):
     api_id = request.query_params.get("api_id", None)
     if not api_id:
         return Response(status_code=400, headers={}, description="api_id is required")
-    is_latest = request.query_params.get("is_latest")
+    is_latest = request.query_params.get("is_latest", "true")
     user_id = userGetUserIdByAccessToken(request)
     with session() as db:
         res = apiGetApiById(
             db=db,
             api_id=int(api_id),
             user_id=user_id,
-            is_latest=bool(is_latest) if is_latest else True,
+            is_latest=string2Bool(is_latest),
         )
     return res
 

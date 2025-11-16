@@ -1,11 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import {
-    CModal,
-    Message,
-    Typography,
-    Space,
-} from "@cloud-materials/common";
+import { CModal, Message, Typography, Space } from "@cloud-materials/common";
 import { t } from "i18next";
 
 import {
@@ -306,6 +301,7 @@ export const useThisService = (service_uuid: string) => {
                 key: `category-${cat.id}`,
                 title: <Text>{cat.name}</Text>,
                 children: [],
+                disabled: true,
             });
         });
 
@@ -313,11 +309,11 @@ export const useThisService = (service_uuid: string) => {
 
         apis.forEach((api) => {
             const node = {
-                key: `${api.method}-${api.path}`,
+                key: api.id.toString(),
                 title: (
                     <Space align="center">
                         {genApiMethodTag(api.method)}
-                        <Text>{api.path}</Text>
+                        {api.path}
                     </Space>
                 ),
             };

@@ -5,7 +5,6 @@ from database.models import (
     Service,
     Api,
     ApiCategory,
-    ServiceIteration,
     User,
     ApiDraft,
     RequestParamDraft,

@@ -43,7 +43,7 @@ export interface ApiCategory {
 export interface ApiBrief {
     id: number;
     name: string;
-    method: HttpMethod | string;
+    method: HttpMethod;
     path: string;
     description?: string | null;
     level?: ApiLevel | string;
@@ -125,7 +125,7 @@ export interface ApiDraftItem {
     owner_id: number;
     category_id?: number | null;
     name: string;
-    method: HttpMethod | string;
+    method: HttpMethod;
     path: string;
     description?: string | null;
     level?: ApiLevel | string;
@@ -206,7 +206,7 @@ export type UpdateApiCategoryByIdResponse = BaseResponse;
 export interface AddApiRequest {
     service_iteration_id: number;
     name: string;
-    method: HttpMethod | string;
+    method: HttpMethod;
     path: string;
     description: string;
     level: ApiLevel | string;
@@ -252,7 +252,7 @@ export interface UpdateApiByApiDraftIdRequest {
     service_iteration_id: number;
     api_draft_id: number;
     name: string;
-    method: HttpMethod | string;
+    method: HttpMethod;
     path: string;
     description: string;
     level: ApiLevel | string;
