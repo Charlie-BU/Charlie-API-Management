@@ -23,6 +23,7 @@ export interface UserBrief {
     id: number;
     username: string;
     nickname?: string | null;
+    email?: string | null;
     role?: string;
     level?: string;
 }
@@ -46,7 +47,7 @@ export interface ApiBrief {
     method: HttpMethod;
     path: string;
     description?: string | null;
-    level?: ApiLevel | string;
+    level?: ApiLevel;
     is_enabled?: boolean;
     category_id?: number | null;
 }
@@ -128,7 +129,7 @@ export interface ApiDraftItem {
     method: HttpMethod;
     path: string;
     description?: string | null;
-    level?: ApiLevel | string;
+    level?: ApiLevel;
     is_enabled?: boolean;
     created_at?: string;
     updated_at?: string;
@@ -209,7 +210,7 @@ export interface AddApiRequest {
     method: HttpMethod;
     path: string;
     description: string;
-    level: ApiLevel | string;
+    level: ApiLevel;
     category_id?: number | null;
 }
 
@@ -255,7 +256,7 @@ export interface UpdateApiByApiDraftIdRequest {
     method: HttpMethod;
     path: string;
     description: string;
-    level: ApiLevel | string;
+    level: ApiLevel;
     req_params: ApiReqParamInput[];
     resp_params: ApiRespParamInput[];
 }

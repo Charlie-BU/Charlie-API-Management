@@ -9,11 +9,12 @@ import {
     Spin,
     Divider,
     Table,
+    Popover,
 } from "@cloud-materials/common";
 
 import styles from "./index.module.less";
-import { genApiMethodTag } from "@/utils";
-import type { ApiDetail, ApiDraftDetail } from "@/services/api/types";
+import { formatDateOrDateTime, genApiLevelTag, genApiMethodTag } from "@/utils";
+import type { ApiDetail, ApiDraftDetail, ApiLevel } from "@/services/api/types";
 
 const { Title, Text } = Typography;
 
@@ -86,15 +87,15 @@ const Detail: React.FC<{
             </div>
         );
     }
-    console.log(apiDetail)
+    console.log(apiDetail);
 
     return (
         <div className={styles.content}>
             <div className={styles.header}>
                 <Title heading={5} className={styles.pathTitle}>
                     <Space>
-                        {genApiMethodTag(apiDetail?.method)}
-                        {apiDetail?.path}
+                        {genApiMethodTag(apiDetail?.method, "medium")}
+                        {apiDetail.path}
                     </Space>
                 </Title>
                 <Space>
@@ -107,40 +108,54 @@ const Detail: React.FC<{
             <Card className={styles.section} title={"接口信息"} bordered>
                 <div className={styles.infoGrid}>
                     <div className={styles.infoItem}>
-                        <Text className={styles.infoLabel}>接口名称中文</Text>
-                        <Text>login</Text>
+                        <Text className={styles.infoLabel}>接口名称</Text>
+                        <Text>{apiDetail.name}</Text>
                     </div>
                     <div className={styles.infoItem}>
                         <Text className={styles.infoLabel}>接口 owner</Text>
-                        <Space>
+                        <Popover
+                            content={`${apiDetail.owner?.nickname} (${apiDetail.owner?.username}) - ${apiDetail.owner?.email}`}
+                        >
                             <Avatar
-                                size={24}
-                                style={{ backgroundColor: "#e8f3ff" }}
+                                size={25}
+                                style={{ backgroundColor: "#ecf2ff" }}
                             >
-                                卡
+                                {apiDetail.owner?.nickname?.[0] ||
+                                    apiDetail.owner?.username?.[0] ||
+                                    "-"}
                             </Avatar>
-                            <Avatar
-                                size={24}
-                                style={{ backgroundColor: "#e8f3ff" }}
-                            >
-                                乙
-                            </Avatar>
-                        </Space>
+                        </Popover>
                     </div>
                     <div className={styles.infoItem}>
                         <Text className={styles.infoLabel}>接口等级</Text>
-                        <Tag color="red">P0</Tag>
+                        {genApiLevelTag(apiDetail.level as ApiLevel, "small")}
                     </div>
-                    <div className={styles.infoItem}>
-                        <Text className={styles.infoLabel}>接口标签</Text>
-                        <Text>无</Text>
+                    <div
+                        className={styles.infoItem}
+                    >
+                        <Text className={styles.infoLabel}>创建时间</Text>
+                        <Text>
+                            {apiDetail.created_at
+                                ? formatDateOrDateTime(apiDetail.created_at)
+                                : "-"}
+                        </Text>
+                    </div>
+                    <div
+                        className={styles.infoItem}
+                    >
+                        <Text className={styles.infoLabel}>更新时间</Text>
+                        <Text>
+                            {apiDetail.updated_at
+                                ? formatDateOrDateTime(apiDetail.updated_at)
+                                : "-"}
+                        </Text>
                     </div>
                     <div
                         className={styles.infoItem}
                         style={{ gridColumn: "1 / -1" }}
                     >
                         <Text className={styles.infoLabel}>接口描述</Text>
-                        <Text>无</Text>
+                        <Text>{apiDetail.description || "-"}</Text>
                     </div>
                 </div>
             </Card>
