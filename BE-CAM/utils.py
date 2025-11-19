@@ -1,4 +1,7 @@
 # 版本号转换为数字，如1.0.0 -> 100
+from typing import List
+
+
 def version2Number(version_str: str) -> int:
     try:
         parts = version_str.split(".")

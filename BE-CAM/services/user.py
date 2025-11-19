@@ -19,7 +19,7 @@ SECRET_KEY = os.getenv("LOGIN_SECRET")
 # 生成access token
 def createAccessToken(data: dict, expires_delta: timedelta | None = None) -> str:
     to_encode = data.copy()
-    expire = datetime.utcnow() + (expires_delta or timedelta(hours=3))
+    expire = datetime.utcnow() + (expires_delta or timedelta(hours=24))
     to_encode.update({"exp": expire})
     if not ALGORITHM or not SECRET_KEY:
         raise Exception("ALGORITHM or SECRET_KEY is not set in .env file")

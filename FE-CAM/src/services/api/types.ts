@@ -23,6 +23,7 @@ export interface UserBrief {
     id: number;
     username: string;
     nickname?: string | null;
+    email?: string | null;
     role?: string;
     level?: string;
 }
@@ -46,7 +47,7 @@ export interface ApiBrief {
     method: HttpMethod;
     path: string;
     description?: string | null;
-    level?: ApiLevel | string;
+    level?: ApiLevel;
     is_enabled?: boolean;
     category_id?: number | null;
 }
@@ -89,6 +90,8 @@ export interface ApiDetail extends ApiBrief {
     service?: ServiceItem | null;
     request_params?: RequestParam[];
     response_params?: ResponseParam[];
+    request_params_by_location?: Record<ParamLocation, RequestParam[]>;
+    response_params_by_status_code?: Record<number, ResponseParam[]>;
 }
 
 // 草稿表 ApiDraft 的详情（包含关系）
@@ -128,7 +131,7 @@ export interface ApiDraftItem {
     method: HttpMethod;
     path: string;
     description?: string | null;
-    level?: ApiLevel | string;
+    level?: ApiLevel;
     is_enabled?: boolean;
     created_at?: string;
     updated_at?: string;
@@ -139,6 +142,8 @@ export interface ApiDraftItem {
 export interface ApiDraftDetail extends ApiDraftItem {
     request_params?: RequestParamDraft[];
     response_params?: ResponseParamDraft[];
+    request_params_by_location?: Record<ParamLocation, RequestParamDraft[]>;
+    response_params_by_status_code?: Record<number, ResponseParamDraft[]>;
 }
 
 // ---- 请求/响应类型 ----
@@ -209,7 +214,7 @@ export interface AddApiRequest {
     method: HttpMethod;
     path: string;
     description: string;
-    level: ApiLevel | string;
+    level: ApiLevel;
     category_id?: number | null;
 }
 
@@ -255,7 +260,7 @@ export interface UpdateApiByApiDraftIdRequest {
     method: HttpMethod;
     path: string;
     description: string;
-    level: ApiLevel | string;
+    level: ApiLevel;
     req_params: ApiReqParamInput[];
     resp_params: ApiRespParamInput[];
 }

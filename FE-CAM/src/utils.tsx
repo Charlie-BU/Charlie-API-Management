@@ -1,6 +1,6 @@
 import { Modal, Tag } from "@cloud-materials/common";
 import { t } from "i18next";
-import type { ApiMethod } from "./services/service/types";
+import type { ApiLevel, HttpMethod } from "./services/api/types";
 
 const pad = (n: number, length = 2) => String(n).padStart(length, "0");
 
@@ -87,19 +87,59 @@ export const handleConfirm = (
     });
 };
 
-export const genApiMethodTag = (method: ApiMethod) => {
-    switch (method) {
-        case "GET":
-            return <Tag color="blue">{method}</Tag>;
-        case "POST":
-            return <Tag color="green">{method}</Tag>;
-        case "PUT":
-            return <Tag color="orangered">{method}</Tag>;
-        case "DELETE":
-            return <Tag color="red">{method}</Tag>;
-        case "PATCH":
-            return <Tag color="orange">{method}</Tag>;
-        default:
-            return null;
-    }
+export const genApiMethodTag = (
+    method: HttpMethod,
+    size: "small" | "default" | "medium" | "large" = "default"
+) => {
+    const methodColorMap = {
+        GET: "arcoblue",
+        POST: "green",
+        PUT: "orangered",
+        DELETE: "red",
+        PATCH: "orange",
+    };
+
+    const color = methodColorMap[method];
+    return (
+        <Tag color={color} size={size}>
+            {method}
+        </Tag>
+    );
+};
+
+export const genApiLevelTag = (
+    level: ApiLevel,
+    size: "small" | "default" | "medium" | "large" = "default"
+) => {
+    const levelColorMap = {
+        P0: "red",
+        P1: "orangered",
+        P2: "orange",
+        P3: "arcoblue",
+        P4: "green",
+    };
+
+    const color = levelColorMap[level];
+    return (
+        <Tag color={color} size={size}>
+            {level}
+        </Tag>
+    );
+};
+
+export const genStatusCodeTag = (
+    code: number,
+    size: "small" | "default" | "medium" | "large" = "default"
+) => {
+    const codeColorMap: Record<string, string> = {
+        "2": "green",
+        "4": "orangered",
+        "5": "red",
+    };
+    const color = codeColorMap[code.toString()[0]] || "arcoblue";
+    return (
+        <Tag color={color} size={size}>
+            {code}
+        </Tag>
+    );
 };

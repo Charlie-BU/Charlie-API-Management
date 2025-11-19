@@ -1,4 +1,10 @@
 {
     "editor.defaultFormatter": "esbenp.prettier-vscode",
-    "prettier.tabWidth": 4
+    "prettier.tabWidth": 4,
+    "python.languageServer": "Pylance",
+    "basedpyright.disableLanguageServices": true,
+    "editor.formatOnSave": false,
+    "[python]": {
+        "editor.defaultFormatter": "ms-python.black-formatter"
+    }
 }

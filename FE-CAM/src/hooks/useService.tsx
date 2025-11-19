@@ -311,10 +311,16 @@ export const useThisService = (service_uuid: string) => {
             const node = {
                 key: api.id.toString(),
                 title: (
-                    <Space align="center">
-                        {genApiMethodTag(api.method)}
-                        {api.path}
-                    </Space>
+                    <div>
+                        <Space align="center" style={{ fontWeight: 500 }}>
+                            {genApiMethodTag(api.method, "small")}
+                            {api.name}
+                        </Space>
+                        <br />
+                        <Text style={{ color: "#6e7687", fontSize: 10 }}>
+                            {api.path}
+                        </Text>
+                    </div>
                 ),
             };
             if (api.category_id == null) {

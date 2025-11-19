@@ -9,6 +9,14 @@
     padding: 12px;
 }
 
+:global(.arco-tree-node-selected) {
+    background-color: var(--color-bg-5) !important;
+}
+
+:global(.arco-tree-node-title:hover) {
+    background-color: transparent !important;
+}
+
 .search {
     margin-bottom: 12px;
 }
@@ -22,6 +30,7 @@
 .content {
     flex: 1;
     padding: 16px 20px;
+    min-height: 100vh;
 }
 
 .header {
@@ -88,12 +97,6 @@
     margin-bottom: 6px;
 }
 
-// .serviceTitleRow {
-//     display: flex;
-//     align-items: center;
-//     gap: 8px;
-// }
-
 .serviceName {
     font-size: 16px;
 }
@@ -110,3 +113,6 @@
     justify-content: center;
 }
 
+:global(.arco-space-vertical) {
+    width: 100%;
+}

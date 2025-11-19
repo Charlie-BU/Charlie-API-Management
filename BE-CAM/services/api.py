@@ -1,5 +1,4 @@
 from sqlalchemy.orm import Session
-from datetime import datetime
 
 from database.models import (
     Service,
@@ -11,7 +10,11 @@ from database.models import (
     ResponseParamDraft,
 )
 from database.enums import ApiLevel, HttpMethod, ParamType, ParamLocation
-from services.utils import checkServiceIterationPermission
+from services.utils import (
+    checkServiceIterationPermission,
+    organizeReqParams,
+    organizeRespParams,
+)
 
 
 # 通过service_id获取全部categories
@@ -104,10 +107,28 @@ def apiGetApiById(
                 "status": -4,
                 "message": "You are neither the owner of this service draft, nor the creator of this service iteration",
             }
+    # 满足查询条件
+    # 处理request_params
+    request_params_by_location = organizeReqParams(api.request_params)
+    # 处理response_params
+    response_params_by_status_code = organizeRespParams(api.response_params)
+
+    api_info = api.toJson(
+        include_relations=True,
+        exclude=[
+            "request_params",
+            "response_params",
+            "service",
+            "service_iteration",
+            "category",
+        ],  # 需要包含owner，但不包含其他无用嵌套数据
+    )
+    api_info["request_params_by_location"] = request_params_by_location
+    api_info["response_params_by_status_code"] = response_params_by_status_code
     return {
         "status": 200,
         "message": "Get api success",
-        "api": api.toJson(include_relations=True),
+        "api": api_info,
     }
 
 
