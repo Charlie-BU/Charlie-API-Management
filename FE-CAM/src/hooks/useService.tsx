@@ -322,9 +322,6 @@ export const useThisService = (service_uuid: string) => {
                         </Text>
                     </div>
                 ),
-                style: {
-                    height: 44,
-                },
             };
             if (api.category_id == null) {
                 uncategorized.push(node);

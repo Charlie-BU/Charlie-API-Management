@@ -10,13 +10,15 @@ import {
     Divider,
     Table,
     Popover,
+    IconCommon,
+    Descriptions,
 } from "@cloud-materials/common";
 
 import styles from "./index.module.less";
 import { formatDateOrDateTime, genApiLevelTag, genApiMethodTag } from "@/utils";
 import type { ApiDetail, ApiDraftDetail, ApiLevel } from "@/services/api/types";
 
-const { Title, Text } = Typography;
+const { Title, Text, Paragraph } = Typography;
 
 // Mock Data
 const requestColumns = [
@@ -87,13 +89,53 @@ const Detail: React.FC<{
             </div>
         );
     }
-    console.log(apiDetail);
+
+    const apiBriefInfo = [
+        {
+            label: "接口名称",
+            value: apiDetail.name,
+        },
+        {
+            label: "接口 Owner",
+            value: (
+                <Popover
+                    content={`${apiDetail.owner?.nickname} (${apiDetail.owner?.username}) - ${apiDetail.owner?.email}`}
+                >
+                    <Avatar size={25} style={{ backgroundColor: "#ecf2ff" }}>
+                        {apiDetail.owner?.nickname?.[0] ||
+                            apiDetail.owner?.username?.[0] ||
+                            "-"}
+                    </Avatar>
+                </Popover>
+            ),
+        },
+        {
+            label: "接口等级",
+            value: genApiLevelTag(apiDetail.level as ApiLevel, "small"),
+        },
+        {
+            label: "创建时间",
+            value: apiDetail.created_at
+                ? formatDateOrDateTime(apiDetail.created_at)
+                : "-",
+        },
+        {
+            label: "更新时间",
+            value: apiDetail.updated_at
+                ? formatDateOrDateTime(apiDetail.updated_at)
+                : "-",
+        },
+        {
+            label: "接口描述",
+            value: apiDetail.description || "-",
+        },
+    ];
 
     return (
         <div className={styles.content}>
             <div className={styles.header}>
                 <Title heading={5} className={styles.pathTitle}>
-                    <Space>
+                    <Space size={10}>
                         {genApiMethodTag(apiDetail?.method, "medium")}
                         {apiDetail.path}
                     </Space>
@@ -105,120 +147,61 @@ const Detail: React.FC<{
                 </Space>
             </div>
 
-            <Card className={styles.section} title={"接口信息"} bordered>
-                <div className={styles.infoGrid}>
-                    <div className={styles.infoItem}>
-                        <Text className={styles.infoLabel}>接口名称</Text>
-                        <Text>{apiDetail.name}</Text>
-                    </div>
-                    <div className={styles.infoItem}>
-                        <Text className={styles.infoLabel}>接口 owner</Text>
-                        <Popover
-                            content={`${apiDetail.owner?.nickname} (${apiDetail.owner?.username}) - ${apiDetail.owner?.email}`}
-                        >
-                            <Avatar
-                                size={25}
-                                style={{ backgroundColor: "#ecf2ff" }}
-                            >
-                                {apiDetail.owner?.nickname?.[0] ||
-                                    apiDetail.owner?.username?.[0] ||
-                                    "-"}
-                            </Avatar>
-                        </Popover>
-                    </div>
-                    <div className={styles.infoItem}>
-                        <Text className={styles.infoLabel}>接口等级</Text>
-                        {genApiLevelTag(apiDetail.level as ApiLevel, "small")}
-                    </div>
-                    <div
-                        className={styles.infoItem}
-                    >
-                        <Text className={styles.infoLabel}>创建时间</Text>
-                        <Text>
-                            {apiDetail.created_at
-                                ? formatDateOrDateTime(apiDetail.created_at)
-                                : "-"}
-                        </Text>
-                    </div>
-                    <div
-                        className={styles.infoItem}
-                    >
-                        <Text className={styles.infoLabel}>更新时间</Text>
-                        <Text>
-                            {apiDetail.updated_at
-                                ? formatDateOrDateTime(apiDetail.updated_at)
-                                : "-"}
-                        </Text>
-                    </div>
-                    <div
-                        className={styles.infoItem}
-                        style={{ gridColumn: "1 / -1" }}
-                    >
-                        <Text className={styles.infoLabel}>接口描述</Text>
-                        <Text>{apiDetail.description || "-"}</Text>
-                    </div>
-                </div>
-            </Card>
+            <div style={{ fontSize: 13, fontWeight: 500, marginBottom: 12 }}>
+                <IconCommon /> 接口信息
+            </div>
+            <Descriptions
+                data={apiBriefInfo}
+                layout="inline-vertical"
+                style={{ marginBottom: -10 }}
+            />
 
-            <Card className={styles.section} title={"请求参数"} bordered>
-                <div className={styles.subHeader}>
-                    <Text>Body 参数</Text>
-                    <Space>
-                        <Button
-                            type="text"
-                            onClick={() => setExpandedReq((v) => !v)}
-                        >
-                            {expandedReq ? "收起示例" : "展开示例"}
-                        </Button>
-                        <Tag color="arcoblue">TypeScript</Tag>
-                    </Space>
-                </div>
-                <Table
-                    pagination={false}
-                    columns={requestColumns as any}
-                    rowKey="name"
-                    data={requestData}
-                    size="small"
-                />
-                {expandedReq && (
-                    <Card className={styles.codeCard} bordered={false}>
-                        <pre className={styles.codeBlock}>
-                            {tsRequestExample}
-                        </pre>
-                    </Card>
-                )}
-            </Card>
+            <Divider />
+            <div style={{ fontSize: 13, fontWeight: 500, marginBottom: 12 }}>
+                <IconCommon /> 请求参数
+            </div>
 
-            <Divider style={{ margin: "16px 0" }} />
+            <div className={styles.subHeader}>
+                <Text>Body 参数</Text>
+                <Space>
+                    <Button
+                        type="text"
+                        onClick={() => setExpandedReq((v) => !v)}
+                    >
+                        {expandedReq ? "收起示例" : "展开示例"}
+                    </Button>
+                    <Tag color="arcoblue">TypeScript</Tag>
+                </Space>
+            </div>
+            <Table
+                pagination={false}
+                columns={requestColumns as any}
+                rowKey="name"
+                data={requestData}
+                size="small"
+            />
+            {expandedReq && (
+                <Card className={styles.codeCard} bordered={false}>
+                    <pre className={styles.codeBlock}>{tsRequestExample}</pre>
+                </Card>
+            )}
 
-            <Card className={styles.section} title={"响应参数"} bordered>
-                <div className={styles.subHeader}>
-                    <Text>Body 参数</Text>
-                    <Space>
-                        <Button
-                            type="text"
-                            onClick={() => setExpandedRes((v) => !v)}
-                        >
-                            {expandedRes ? "收起示例" : "展开示例"}
-                        </Button>
-                        <Tag color="arcoblue">TypeScript</Tag>
-                    </Space>
-                </div>
-                <Table
-                    pagination={false}
-                    columns={responseColumns as any}
-                    rowKey="name"
-                    data={responseData}
-                    size="small"
-                />
-                {expandedRes && (
-                    <Card className={styles.codeCard} bordered={false}>
-                        <pre className={styles.codeBlock}>
-                            {tsResponseExample}
-                        </pre>
-                    </Card>
-                )}
-            </Card>
+            <Divider />
+            <div style={{ fontSize: 13, fontWeight: 500, marginBottom: 12 }}>
+                <IconCommon /> 响应参数
+            </div>
+            <Table
+                pagination={false}
+                columns={responseColumns as any}
+                rowKey="name"
+                data={responseData}
+                size="small"
+            />
+            {expandedRes && (
+                <Card className={styles.codeCard} bordered={false}>
+                    <pre className={styles.codeBlock}>{tsResponseExample}</pre>
+                </Card>
+            )}
         </div>
     );
 };

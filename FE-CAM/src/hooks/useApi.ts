@@ -37,6 +37,16 @@ const useApi = (apiId: number, isLatest: boolean) => {
         fetchApiDetail();
     }, [apiId, isLatest]);
 
+    const organizeReqParams = () => {
+        const { request_params = [] } = apiDetail;
+        console.log(request_params);
+        return {}
+    };
+
+    useEffect(() => {
+        organizeReqParams();
+    }, [apiDetail]);
+
     return {
         loading,
         apiDetail,
