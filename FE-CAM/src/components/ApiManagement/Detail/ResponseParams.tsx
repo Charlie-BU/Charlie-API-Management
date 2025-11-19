@@ -1,4 +1,5 @@
-import type { ApiDetail, ApiDraftDetail } from "@/services/api/types";
+import type { ApiDetail, ApiDraftDetail, ResponseParam, ResponseParamDraft } from "@/services/api/types";
+import { genStatusCodeTag } from "@/utils";
 import {
     IconCommon,
     Space,
@@ -10,35 +11,69 @@ import {
 const { Text } = Typography;
 
 const responseColumns = [
-    { title: "字段名称", dataIndex: "name", width: 160 },
-    { title: "参数类型", dataIndex: "type", width: 120 },
-    { title: "类型格式", dataIndex: "format", width: 120 },
-    { title: "备注", dataIndex: "desc" },
+    { title: "参数名称", dataIndex: "name", width: 160 },
+    {
+        title: "参数类型",
+        dataIndex: "type",
+        width: 150,
+        render: (v: string, record: ResponseParam | ResponseParamDraft) =>
+            v === "array" && record.array_child_type ? (
+                <Tag>
+                    {v}
+                    {"<"}
+                    {record.array_child_type}
+                    {">"}
+                </Tag>
+            ) : (
+                <Tag>{v}</Tag>
+            ),
+    },
+    {
+        title: "是否必填",
+        dataIndex: "required",
+        width: 120,
+        render: (v: boolean) => (
+            <Tag color={v ? "red" : "gray"}>{v ? "必填" : "选填"}</Tag>
+        ),
+    },
+    { title: "描述", dataIndex: "description", placeholder: "-" },
+    {
+        title: "默认值",
+        dataIndex: "default_value",
+        width: 200,
+        placeholder: "-",
+    },
+    { title: "示例值", dataIndex: "example", width: 200, placeholder: "-" },
 ];
 
-const responseData = [
-    { name: "message", type: "string", format: "string", desc: "" },
-    { name: "access_token", type: "string", format: "string", desc: "" },
-];
 
 const ResponseParams = (props: { apiDetail: ApiDetail | ApiDraftDetail }) => {
     const { apiDetail } = props;
+    const responseParamsByStatusCode: Record<
+            number,
+            ResponseParam[] | ResponseParamDraft[]
+        > = apiDetail.response_params_by_status_code || {};
+        const existCodes: number[] = Object.keys(responseParamsByStatusCode).filter(
+            (status) => responseParamsByStatusCode[Number(status)]?.length > 0
+        ).map(Number).sort((a, b) => a - b);      // Object.keys()自动将key转换为string，需要手动转换为number，并排序
 
     return (
         <Space direction="vertical" size={12}>
             <div style={{ fontSize: 13, fontWeight: 500 }}>
                 <IconCommon /> 响应参数
             </div>
-            <Space direction="vertical" size={8}>
-                <Text>状态码：200</Text>
-                <Table
-                    pagination={false}
-                    columns={responseColumns as any}
-                    rowKey="name"
-                    data={responseData}
-                    size="small"
-                />
-            </Space>
+            {existCodes.map((code) => (
+                <Space direction="vertical" size={8} key={code}>
+                    <Text>状态码：{genStatusCodeTag(code)}</Text>
+                    <Table<ResponseParam | ResponseParamDraft>
+                        pagination={false}
+                        columns={responseColumns as any}
+                        rowKey="name"
+                        data={responseParamsByStatusCode[code]}
+                        size="small"
+                    />
+                </Space>
+            ))}
         </Space>
     );
 };

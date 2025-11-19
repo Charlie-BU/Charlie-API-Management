@@ -126,3 +126,20 @@ export const genApiLevelTag = (
         </Tag>
     );
 };
+
+export const genStatusCodeTag = (
+    code: number,
+    size: "small" | "default" | "medium" | "large" = "default"
+) => {
+    const codeColorMap: Record<string, string> = {
+        "2": "green",
+        "4": "orangered",
+        "5": "red",
+    };
+    const color = codeColorMap[code.toString()[0]] || "arcoblue";
+    return (
+        <Tag color={color} size={size}>
+            {code}
+        </Tag>
+    );
+};
