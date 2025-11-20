@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 import type { ApiDetail, ApiDraftDetail } from "@/services/api/types";
 import { GetApiById } from "@/services/api";
@@ -10,7 +10,11 @@ const useApi = (apiId: number, isLatest: boolean) => {
         {} as ApiDetail
     );
 
-    const fetchApiDetail = async () => {
+    const fetchApiDetail = useCallback(async () => {
+        if (!apiId || apiId <= 0) {
+            setApiDetail({} as ApiDetail);
+            return;
+        }
         setLoading(true);
         try {
             const res = await GetApiById(apiId, isLatest);
@@ -27,15 +31,11 @@ const useApi = (apiId: number, isLatest: boolean) => {
         } finally {
             setLoading(false);
         }
-    };
+    }, [apiId, isLatest]);
 
     useEffect(() => {
-        if (!apiId || apiId <= 0) {
-            setApiDetail({} as ApiDetail);
-            return;
-        }
         fetchApiDetail();
-    }, [apiId, isLatest]);
+    }, [fetchApiDetail]);
 
     return {
         loading,

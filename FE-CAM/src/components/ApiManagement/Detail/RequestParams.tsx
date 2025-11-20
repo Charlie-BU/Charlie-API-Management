@@ -1,21 +1,59 @@
+import {
+    IconCommon,
+    Popover,
+    Space,
+    Table,
+    Tag,
+    Tooltip,
+    Typography,
+} from "@cloud-materials/common";
+
 import type {
     ApiDetail,
     ApiDraftDetail,
     RequestParam,
     RequestParamDraft,
 } from "@/services/api/types";
-import {
-    IconCommon,
-    Space,
-    Table,
-    Tag,
-    Typography,
-} from "@cloud-materials/common";
+import styles from "../index.module.less";
 
 const { Text } = Typography;
 
 const requestColumns = [
-    { title: "参数名称", dataIndex: "name", width: 160 },
+    {
+        title: "参数名称",
+        dataIndex: "name",
+        width: 160,
+        render: (v: string, record: RequestParam | RequestParamDraft) => {
+            const childrenParams = record.children_params || [];
+            if (!childrenParams || childrenParams.length === 0) {
+                return v;
+            }
+            return (
+                <Tooltip content="点击查看子参数">
+                    <Popover
+                        trigger="click"
+                        content={
+                            <Table<RequestParam | RequestParamDraft>
+                                pagination={false}
+                                columns={requestColumns as any}
+                                rowKey="name"
+                                data={childrenParams}
+                                size="small"
+                            />
+                        }
+                        style={{ width: 1000, maxWidth: 1000 }}
+                    >
+                        <Text
+                            type="primary"
+                            className={styles.hasChildParamTitle}
+                        >
+                            {v}
+                        </Text>
+                    </Popover>
+                </Tooltip>
+            );
+        },
+    },
     {
         title: "参数类型",
         dataIndex: "type",

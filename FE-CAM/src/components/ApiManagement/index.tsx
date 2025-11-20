@@ -6,6 +6,7 @@ import useApi from "@/hooks/useApi";
 import Detail from "./Detail";
 import Header from "./Header";
 import ApiList from "./ApiList";
+import { Spin } from "@cloud-materials/common";
 
 const ApiManagement: React.FC = () => {
     const [searchParams] = useSearchParams();
@@ -18,6 +19,8 @@ const ApiManagement: React.FC = () => {
         serviceDetail,
         treeData,
         setCurrentVersion,
+        handleAddCategory,
+        handleUpdateApiCategory,
     } = useThisService(uuid);
 
     const serviceUuid = useMemo(() => {
@@ -27,7 +30,21 @@ const ApiManagement: React.FC = () => {
     }, [serviceDetail]);
 
     const [selectedApiId, setSelectedApiId] = useState<number>(-1);
-    const { loading: apiLoading, apiDetail } = useApi(selectedApiId, isLatest);
+    const { loading: apiLoading, apiDetail  } = useApi(selectedApiId, isLatest);
+
+    if (
+        loading ||
+        !versions ||
+        !serviceUuid ||
+        !treeData ||
+        treeData.length === 0
+    ) {
+        return (
+            <div className={styles.loadingCenter}>
+                <Spin dot />
+            </div>
+        );
+    }
 
     return (
         <>
@@ -43,6 +60,8 @@ const ApiManagement: React.FC = () => {
                 <ApiList
                     treeData={treeData}
                     setSelectedApiId={setSelectedApiId}
+                    handleAddCategory={handleAddCategory}
+                    handleUpdateApiCategory={handleUpdateApiCategory}
                 />
                 {/* 右侧详情 */}
                 <Detail loading={apiLoading} apiDetail={apiDetail} />

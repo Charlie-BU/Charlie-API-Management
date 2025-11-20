@@ -65,6 +65,7 @@ export interface RequestParam {
     example?: string | null;
     array_child_type?: ParamType | string | null;
     parent_param_id?: number | null;
+    children_params?: RequestParam[];
 }
 
 export interface ResponseParam {
@@ -78,6 +79,7 @@ export interface ResponseParam {
     example?: string | null;
     array_child_type?: ParamType | string | null;
     parent_param_id?: number | null;
+    children_params?: ResponseParam[];
 }
 
 export interface ApiDetail extends ApiBrief {
@@ -107,6 +109,7 @@ export interface RequestParamDraft {
     example?: string | null;
     array_child_type?: ParamType | string | null;
     parent_param_id?: number | null;
+    children_params?: RequestParamDraft[];
 }
 
 export interface ResponseParamDraft {
@@ -120,6 +123,7 @@ export interface ResponseParamDraft {
     example?: string | null;
     array_child_type?: ParamType | string | null;
     parent_param_id?: number | null;
+    children_params?: ResponseParamDraft[];
 }
 
 export interface ApiDraftItem {

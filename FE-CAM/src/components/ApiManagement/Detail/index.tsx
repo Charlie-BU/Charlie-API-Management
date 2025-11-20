@@ -1,14 +1,8 @@
-import { useState } from "react";
 import {
     Button,
-    Card,
     Space,
-    Tag,
     Typography,
-    Spin,
     Divider,
-    Table,
-    IconCommon,
 } from "@cloud-materials/common";
 
 import styles from "../index.module.less";
@@ -27,11 +21,7 @@ const Detail: React.FC<{
     const { loading, apiDetail } = props;
 
     if (loading || !apiDetail || Object.keys(apiDetail).length === 0) {
-        return (
-            <div className={styles.loadingCenter}>
-                <Spin dot />
-            </div>
-        );
+        return null;
     }
 
     return (

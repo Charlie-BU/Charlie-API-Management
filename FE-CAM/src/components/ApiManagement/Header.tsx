@@ -3,7 +3,6 @@ import {
     Divider,
     Select,
     Space,
-    Spin,
     Tag,
     Typography,
 } from "@cloud-materials/common";
@@ -28,11 +27,7 @@ const Header: React.FC<{
     } = props;
 
     if (loading || !versions || !serviceUuid) {
-        return (
-            <div className={styles.loadingCenter}>
-                <Spin dot />
-            </div>
-        );
+        return null;
     }
 
     return (

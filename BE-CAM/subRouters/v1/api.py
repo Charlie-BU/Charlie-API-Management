@@ -90,7 +90,7 @@ def addCategoryByServiceId(request: Request):
     with session() as db:
         res = apiAddCategoryByServiceId(
             db=db,
-            service_id=service_id,
+            service_id=int(service_id),
             user_id=user_id,
             category_name=category_name,
             description=description,
@@ -120,7 +120,7 @@ def updateCategoryById(request: Request):
     with session() as db:
         res = apiUpdateCategoryById(
             db=db,
-            category_id=category_id,
+            category_id=int(category_id),
             user_id=user_id,
             category_name=category_name,
             description=description,
@@ -137,7 +137,7 @@ def updateApiCategoryById(request: Request):
     user_id = userGetUserIdByAccessToken(request)
     with session() as db:
         res = apiUpdateApiCategory(
-            db=db, api_id=api_id, category_id=category_id, user_id=user_id
+            db=db, api_id=int(api_id), category_id=int(category_id), user_id=user_id
         )
     return res
 
@@ -158,14 +158,14 @@ def addApi(request: Request):
     with session() as db:
         res = apiAddApi(
             db=db,
-            service_iteration_id=service_iteration_id,
+            service_iteration_id=int(service_iteration_id),
             user_id=user_id,
             name=name,
             method=method,
             path=path,
             description=description,
             level=level,
-            category_id=category_id,
+            category_id=int(category_id),
         )
     return res
 
@@ -180,8 +180,8 @@ def deleteApiByApiDraftId(request: Request):
     with session() as db:
         res = apiDeleteApiByApiDraftId(
             db=db,
-            service_iteration_id=service_iteration_id,
-            api_draft_id=api_draft_id,
+            service_iteration_id=int(service_iteration_id),
+            api_draft_id=int(api_draft_id),
             user_id=user_id,
         )
     return res
@@ -205,8 +205,8 @@ def updateApiByApiDraftId(request: Request):
     with session() as db:
         res = apiUpdateApiByApiDraftId(
             db=db,
-            service_iteration_id=service_iteration_id,
-            api_draft_id=api_draft_id,
+            service_iteration_id=int(service_iteration_id),
+            api_draft_id=int(api_draft_id),
             user_id=user_id,
             name=name,
             method=method,
