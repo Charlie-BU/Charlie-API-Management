@@ -1,6 +1,7 @@
+import { useState, useEffect } from "react";
 import { Tree, Input, Spin } from "@cloud-materials/common";
+
 import styles from "./index.module.less";
-import { useState } from "react";
 
 const { Search } = Input;
 
@@ -11,11 +12,29 @@ const ApiList: React.FC<{
     const { treeData, setSelectedApiId } = props;
     const [selectedKeys, setSelectedKeys] = useState<string[]>([]);
 
+    const firstOptionKey: string = (() => {
+        const first = treeData[0];
+        if (!first) return "";
+        const childKey = first.children?.[0]?.key;
+        const key = childKey ?? first.key;
+        if (key == null) return "";
+        if (Number.isNaN(Number(key))) return "";
+        return typeof key === "string" ? key : key.toString();
+    })();
+
     const handleSelectApi = (keys: string[]) => {
         const apiId = Number(keys[0]);
-        setSelectedApiId(apiId);
+        if (!Number.isNaN(apiId) && apiId > 0) {
+            setSelectedApiId(apiId);
+        } else {
+            setSelectedApiId(-1);
+        }
         setSelectedKeys(keys);
     };
+
+    useEffect(() => {
+        handleSelectApi([firstOptionKey]);
+    }, [firstOptionKey]);
 
     if (!treeData || treeData.length === 0) {
         return (
