@@ -116,3 +116,17 @@
 :global(.arco-space-vertical) {
     width: 100%;
 }
+
+.hasChildParamTitle {
+    cursor: pointer;
+    text-decoration: none;
+    background-image: linear-gradient(currentColor, currentColor);
+    background-size: 0% 1px;
+    background-position: 0 100%;
+    background-repeat: no-repeat;
+    transition: background-size 200ms ease-out;
+}
+
+.hasChildParamTitle:hover {
+    background-size: 100% 1px;
+}
