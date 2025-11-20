@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Tree, Input, Spin } from "@cloud-materials/common";
+import { Tree, Input, Button, Space } from "@cloud-materials/common";
 
 import styles from "./index.module.less";
 
@@ -37,20 +37,16 @@ const ApiList: React.FC<{
     }, [firstOptionKey]);
 
     if (!treeData || treeData.length === 0) {
-        return (
-            <div className={styles.loadingCenter}>
-                <Spin dot />
-            </div>
-        );
+        return null;
     }
 
     return (
         <div className={styles.sidebar}>
-            <Search
-                className={styles.search}
-                allowClear
-                placeholder="搜索 API"
-            />
+            <Space className={styles.search}>
+                <Search allowClear placeholder="搜索 API" />
+                <Button type="outline">创建 API</Button>
+            </Space>
+
             {/* autoExpandParent只有在Tree初次挂载时生效，所以要在treeData计算完成后再渲染 */}
             {treeData.length > 0 && (
                 <Tree

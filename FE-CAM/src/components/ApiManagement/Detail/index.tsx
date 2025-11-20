@@ -2,7 +2,6 @@ import {
     Button,
     Space,
     Typography,
-    Spin,
     Divider,
 } from "@cloud-materials/common";
 
@@ -22,11 +21,7 @@ const Detail: React.FC<{
     const { loading, apiDetail } = props;
 
     if (loading || !apiDetail || Object.keys(apiDetail).length === 0) {
-        return (
-            <div className={styles.loadingCenter}>
-                <Spin dot />
-            </div>
-        );
+        return null;
     }
 
     return (
