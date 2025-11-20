@@ -67,11 +67,15 @@ const ApiList: React.FC<{
             {treeData.length > 0 && (
                 <Tree
                     className={styles.tree}
-                    selectedKeys={selectedKeys}
-                    autoExpandParent={true}
-                    blockNode={true}
-                    onSelect={handleSelectApi}
                     treeData={treeData}
+                    selectedKeys={selectedKeys}
+                    autoExpandParent
+                    blockNode
+                    draggable
+                    onSelect={handleSelectApi}
+                    onDrop={({ dragNode, dropNode, dropPosition }) => {
+                        console.log(dragNode, dropNode, dropPosition);
+                    }}
                 />
             )}
         </div>

@@ -40,7 +40,7 @@ export const useService = () => {
         ServiceItem[] | DeletedServiceItem[]
     >([]);
     const [loading, setLoading] = useState(false);
-    // 记录最近一次触发的获取服务操作，用于在删除或还原服务后刷新列表
+    // 记录最近一次触发的获取服务操作，用于在删除、还原或新增服务后刷新列表
     const refetchRef = useRef<(() => Promise<number>) | null>(null);
 
     const fetchMyNewestServices = useCallback(
@@ -200,9 +200,22 @@ export const useService = () => {
                             service_uuid: values.service_uuid,
                             description: values.description,
                         });
+                        if (res.status !== 200) {
+                            throw new Error(res.message || "服务创建失败");
+                        }
                         Message.success(res.message || "服务创建成功");
                         // 显式关闭弹窗，避免依赖隐式行为
                         modal.close();
+                        // 刷新服务列表
+                        try {
+                            await refetchRef.current?.();
+                        } catch (err) {
+                            const msg =
+                                err instanceof Error
+                                    ? err.message
+                                    : "获取服务失败";
+                            Message.warning(msg || "获取服务失败");
+                        }
                     } catch (err: unknown) {
                         const msg =
                             err instanceof Error ? err.message : "服务创建失败";
@@ -249,7 +262,7 @@ export const useThisService = (service_uuid: string) => {
     const [apiCategories, setApiCategories] = useState<ApiCategory[]>([]);
     const [apis, setApis] = useState<ApiBrief[]>([]);
 
-    const initHook = useCallback(async () => {
+    const fetchAllVersions = useCallback(async () => {
         setLoading(true);
         try {
             const res = await GetAllVersionsByUuid(service_uuid);
@@ -300,8 +313,8 @@ export const useThisService = (service_uuid: string) => {
     );
 
     useEffect(() => {
-        initHook();
-    }, [initHook]);
+        fetchAllVersions();
+    }, [fetchAllVersions]);
 
     useEffect(() => {
         if (currentVersion) {
@@ -320,6 +333,7 @@ export const useThisService = (service_uuid: string) => {
                 title: <Text>{cat.name}</Text>,
                 children: [],
                 disabled: true,
+                draggable: false,
             });
         });
 
@@ -370,9 +384,24 @@ export const useThisService = (service_uuid: string) => {
                         category_name: values.category_name,
                         description: values.description,
                     });
+                    if (res.status !== 200) {
+                        throw new Error(res.message || "分类添加失败");
+                    }
                     Message.success(res.message || "分类添加成功");
                     // 显式关闭弹窗，避免依赖隐式行为
                     modal.close();
+                    // 刷新当前服务
+                    if (currentVersion) {
+                        try {
+                            await fetchServiceDetail(currentVersion || "");
+                        } catch (err) {
+                            const msg =
+                                err instanceof Error
+                                    ? err.message
+                                    : "获取服务失败";
+                            Message.warning(msg || "获取服务失败");
+                        }
+                    }
                 } catch (err: unknown) {
                     const msg =
                         err instanceof Error ? err.message : "分类添加失败";
@@ -382,7 +411,7 @@ export const useThisService = (service_uuid: string) => {
                 }
             },
         });
-    }, [serviceDetail]);
+    }, [serviceDetail.id, currentVersion, fetchServiceDetail]);
 
     return {
         loading,
