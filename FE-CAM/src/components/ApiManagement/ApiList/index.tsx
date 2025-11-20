@@ -9,8 +9,14 @@ const ApiList: React.FC<{
     treeData: any[];
     setSelectedApiId: (apiId: number) => void;
     handleAddCategory: () => void;
+    handleUpdateApiCategory: (apiId: number, categoryId: number) => void;
 }> = (props) => {
-    const { treeData, setSelectedApiId, handleAddCategory } = props;
+    const {
+        treeData,
+        setSelectedApiId,
+        handleAddCategory,
+        handleUpdateApiCategory,
+    } = props;
     const [selectedKeys, setSelectedKeys] = useState<string[]>([]);
 
     const otherOperations = (
@@ -45,6 +51,45 @@ const ApiList: React.FC<{
         handleSelectApi([firstOptionKey]);
     }, [firstOptionKey]);
 
+    const handleDrag = (info: any) => {
+        const { dragNode, dropNode } = info;
+        const apiId = Number(dragNode.key);
+        let categoryId = -1;
+        if (dropNode.key.startsWith("category-")) {
+            // 若拖拽目标是分类节点，直接使用分类 ID
+            if (dropNode.key === "category-null") {
+                // 若拖拽目标是未分类节点，分类 ID 设为 -1
+                categoryId = -1;
+            } else {
+                categoryId = Number(dropNode.key.replace("category-", ""));
+            }
+        } else {
+            // 若拖拽目标不是分类节点，获取其父分类 ID
+            const category = dropNode.props.parentKey;
+            if (!category || !category.startsWith("category-")) {
+                return;
+            }
+            if (category === "category-null") {
+                // 若拖拽目标是未分类节点，分类 ID 设为 -1
+                categoryId = -1;
+            } else {
+                categoryId = Number(category.replace("category-", ""));
+            }
+        }
+        if (!apiId || apiId === Number.NaN) {
+            return;
+        }
+        // 若当前 API 已属于该分类，无需更新
+        if (
+            dragNode.props.parentKey === dropNode.key ||
+            dragNode.props.parentKey === dropNode.props.parentKey
+        ) {
+            return;
+        }
+        console.log(apiId, categoryId);
+        handleUpdateApiCategory(apiId, categoryId);
+    };
+
     if (!treeData || treeData.length === 0) {
         return null;
     }
@@ -67,15 +112,13 @@ const ApiList: React.FC<{
             {treeData.length > 0 && (
                 <Tree
                     className={styles.tree}
-                    treeData={treeData}
                     selectedKeys={selectedKeys}
+                    treeData={treeData}
                     autoExpandParent
                     blockNode
                     draggable
                     onSelect={handleSelectApi}
-                    onDrop={({ dragNode, dropNode, dropPosition }) => {
-                        console.log(dragNode, dropNode, dropPosition);
-                    }}
+                    onDrop={handleDrag}
                 />
             )}
         </div>

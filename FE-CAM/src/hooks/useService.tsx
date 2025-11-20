@@ -1,6 +1,12 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { CModal, Message, Typography, Space } from "@cloud-materials/common";
+import {
+    CModal,
+    Message,
+    Typography,
+    Space,
+    Popover,
+} from "@cloud-materials/common";
 import { t } from "i18next";
 
 import {
@@ -28,7 +34,7 @@ import CreateServiceForm from "@/components/ServiceManagement/CreateServiceForm"
 import type { UserProfile } from "@/services/user/types";
 import { genApiMethodTag } from "@/utils";
 import AddCategoryForm from "@/components/ApiManagement/ApiList/AddCategoryForm";
-import { AddCategoryByServiceId } from "@/services/api";
+import { AddCategoryByServiceId, UpdateApiCategoryById } from "@/services/api";
 
 const { Text } = Typography;
 
@@ -330,44 +336,52 @@ export const useThisService = (service_uuid: string) => {
         apiCategories.forEach((cat) => {
             categoryMap.set(cat.id, {
                 key: `category-${cat.id}`,
-                title: <Text>{cat.name}</Text>,
-                children: [],
-                disabled: true,
+                title: (
+                    <Popover content={cat.description}>
+                        <Text>{cat.name}</Text>
+                    </Popover>
+                ),
+                children: [] as any[],
+                selectable: false,
                 draggable: false,
             });
         });
-
-        const uncategorized: any[] = [];
+        const uncategorizedGroup = {
+            key: "category-null",
+            title: <Text>未分类</Text>,
+            children: [] as any[],
+            selectable: false,
+            draggable: false,
+        };
 
         apis.forEach((api) => {
             const node = {
                 key: api.id.toString(),
                 title: (
-                    <div>
-                        <Space align="center" style={{ fontWeight: 500 }}>
+                    <>
+                        <Space style={{ fontWeight: 500 }}>
                             {genApiMethodTag(api.method, "small")}
                             {api.name}
+                            <Text style={{ color: "#6e7687", fontSize: 10 }}>
+                                {api.path}
+                            </Text>
                         </Space>
-                        <br />
-                        <Text style={{ color: "#6e7687", fontSize: 10 }}>
-                            {api.path}
-                        </Text>
-                    </div>
+                    </>
                 ),
             };
             if (api.category_id == null) {
-                uncategorized.push(node);
+                uncategorizedGroup.children.push(node);
             } else {
                 const group = categoryMap.get(api.category_id);
                 if (group) {
                     group.children.push(node);
                 } else {
-                    uncategorized.push(node);
+                    uncategorizedGroup.children.push(node);
                 }
             }
         });
 
-        return [...Array.from(categoryMap.values()), ...uncategorized];
+        return [...Array.from(categoryMap.values()), uncategorizedGroup];
     }, [apiCategories, apis]);
 
     const handleAddCategory = useCallback(() => {
@@ -413,6 +427,25 @@ export const useThisService = (service_uuid: string) => {
         });
     }, [serviceDetail.id, currentVersion, fetchServiceDetail]);
 
+    const handleUpdateApiCategory = useCallback(
+        async (api_id: number, category_id: number) => {
+            const res = await UpdateApiCategoryById({ api_id, category_id });
+            if (res.status !== 200) {
+                throw new Error(res.message || "API 分类更新失败");
+            }
+            if (currentVersion) {
+                try {
+                    await fetchServiceDetail(currentVersion || "");
+                } catch (err) {
+                    const msg =
+                        err instanceof Error ? err.message : "获取服务失败";
+                    Message.warning(msg || "获取服务失败");
+                }
+            }
+        },
+        [currentVersion, fetchServiceDetail]
+    );
+
     return {
         loading,
         versions,
@@ -424,5 +457,6 @@ export const useThisService = (service_uuid: string) => {
         treeData,
         setCurrentVersion,
         handleAddCategory,
+        handleUpdateApiCategory,
     };
 };

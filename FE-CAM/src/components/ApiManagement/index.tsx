@@ -19,7 +19,8 @@ const ApiManagement: React.FC = () => {
         serviceDetail,
         treeData,
         setCurrentVersion,
-        handleAddCategory
+        handleAddCategory,
+        handleUpdateApiCategory,
     } = useThisService(uuid);
 
     const serviceUuid = useMemo(() => {
@@ -60,6 +61,7 @@ const ApiManagement: React.FC = () => {
                     treeData={treeData}
                     setSelectedApiId={setSelectedApiId}
                     handleAddCategory={handleAddCategory}
+                    handleUpdateApiCategory={handleUpdateApiCategory}
                 />
                 {/* 右侧详情 */}
                 <Detail loading={apiLoading} apiDetail={apiDetail} />

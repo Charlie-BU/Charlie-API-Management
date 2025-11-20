@@ -291,6 +291,14 @@ def apiUpdateApiCategory(
             "status": -4,
             "message": "Api category not changed",
         }
+    # 分类ID为-1时，设为未分类
+    if category_id == -1:
+        api.category_id = None  # type: ignore
+        db.commit()
+        return {
+            "status": 200,
+            "message": "Update api category success",
+        }
     category = db.get(ApiCategory, category_id)
     if not category:
         return {
