@@ -1,16 +1,25 @@
 import { useState, useEffect } from "react";
-import { Tree, Input, Button, Space } from "@cloud-materials/common";
+import { Tree, Input, Space, Dropdown, Menu } from "@cloud-materials/common";
 
-import styles from "./index.module.less";
+import styles from "../index.module.less";
 
 const { Search } = Input;
 
 const ApiList: React.FC<{
     treeData: any[];
     setSelectedApiId: (apiId: number) => void;
+    handleAddCategory: () => void;
 }> = (props) => {
-    const { treeData, setSelectedApiId } = props;
+    const { treeData, setSelectedApiId, handleAddCategory } = props;
     const [selectedKeys, setSelectedKeys] = useState<string[]>([]);
+
+    const otherOperations = (
+        <Menu>
+            <Menu.Item key="1" onClick={handleAddCategory}>
+                添加分类
+            </Menu.Item>
+        </Menu>
+    );
 
     const firstOptionKey: string = (() => {
         const first = treeData[0];
@@ -44,7 +53,14 @@ const ApiList: React.FC<{
         <div className={styles.sidebar}>
             <Space className={styles.search}>
                 <Search allowClear placeholder="搜索 API" />
-                <Button type="outline">创建 API</Button>
+                <Dropdown.Button
+                    type="outline"
+                    droplist={otherOperations}
+                    position="bl"
+                    trigger="click"
+                >
+                    创建 API
+                </Dropdown.Button>
             </Space>
 
             {/* autoExpandParent只有在Tree初次挂载时生效，所以要在treeData计算完成后再渲染 */}

@@ -19,6 +19,7 @@ const ApiManagement: React.FC = () => {
         serviceDetail,
         treeData,
         setCurrentVersion,
+        handleAddCategory
     } = useThisService(uuid);
 
     const serviceUuid = useMemo(() => {
@@ -28,7 +29,7 @@ const ApiManagement: React.FC = () => {
     }, [serviceDetail]);
 
     const [selectedApiId, setSelectedApiId] = useState<number>(-1);
-    const { loading: apiLoading, apiDetail } = useApi(selectedApiId, isLatest);
+    const { loading: apiLoading, apiDetail  } = useApi(selectedApiId, isLatest);
 
     if (
         loading ||
@@ -58,6 +59,7 @@ const ApiManagement: React.FC = () => {
                 <ApiList
                     treeData={treeData}
                     setSelectedApiId={setSelectedApiId}
+                    handleAddCategory={handleAddCategory}
                 />
                 {/* 右侧详情 */}
                 <Detail loading={apiLoading} apiDetail={apiDetail} />
