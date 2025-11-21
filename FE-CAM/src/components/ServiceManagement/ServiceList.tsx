@@ -11,6 +11,7 @@ import {
     Tag,
     Button,
     Popover,
+    Space,
     type TableColumnProps,
 } from "@cloud-materials/common";
 
@@ -165,13 +166,16 @@ const ServiceList: React.FC<{
         align: "center" as const,
 
         render: (_: any, item: ServiceItem) => (
-            <div
-                className={styles["custom-action-btn"]}
-                style={{ display: "flex" }}
-            >
-                <Button type="text" size="small" onClick={() => handleViewService(item.service_uuid)}>
-                    查看
-                </Button>
+            <Space size={4} className={styles["custom-action-btn"]}>
+                {!item.is_deleted && (
+                    <Button
+                        type="text"
+                        size="small"
+                        onClick={() => handleViewService(item.service_uuid)}
+                    >
+                        查看
+                    </Button>
+                )}
                 {!item.is_deleted ? (
                     <Button
                         type="text"
@@ -203,7 +207,7 @@ const ServiceList: React.FC<{
                         恢复
                     </Button>
                 )}
-            </div>
+            </Space>
         ),
     });
 
