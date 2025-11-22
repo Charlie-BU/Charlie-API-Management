@@ -5,7 +5,6 @@ import "./App.less";
 import { useUser } from "@/hooks/useUser";
 
 const App: React.FC = () => {
-    // 拉取用户信息
     const { user, fetchUser } = useUser();
 
     useEffect(() => {
