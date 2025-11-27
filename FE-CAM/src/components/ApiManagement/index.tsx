@@ -21,6 +21,7 @@ const ApiManagement: React.FC = () => {
         setCurrentVersion,
         handleAddCategory,
         handleUpdateApiCategory,
+        handleDeleteCategory
     } = useThisService(uuid);
 
     const serviceUuid = useMemo(() => {
@@ -62,6 +63,7 @@ const ApiManagement: React.FC = () => {
                     setSelectedApiId={setSelectedApiId}
                     handleAddCategory={handleAddCategory}
                     handleUpdateApiCategory={handleUpdateApiCategory}
+                    handleDeleteCategory={handleDeleteCategory}
                 />
                 {/* 右侧详情 */}
                 <Detail loading={apiLoading} apiDetail={apiDetail} />

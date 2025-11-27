@@ -4,7 +4,6 @@ import {
     Space,
     Table,
     Tag,
-    Tooltip,
     Typography,
 } from "@cloud-materials/common";
 
@@ -30,7 +29,7 @@ const responseColumns = [
                 return v;
             }
             return (
-                <Tooltip content="点击查看子参数">
+                <Popover content="点击查看子参数">
                     <Popover
                         trigger="click"
                         content={
@@ -51,7 +50,7 @@ const responseColumns = [
                             {v}
                         </Text>
                     </Popover>
-                </Tooltip>
+                </Popover>
             );
         },
     },

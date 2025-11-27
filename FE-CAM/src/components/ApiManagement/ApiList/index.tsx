@@ -1,5 +1,13 @@
 import { useState, useEffect } from "react";
-import { Tree, Input, Space, Dropdown, Menu } from "@cloud-materials/common";
+import {
+    Tree,
+    Input,
+    Space,
+    Dropdown,
+    Menu,
+    Button,
+    IconDelete,
+} from "@cloud-materials/common";
 
 import styles from "../index.module.less";
 
@@ -10,12 +18,14 @@ const ApiList: React.FC<{
     setSelectedApiId: (apiId: number) => void;
     handleAddCategory: () => void;
     handleUpdateApiCategory: (apiId: number, categoryId: number) => void;
+    handleDeleteCategory: (categoryId: number) => void;
 }> = (props) => {
     const {
         treeData,
         setSelectedApiId,
         handleAddCategory,
         handleUpdateApiCategory,
+        handleDeleteCategory,
     } = props;
     const [selectedKeys, setSelectedKeys] = useState<string[]>([]);
 
@@ -86,7 +96,6 @@ const ApiList: React.FC<{
         ) {
             return;
         }
-        console.log(apiId, categoryId);
         handleUpdateApiCategory(apiId, categoryId);
     };
 
@@ -119,6 +128,44 @@ const ApiList: React.FC<{
                     draggable
                     onSelect={handleSelectApi}
                     onDrop={handleDrag}
+                    renderExtra={(node) => {
+                        if (
+                            !node.draggable &&
+                            !node.selectable &&
+                            !node.childrenData?.length &&
+                            node._key !== "category-null"
+                        ) {
+                            // 没有子节点的 category 节点（不包括未分类节点）
+                            return (
+                                <Button
+                                    onClick={() =>
+                                        handleDeleteCategory(
+                                            Number(
+                                                node?._key?.replace(
+                                                    "category-",
+                                                    ""
+                                                ) ?? -1
+                                            )
+                                        )
+                                    }
+                                    type="outline"
+                                    status="danger"
+                                    shape="circle"
+                                    size="mini"
+                                    className={styles.nodeDelete}
+                                    style={{
+                                        width: 20,
+                                        height: 20,
+                                        position: "absolute",
+                                        top: 0,
+                                        right: 0,
+                                    }}
+                                    icon={<IconDelete />}
+                                />
+                            );
+                        }
+                        return null;
+                    }}
                 />
             )}
         </div>

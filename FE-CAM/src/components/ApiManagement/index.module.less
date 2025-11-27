@@ -27,6 +27,15 @@
     :global(.arco-tree-node) {
         padding: 6px 4px;
     }
+    :global(.arco-tree-node) .nodeDelete {
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 150ms ease-in-out;
+    }
+    :global(.arco-tree-node:hover) .nodeDelete {
+        opacity: 1;
+        pointer-events: auto;
+    }
 }
 
 .content {

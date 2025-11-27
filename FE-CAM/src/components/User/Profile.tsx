@@ -7,7 +7,7 @@ import {
     Layout,
     IconLock,
     IconPoweroff,
-    Tooltip,
+    Popover,
 } from "@cloud-materials/common";
 import styles from "./index.module.less";
 import { useTranslation } from "react-i18next";
@@ -52,11 +52,11 @@ const Profile: React.FC<UserProfileProps> = ({
                         </div>
                     </Layout.Sider>
                     <Layout.Content style={{ width: "100%", paddingLeft: 12 }}>
-                        <Tooltip content={userInfo.username}>
+                        <Popover content={userInfo.username}>
                             <Typography.Text style={{ fontSize: 16 }}>
                                 {userInfo.nickname || userInfo.username}
                             </Typography.Text>
-                        </Tooltip>
+                        </Popover>
                         <Typography.Ellipsis
                             rows={1}
                             showTooltip

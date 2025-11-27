@@ -32,9 +32,13 @@ import type {
 } from "@/services/service/types";
 import CreateServiceForm from "@/components/ServiceManagement/CreateServiceForm";
 import type { UserProfile } from "@/services/user/types";
-import { genApiMethodTag } from "@/utils";
+import { genApiMethodTag, handleConfirm } from "@/utils";
 import AddCategoryForm from "@/components/ApiManagement/ApiList/AddCategoryForm";
-import { AddCategoryByServiceId, UpdateApiCategoryById } from "@/services/api";
+import {
+    AddCategoryByServiceId,
+    DeleteCategoryById,
+    UpdateApiCategoryById,
+} from "@/services/api";
 
 const { Text } = Typography;
 
@@ -358,15 +362,13 @@ export const useThisService = (service_uuid: string) => {
             const node = {
                 key: api.id.toString(),
                 title: (
-                    <>
-                        <Space style={{ fontWeight: 500 }}>
-                            {genApiMethodTag(api.method, "small")}
-                            {api.name}
-                            <Text style={{ color: "#6e7687", fontSize: 10 }}>
-                                {api.path}
-                            </Text>
-                        </Space>
-                    </>
+                    <Space style={{ fontWeight: 500 }}>
+                        {genApiMethodTag(api.method, "small")}
+                        {api.name}
+                        <Text style={{ color: "#6e7687", fontSize: 10 }}>
+                            {api.path}
+                        </Text>
+                    </Space>
                 ),
             };
             if (api.category_id == null) {
@@ -404,18 +406,7 @@ export const useThisService = (service_uuid: string) => {
                     Message.success(res.message || "分类添加成功");
                     // 显式关闭弹窗，避免依赖隐式行为
                     modal.close();
-                    // 刷新当前服务
-                    if (currentVersion) {
-                        try {
-                            await fetchServiceDetail(currentVersion || "");
-                        } catch (err) {
-                            const msg =
-                                err instanceof Error
-                                    ? err.message
-                                    : "获取服务失败";
-                            Message.warning(msg || "获取服务失败");
-                        }
-                    }
+                    setApiCategories((prev) => [...prev, res.category || {}]);
                 } catch (err: unknown) {
                     const msg =
                         err instanceof Error ? err.message : "分类添加失败";
@@ -433,16 +424,43 @@ export const useThisService = (service_uuid: string) => {
             if (res.status !== 200) {
                 throw new Error(res.message || "API 分类更新失败");
             }
-            if (currentVersion) {
-                try {
-                    await fetchServiceDetail(currentVersion || "");
-                } catch (err) {
-                    const msg =
-                        err instanceof Error ? err.message : "获取服务失败";
-                    Message.warning(msg || "获取服务失败");
-                }
-            }
+            setApis((prev) =>
+                prev.map((api) =>
+                    api.id === api_id
+                        ? {
+                              ...api,
+                              category_id:
+                                  category_id >= 0 ? category_id : null,
+                          }
+                        : api
+                )
+            );
         },
+        [currentVersion, fetchServiceDetail]
+    );
+
+    const handleDeleteCategory = useCallback(
+        async (category_id: number) =>
+            handleConfirm(
+                async () => {
+                    try {
+                        const res = await DeleteCategoryById({ category_id });
+                        if (res.status !== 200) {
+                            throw new Error(res.message || "分类删除失败");
+                        }
+                        Message.success(res.message || "分类删除成功");
+                        setApiCategories((prev) =>
+                            prev.filter((cat) => cat.id !== category_id)
+                        );
+                    } catch (err: unknown) {
+                        const msg =
+                            err instanceof Error ? err.message : "分类删除失败";
+                        Message.error(msg);
+                    }
+                },
+                "删除",
+                "确认删除当前分类？"
+            ),
         [currentVersion, fetchServiceDetail]
     );
 
@@ -458,5 +476,6 @@ export const useThisService = (service_uuid: string) => {
         setCurrentVersion,
         handleAddCategory,
         handleUpdateApiCategory,
+        handleDeleteCategory,
     };
 };
