@@ -30,7 +30,7 @@ const ApiList: React.FC<{
     const [selectedKeys, setSelectedKeys] = useState<string[]>([]);
 
     const otherOperations = (
-        <Menu>
+        <Menu style={{ width: 100 }}>
             <Menu.Item key="1" onClick={handleAddCategory}>
                 添加分类
             </Menu.Item>

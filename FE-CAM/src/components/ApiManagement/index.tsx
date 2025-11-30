@@ -21,7 +21,7 @@ const ApiManagement: React.FC = () => {
         setCurrentVersion,
         handleAddCategory,
         handleUpdateApiCategory,
-        handleDeleteCategory
+        handleDeleteCategory,
     } = useThisService(uuid);
 
     const serviceUuid = useMemo(() => {
@@ -31,7 +31,7 @@ const ApiManagement: React.FC = () => {
     }, [serviceDetail]);
 
     const [selectedApiId, setSelectedApiId] = useState<number>(-1);
-    const { loading: apiLoading, apiDetail  } = useApi(selectedApiId, isLatest);
+    const { loading: apiLoading, apiDetail } = useApi(selectedApiId, isLatest);
 
     if (
         loading ||
@@ -54,7 +54,10 @@ const ApiManagement: React.FC = () => {
                 serviceUuid={serviceUuid}
                 versions={versions}
                 currentVersion={currentVersion}
-                setCurrentVersion={setCurrentVersion}
+                setCurrentVersion={(v) => {
+                    setSelectedApiId(-1);
+                    setCurrentVersion(v);
+                }}
             />
             <div className={styles.apiPage}>
                 {/* 左侧 API 列表 */}

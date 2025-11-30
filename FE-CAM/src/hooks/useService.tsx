@@ -283,6 +283,7 @@ export const useThisService = (service_uuid: string) => {
             }
             setVersions(res.versions || []);
             setCurrentVersion(res.versions?.[0]?.version || "");
+            setIsLatest(res.versions?.[0]?.is_latest || false);
         } catch (err: unknown) {
             const msg =
                 err instanceof Error ? err.message : t("service.failure");
@@ -292,6 +293,10 @@ export const useThisService = (service_uuid: string) => {
             setLoading(false);
         }
     }, [service_uuid, navigate]);
+
+    useEffect(() => {
+        fetchAllVersions();
+    }, [fetchAllVersions]);
 
     const fetchServiceDetail = useCallback(
         async (version: string) => {
@@ -304,7 +309,7 @@ export const useThisService = (service_uuid: string) => {
                 return;
             }
             setServiceDetail(res.service || {});
-            setIsLatest(res.is_latest || true);
+            setIsLatest(res.is_latest);
             if ("api_categories" in res.service) {
                 setApiCategories(res.service.api_categories || []);
             }
@@ -321,10 +326,6 @@ export const useThisService = (service_uuid: string) => {
         },
         [service_uuid]
     );
-
-    useEffect(() => {
-        fetchAllVersions();
-    }, [fetchAllVersions]);
 
     useEffect(() => {
         if (currentVersion) {

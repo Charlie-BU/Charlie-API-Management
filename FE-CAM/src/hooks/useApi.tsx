@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useState } from "react";
+import { Message } from "@cloud-materials/common";
 
 import type { ApiDetail, ApiDraftDetail } from "@/services/api/types";
 import { GetApiById } from "@/services/api";
-import { Message } from "@cloud-materials/common";
 
 const useApi = (apiId: number, isLatest: boolean) => {
     const [loading, setLoading] = useState(false);
