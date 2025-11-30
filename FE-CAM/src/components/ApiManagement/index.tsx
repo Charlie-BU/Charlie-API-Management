@@ -7,6 +7,7 @@ import Detail from "./Detail";
 import Header from "./Header";
 import ApiList from "./ApiList";
 import { Spin } from "@cloud-materials/common";
+import ApiEdit from "./ApiEdit";
 
 const ApiManagement: React.FC = () => {
     const [searchParams] = useSearchParams();
@@ -70,6 +71,7 @@ const ApiManagement: React.FC = () => {
                 />
                 {/* 右侧详情 */}
                 <Detail loading={apiLoading} apiDetail={apiDetail} />
+                {/* <ApiEdit /> */}
             </div>
         </>
     );
