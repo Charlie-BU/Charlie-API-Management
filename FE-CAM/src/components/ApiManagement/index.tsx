@@ -6,8 +6,7 @@ import useApi from "@/hooks/useApi";
 import Detail from "./Detail";
 import Header from "./Header";
 import ApiList from "./ApiList";
-import { Spin } from "@cloud-materials/common";
-import ApiEdit from "./ApiEdit";
+import { Layout, Spin } from "@cloud-materials/common";
 
 const ApiManagement: React.FC = () => {
     const [searchParams] = useSearchParams();
@@ -49,31 +48,43 @@ const ApiManagement: React.FC = () => {
     }
 
     return (
-        <>
-            <Header
-                loading={loading}
-                serviceUuid={serviceUuid}
-                versions={versions}
-                currentVersion={currentVersion}
-                setCurrentVersion={(v) => {
-                    setSelectedApiId(-1);
-                    setCurrentVersion(v);
-                }}
-            />
-            <div className={styles.apiPage}>
-                {/* 左侧 API 列表 */}
-                <ApiList
-                    treeData={treeData}
-                    setSelectedApiId={setSelectedApiId}
-                    handleAddCategory={handleAddCategory}
-                    handleUpdateApiCategory={handleUpdateApiCategory}
-                    handleDeleteCategory={handleDeleteCategory}
+        <Layout className={styles.apiPage}>
+            <Layout.Header>
+                <Header
+                    loading={loading}
+                    serviceUuid={serviceUuid}
+                    versions={versions}
+                    currentVersion={currentVersion}
+                    setCurrentVersion={(v) => {
+                        setSelectedApiId(-1);
+                        setCurrentVersion(v);
+                    }}
                 />
-                {/* 右侧详情 */}
-                <Detail loading={apiLoading} apiDetail={apiDetail} />
-                {/* <ApiEdit /> */}
-            </div>
-        </>
+            </Layout.Header>
+
+            <Layout>
+                {/* 左侧 API 列表 */}
+                <Layout.Sider
+                    style={{
+                        width: 300,
+                        paddingBottom: 12,
+                    }}
+                >
+                    <ApiList
+                        treeData={treeData}
+                        setSelectedApiId={setSelectedApiId}
+                        handleAddCategory={handleAddCategory}
+                        handleUpdateApiCategory={handleUpdateApiCategory}
+                        handleDeleteCategory={handleDeleteCategory}
+                    />
+                </Layout.Sider>
+                <Layout.Content>
+                    {/* 右侧详情 */}
+                    <Detail loading={apiLoading} apiDetail={apiDetail} />
+                    {/* <ApiEdit /> */}
+                </Layout.Content>
+            </Layout>
+        </Layout>
     );
 };
 
