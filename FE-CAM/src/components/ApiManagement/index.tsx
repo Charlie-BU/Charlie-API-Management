@@ -6,6 +6,7 @@ import useApi from "@/hooks/useApi";
 import Detail from "./Detail";
 import Header from "./Header";
 import ApiList from "./ApiList";
+import ApiEdit from "./ApiEdit";
 import { Layout, Spin } from "@cloud-materials/common";
 
 const ApiManagement: React.FC = () => {
@@ -18,10 +19,14 @@ const ApiManagement: React.FC = () => {
         isLatest,
         serviceDetail,
         treeData,
+        inIteration,
+        iterationId,
         setCurrentVersion,
         handleAddCategory,
         handleUpdateApiCategory,
         handleDeleteCategory,
+        setInIteration,
+        handleStartIteration,
     } = useThisService(uuid);
 
     const serviceUuid = useMemo(() => {
@@ -31,6 +36,7 @@ const ApiManagement: React.FC = () => {
     }, [serviceDetail]);
 
     const [selectedApiId, setSelectedApiId] = useState<number>(-1);
+    
     const { loading: apiLoading, apiDetail } = useApi(selectedApiId, isLatest);
 
     if (
@@ -57,6 +63,8 @@ const ApiManagement: React.FC = () => {
                     currentVersion={currentVersion}
                     setCurrentVersion={(v) => {
                         setSelectedApiId(-1);
+                        // todo：中断该操作
+                        setInIteration(false);
                         setCurrentVersion(v);
                     }}
                 />
@@ -71,17 +79,32 @@ const ApiManagement: React.FC = () => {
                     }}
                 >
                     <ApiList
+                        inIteration={inIteration}
                         treeData={treeData}
-                        setSelectedApiId={setSelectedApiId}
+                        setSelectedApiId={(id) => {
+                            setSelectedApiId(id);
+                            // todo
+                        }}
                         handleAddCategory={handleAddCategory}
                         handleUpdateApiCategory={handleUpdateApiCategory}
                         handleDeleteCategory={handleDeleteCategory}
+                        handleStartIteration={handleStartIteration}
                     />
                 </Layout.Sider>
                 <Layout.Content>
                     {/* 右侧详情 */}
-                    <Detail loading={apiLoading} apiDetail={apiDetail} />
-                    {/* <ApiEdit /> */}
+                    {inIteration && apiDetail ? (
+                        <ApiEdit
+                            apiDetail={apiDetail}
+                            iterationId={iterationId}
+                            onSuccess={() => {}}
+                        />
+                    ) : (
+                        <Detail
+                            loading={apiLoading}
+                            apiDetail={apiDetail}
+                        />
+                    )}
                 </Layout.Content>
             </Layout>
         </Layout>

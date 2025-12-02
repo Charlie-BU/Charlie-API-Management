@@ -34,7 +34,6 @@ const Detail: React.FC<{
                     </Space>
                 </Title>
                 <Space>
-                    <Button type="secondary">编辑</Button>
                     <Button type="secondary">Mock</Button>
                     <Button type="primary">测试</Button>
                 </Space>

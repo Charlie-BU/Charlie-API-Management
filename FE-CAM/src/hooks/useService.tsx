@@ -19,6 +19,7 @@ import {
     GetMyNewestServices,
     GetServiceByUuidAndVersion,
     RestoreServiceById,
+    StartIteration,
 } from "@/services/service";
 import type {
     ApiBrief,
@@ -465,6 +466,27 @@ export const useThisService = (service_uuid: string) => {
         [currentVersion, fetchServiceDetail]
     );
 
+    // 迭代相关
+    const [inIteration, setInIteration] = useState(false);
+    const [iterationId, setIterationId] = useState<number>(-1);
+
+    const handleStartIteration = useCallback(async () => {
+        try {
+            const res = await StartIteration({
+                service_id: serviceDetail.id,
+            });
+            if (res.status !== 200 && res.status !== 201) {
+                throw new Error(res.message || "迭代开始失败");
+            }
+            Message.success(res.message || "迭代开始成功");
+            setInIteration(true);
+            setIterationId(res.service_iteration_id);
+        } catch (err: unknown) {
+            const msg = err instanceof Error ? err.message : "迭代开始失败";
+            Message.error(msg);
+        }
+    }, [serviceDetail.id, currentVersion, fetchServiceDetail]);
+
     return {
         loading,
         versions,
@@ -474,9 +496,52 @@ export const useThisService = (service_uuid: string) => {
         apiCategories,
         apis,
         treeData,
+        inIteration,
+        iterationId,
         setCurrentVersion,
         handleAddCategory,
         handleUpdateApiCategory,
         handleDeleteCategory,
+        setInIteration,
+        handleStartIteration,
     };
 };
+
+
+// 迭代相关（只用于一次迭代周期内，与服务历史版本无关）
+export const useServiceIteration = (iterationId: number) => {
+    const [loading, setLoading] = useState(false);
+    const [iterationDetail, setIterationDetail] = useState<
+        ServiceIterationDetail
+    >({} as ServiceIterationDetail);
+    const [apiDrafts, setApiDrafts] = useState<ApiBrief[]>([]);
+
+    const fetchIterationDetail = useCallback(
+        async (version: string) => {
+            setLoading(true);
+            const res = await GetServiceByUuidAndVersion(service_uuid, version);
+            if (res.status !== 200) {
+                setServiceDetail({} as ServiceDetail);
+                Message.warning(res.message || "获取服务详情失败");
+                setLoading(false);
+                return;
+            }
+            setServiceDetail(res.service || {});
+            setIsLatest(res.is_latest);
+            if ("api_categories" in res.service) {
+                setApiCategories(res.service.api_categories || []);
+            }
+            if ("apis" in res.service || "api_drafts" in res.service) {
+                setApis(
+                    ("apis" in res.service
+                        ? res.service.apis
+                        : "api_drafts" in res.service
+                        ? res.service.api_drafts
+                        : []) || []
+                );
+            }
+            setLoading(false);
+        },
+        [service_uuid]
+    );
+}

@@ -23,7 +23,6 @@ const RequestParamsEdit: React.FC = () => {
                         <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 8 }}>
                             <Space>
                                 <Button size="small">AI 填充空缺的备注和示例值</Button>
-                                <Button size="small">清除本次 AI 填充的数据</Button>
                             </Space>
                         </div>
                         <Form.Item field="requestParams.query" noStyle>

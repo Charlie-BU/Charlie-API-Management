@@ -14,18 +14,22 @@ import styles from "../index.module.less";
 const { Search } = Input;
 
 const ApiList: React.FC<{
+    inIteration: boolean;
     treeData: any[];
     setSelectedApiId: (apiId: number) => void;
     handleAddCategory: () => void;
     handleUpdateApiCategory: (apiId: number, categoryId: number) => void;
     handleDeleteCategory: (categoryId: number) => void;
+    handleStartIteration: () => void;
 }> = (props) => {
     const {
+        inIteration,
         treeData,
         setSelectedApiId,
         handleAddCategory,
         handleUpdateApiCategory,
         handleDeleteCategory,
+        handleStartIteration,
     } = props;
     const [selectedKeys, setSelectedKeys] = useState<string[]>([]);
 
@@ -62,6 +66,10 @@ const ApiList: React.FC<{
     }, [firstOptionKey]);
 
     const handleDrag = (info: any) => {
+        // 迭代过程中不可拖拽 API 更换分类
+        if (inIteration) {
+            return;
+        }
         const { dragNode, dropNode } = info;
         const apiId = Number(dragNode.key);
         let categoryId = -1;
@@ -107,14 +115,20 @@ const ApiList: React.FC<{
         <div className={styles.sidebar}>
             <Space className={styles.search}>
                 <Search allowClear placeholder="搜索 API" />
-                <Dropdown.Button
-                    type="outline"
-                    droplist={otherOperations}
-                    position="bl"
-                    trigger="click"
-                >
-                    创建 API
-                </Dropdown.Button>
+                {inIteration ? (
+                    <Dropdown.Button
+                        type="outline"
+                        droplist={otherOperations}
+                        position="bl"
+                        trigger="click"
+                    >
+                        创建 API
+                    </Dropdown.Button>
+                ) : (
+                    <Button type="outline" onClick={handleStartIteration}>
+                        发起迭代
+                    </Button>
+                )}
             </Space>
 
             {/* autoExpandParent只有在Tree初次挂载时生效，所以要在treeData计算完成后再渲染 */}
@@ -125,7 +139,7 @@ const ApiList: React.FC<{
                     treeData={treeData}
                     autoExpandParent
                     blockNode
-                    draggable
+                    draggable={!inIteration}
                     onSelect={handleSelectApi}
                     onDrop={handleDrag}
                     renderExtra={(node) => {

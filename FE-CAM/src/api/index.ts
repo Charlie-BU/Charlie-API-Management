@@ -55,6 +55,7 @@ http.interceptors.response.use(
         if (error.code === "ERR_NETWORK" || status === 401) {
             localStorage.removeItem("cam_access_token");
             sessionStorage.removeItem("user-store");
+            window.location.reload();
         }
         return Promise.reject(new ApiError(message, status, data));
     }

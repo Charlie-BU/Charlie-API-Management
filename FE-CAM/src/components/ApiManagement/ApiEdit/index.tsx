@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
     Button,
     Space,
@@ -11,16 +11,36 @@ import styles from "../index.module.less";
 import BriefInfoEdit from "./BriefInfoEdit";
 import ResponseParamsEdit from "./ResponseParamsEdit";
 import RequestParamsEdit from "./RequestParamsEdit";
+import type { ApiDetail, ApiDraftDetail } from "@/services/api/types";
 
-const ApiEdit: React.FC = () => {
+interface ApiEditProps {
+    apiDetail: ApiDetail | ApiDraftDetail;
+    iterationId: number;
+    onSuccess: () => void;
+}
+
+const ApiEdit: React.FC<ApiEditProps> = ({
+    apiDetail,
+    iterationId,
+    onSuccess,
+}) => {
     const [form] = Form.useForm();
     const [loading, setLoading] = useState(false);
+    const [isDraft, setIsDraft] = useState(true);
+
+    useEffect(() => {
+        form.setFieldsValue(apiDetail);
+        setIsDraft(true);
+    }, [apiDetail, form]);
 
     const handleSubmit = async () => {
         try {
             const values = await form.validate();
             console.log("Form values:", values);
+            // TODO: Call API update service here
+            setIsDraft(false);
             Message.success("保存成功");
+            onSuccess();
         } catch (error) {
             console.error("Validation failed:", error);
         }
@@ -29,19 +49,29 @@ const ApiEdit: React.FC = () => {
     return (
         <div className={styles.content}>
             <div className={styles.header}>
-                <Typography.Title heading={5}>编辑接口</Typography.Title>
+                <Typography.Title heading={5}>Service 迭代</Typography.Title>
                 <Space>
-                    <Button type="secondary">取消</Button>
                     <Button
-                        type="primary"
+                        type="default"
+                        status="success"
                         onClick={handleSubmit}
                         loading={loading}
+                        disabled={!isDraft}
                     >
-                        保存
+                        {isDraft ? "保存当前 API" : "当前 API 已保存"}
                     </Button>
                 </Space>
             </div>
-            <Form form={form} layout="vertical" scrollToFirstError>
+            <Form
+                form={form}
+                layout="vertical"
+                scrollToFirstError
+                initialValues={apiDetail}
+                onValuesChange={(_, allValues) => {
+                    setIsDraft(true);
+                    console.log("Form values:", allValues);
+                }}
+            >
                 <BriefInfoEdit />
                 <Divider />
                 <RequestParamsEdit />

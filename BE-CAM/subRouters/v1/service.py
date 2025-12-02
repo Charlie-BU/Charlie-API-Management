@@ -192,6 +192,25 @@ def deleteIterationById(request: Request):
 
 
 # ---- ⚠️ 以下为service迭代流程相关路由 ----
+@serviceRouterV1.get("/getIterationById", auth_required=True)
+def getIterationById(request: Request):
+    id = request.query_params.get("id", None)
+    if not id:
+        return Response(
+            status_code=400,
+            description="id is required",
+            headers={},
+        )
+    user_id = userGetUserIdByAccessToken(request=request)
+    with session() as db:
+        res = serviceGetServiceIterationById(
+            db=db,
+            id=int(id),
+            user_id=user_id,
+        )
+    return res
+
+
 # 发起service迭代流程
 @serviceRouterV1.post("/startIteration", auth_required=True)
 def startIteration(request: Request):
