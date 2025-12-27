@@ -10,12 +10,14 @@ import {
 import { t } from "i18next";
 
 import {
+    CommitIteration,
     CreateNewService,
     DeleteServiceById,
     GetAllDeletedServicesByUserId,
     GetAllServices,
     GetAllVersionsByUuid,
     GetHisNewestServicesByOwnerId,
+    GetIterationById,
     GetMyNewestServices,
     GetServiceByUuidAndVersion,
     RestoreServiceById,
@@ -40,6 +42,7 @@ import {
     DeleteCategoryById,
     UpdateApiCategoryById,
 } from "@/services/api";
+import CompleteIterationForm from "@/components/ApiManagement/ApiList/CompleteIterationForm";
 
 const { Text } = Typography;
 
@@ -255,6 +258,7 @@ export const useService = () => {
     };
 };
 
+// 某个服务hook
 export const useThisService = (service_uuid: string) => {
     const navigate = useNavigate();
 
@@ -282,7 +286,7 @@ export const useThisService = (service_uuid: string) => {
                 setVersions([]);
                 throw new Error(res.message || "获取版本失败");
             }
-            setVersions(res.versions || []);
+            setVersions(res.versions.filter((v) => v.version) || []); // 筛选掉正在迭代的，没有版本号的service_iteration
             setCurrentVersion(res.versions?.[0]?.version || "");
             setIsLatest(res.versions?.[0]?.is_latest || false);
         } catch (err: unknown) {
@@ -470,22 +474,61 @@ export const useThisService = (service_uuid: string) => {
     const [inIteration, setInIteration] = useState(false);
     const [iterationId, setIterationId] = useState<number>(-1);
 
-    const handleStartIteration = useCallback(async () => {
-        try {
-            const res = await StartIteration({
-                service_id: serviceDetail.id,
-            });
-            if (res.status !== 200 && res.status !== 201) {
-                throw new Error(res.message || "迭代开始失败");
-            }
-            Message.success(res.message || "迭代开始成功");
-            setInIteration(true);
-            setIterationId(res.service_iteration_id);
-        } catch (err: unknown) {
-            const msg = err instanceof Error ? err.message : "迭代开始失败";
-            Message.error(msg);
-        }
-    }, [serviceDetail.id, currentVersion, fetchServiceDetail]);
+    const handleStartIteration = useCallback(
+        async () =>
+            handleConfirm(
+                async () => {
+                    try {
+                        const res = await StartIteration({
+                            service_id: serviceDetail.id,
+                        });
+                        if (res.status !== 200 && res.status !== 201) {
+                            throw new Error(res.message || "迭代开始失败");
+                        }
+                        Message.success(res.message || "迭代开始成功");
+                        setInIteration(true);
+                        setIterationId(res.service_iteration_id);
+                    } catch (err: unknown) {
+                        const msg =
+                            err instanceof Error ? err.message : "迭代开始失败";
+                        Message.error(msg);
+                    }
+                },
+                "开始迭代",
+                "确认开始新的迭代？"
+            ),
+        [serviceDetail.id, currentVersion, fetchServiceDetail]
+    );
+
+    const handleCompleteIteration = useCallback(async () => {
+        const modal = CModal.openArcoForm({
+            title: "完成迭代",
+            content: <CompleteIterationForm currentVersion={currentVersion} />,
+            cancelText: t("common.cancel"),
+            okText: "确定",
+            onOk: async (values, form) => {
+                try {
+                    await form.validate();
+                    const res = await CommitIteration({
+                        service_iteration_id: iterationId,
+                        new_version: values.new_version,
+                    });
+                    if (res.status !== 200) {
+                        throw new Error(res.message || "迭代提交失败");
+                    }
+                    Message.success(res.message || "迭代提交成功");
+                    // 显式关闭弹窗，避免依赖隐式行为
+                    modal.close();
+                } catch (err: unknown) {
+                    const msg =
+                        err instanceof Error ? err.message : "迭代提交失败";
+                    Message.error(msg);
+                    // 抛出错误以阻止弹窗自动关闭（库内有相关处理）
+                    throw err;
+                }
+            },
+        });
+    }, [iterationId, currentVersion, fetchServiceDetail]);
 
     return {
         loading,
@@ -504,44 +547,100 @@ export const useThisService = (service_uuid: string) => {
         handleDeleteCategory,
         setInIteration,
         handleStartIteration,
+        handleCompleteIteration,
     };
 };
 
-
 // 迭代相关（只用于一次迭代周期内，与服务历史版本无关）
-export const useServiceIteration = (iterationId: number) => {
+export const useServiceIteration = (
+    iterationId: number,
+    apiCategories: ApiCategory[]
+) => {
     const [loading, setLoading] = useState(false);
-    const [iterationDetail, setIterationDetail] = useState<
-        ServiceIterationDetail
-    >({} as ServiceIterationDetail);
+    const [iterationDetail, setIterationDetail] =
+        useState<ServiceIterationDetail>({} as ServiceIterationDetail);
     const [apiDrafts, setApiDrafts] = useState<ApiBrief[]>([]);
 
-    const fetchIterationDetail = useCallback(
-        async (version: string) => {
-            setLoading(true);
-            const res = await GetServiceByUuidAndVersion(service_uuid, version);
-            if (res.status !== 200) {
-                setServiceDetail({} as ServiceDetail);
-                Message.warning(res.message || "获取服务详情失败");
-                setLoading(false);
-                return;
-            }
-            setServiceDetail(res.service || {});
-            setIsLatest(res.is_latest);
-            if ("api_categories" in res.service) {
-                setApiCategories(res.service.api_categories || []);
-            }
-            if ("apis" in res.service || "api_drafts" in res.service) {
-                setApis(
-                    ("apis" in res.service
-                        ? res.service.apis
-                        : "api_drafts" in res.service
-                        ? res.service.api_drafts
-                        : []) || []
-                );
-            }
+    const fetchIterationDetail = useCallback(async () => {
+        if (iterationId <= 0) return;
+        setLoading(true);
+        const res = await GetIterationById(iterationId);
+        if (res.status !== 200) {
+            setIterationDetail({} as ServiceIterationDetail);
+            Message.warning(res.message || "获取当前迭代详情失败");
             setLoading(false);
-        },
-        [service_uuid]
-    );
-}
+            return;
+        }
+        setIterationDetail(res.iteration || {});
+        if ("api_drafts" in res.iteration) {
+            setApiDrafts(res.iteration.api_drafts || [] || []);
+        }
+        setLoading(false);
+    }, [iterationId]);
+
+    useEffect(() => {
+        fetchIterationDetail();
+    }, [fetchIterationDetail]);
+
+    const iterationTreeData = useMemo(() => {
+        if (!apiCategories || !apiDrafts) {
+            return [] as any[];
+        }
+        const categoryMap = new Map<number, any>();
+        apiCategories.forEach((cat) => {
+            categoryMap.set(cat.id, {
+                key: `category-${cat.id}`,
+                title: (
+                    <Popover content={cat.description}>
+                        <Text>{cat.name}</Text>
+                    </Popover>
+                ),
+                children: [] as any[],
+                selectable: false,
+                draggable: false,
+            });
+        });
+        const uncategorizedGroup = {
+            key: "category-null",
+            title: <Text>未分类</Text>,
+            children: [] as any[],
+            selectable: false,
+            draggable: false,
+        };
+
+        apiDrafts.forEach((apiDraft) => {
+            const node = {
+                key: apiDraft.id.toString(),
+                title: (
+                    <Space style={{ fontWeight: 500 }}>
+                        {genApiMethodTag(apiDraft.method, "small")}
+                        {apiDraft.name}
+                        <Text style={{ color: "#6e7687", fontSize: 10 }}>
+                            {apiDraft.path}
+                        </Text>
+                    </Space>
+                ),
+            };
+            if (apiDraft.category_id == null) {
+                uncategorizedGroup.children.push(node);
+            } else {
+                const group = categoryMap.get(apiDraft.category_id);
+                if (group) {
+                    group.children.push(node);
+                } else {
+                    uncategorizedGroup.children.push(node);
+                }
+            }
+        });
+
+        return [...Array.from(categoryMap.values()), uncategorizedGroup];
+    }, [apiCategories, apiDrafts]);
+
+    return {
+        loading,
+        iterationDetail,
+        apiDrafts,
+        iterationTreeData,
+        fetchIterationDetail,
+    };
+};

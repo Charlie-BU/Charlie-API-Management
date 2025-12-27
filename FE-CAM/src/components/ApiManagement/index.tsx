@@ -1,13 +1,13 @@
 import React, { useMemo, useState } from "react";
 import styles from "./index.module.less";
 import { useSearchParams } from "react-router-dom";
-import { useThisService } from "@/hooks/useService";
+import { useServiceIteration, useThisService } from "@/hooks/useService";
 import useApi from "@/hooks/useApi";
 import Detail from "./Detail";
 import Header from "./Header";
 import ApiList from "./ApiList";
 import ApiEdit from "./ApiEdit";
-import { Layout, Spin } from "@cloud-materials/common";
+import { Layout, Message, Spin } from "@cloud-materials/common";
 
 const ApiManagement: React.FC = () => {
     const [searchParams] = useSearchParams();
@@ -18,6 +18,7 @@ const ApiManagement: React.FC = () => {
         currentVersion,
         isLatest,
         serviceDetail,
+        apiCategories,
         treeData,
         inIteration,
         iterationId,
@@ -25,8 +26,8 @@ const ApiManagement: React.FC = () => {
         handleAddCategory,
         handleUpdateApiCategory,
         handleDeleteCategory,
-        setInIteration,
         handleStartIteration,
+        handleCompleteIteration,
     } = useThisService(uuid);
 
     const serviceUuid = useMemo(() => {
@@ -36,8 +37,17 @@ const ApiManagement: React.FC = () => {
     }, [serviceDetail]);
 
     const [selectedApiId, setSelectedApiId] = useState<number>(-1);
-    
-    const { loading: apiLoading, apiDetail } = useApi(selectedApiId, isLatest);
+
+    const { loading: apiLoading, apiDetail } = useApi(
+        selectedApiId,
+        inIteration ? false : isLatest      // 如果在迭代中，则 isLatest 为false
+    );
+
+    const {
+        loading: iterationLoading,
+        iterationDetail,
+        iterationTreeData,
+    } = useServiceIteration(iterationId, apiCategories);
 
     if (
         loading ||
@@ -55,58 +65,118 @@ const ApiManagement: React.FC = () => {
 
     return (
         <Layout className={styles.apiPage}>
-            <Layout.Header>
-                <Header
-                    loading={loading}
-                    serviceUuid={serviceUuid}
-                    versions={versions}
-                    currentVersion={currentVersion}
-                    setCurrentVersion={(v) => {
-                        setSelectedApiId(-1);
-                        // todo：中断该操作
-                        setInIteration(false);
-                        setCurrentVersion(v);
-                    }}
-                />
-            </Layout.Header>
+            {inIteration && iterationDetail ? (
+                // 迭代中
+                <>
+                    <Layout.Header>
+                        <Header
+                            loading={loading}
+                            serviceUuid={serviceUuid}
+                            versions={versions}
+                            currentVersion={currentVersion}
+                            setCurrentVersion={() => {
+                                Message.warning(
+                                    "当前在迭代中，请先完成当前迭代"
+                                );
+                            }}
+                        />
+                    </Layout.Header>
 
-            <Layout>
-                {/* 左侧 API 列表 */}
-                <Layout.Sider
-                    style={{
-                        width: 300,
-                        paddingBottom: 12,
-                    }}
-                >
-                    <ApiList
-                        inIteration={inIteration}
-                        treeData={treeData}
-                        setSelectedApiId={(id) => {
-                            setSelectedApiId(id);
-                            // todo
-                        }}
-                        handleAddCategory={handleAddCategory}
-                        handleUpdateApiCategory={handleUpdateApiCategory}
-                        handleDeleteCategory={handleDeleteCategory}
-                        handleStartIteration={handleStartIteration}
-                    />
-                </Layout.Sider>
-                <Layout.Content>
-                    {/* 右侧详情 */}
-                    {inIteration && apiDetail ? (
-                        <ApiEdit
-                            apiDetail={apiDetail}
-                            iterationId={iterationId}
-                            onSuccess={() => {}}
+                    <Layout>
+                        {/* 左侧 API 列表 */}
+                        <Layout.Sider
+                            style={{
+                                width: 300,
+                                paddingBottom: 12,
+                            }}
+                        >
+                            <ApiList
+                                inIteration={inIteration}
+                                isLatest={isLatest}
+                                treeData={iterationTreeData}
+                                setSelectedApiId={(id) => {
+                                    setSelectedApiId(id);
+                                }}
+                                handleAddCategory={handleAddCategory}
+                                handleUpdateApiCategory={() => {
+                                    Message.warning(
+                                        "当前在迭代中，请先完成当前迭代"
+                                    );
+                                }}
+                                handleDeleteCategory={handleDeleteCategory}
+                                handleStartIteration={() => {
+                                    handleStartIteration();
+                                }}
+                                handleCompleteIteration={() => {
+                                    handleCompleteIteration();
+                                }}
+                            />
+                        </Layout.Sider>
+                        <Layout.Content>
+                            {/* 右侧 API 编辑 */}
+                            <ApiEdit
+                                loading={iterationLoading}
+                                apiDetail={apiDetail}
+                                iterationId={iterationId}
+                                onSuccess={() => {}}
+                            />
+                        </Layout.Content>
+                    </Layout>
+                </>
+            ) : (
+                // 非迭代中
+                <>
+                    <Layout.Header>
+                        <Header
+                            loading={loading}
+                            serviceUuid={serviceUuid}
+                            versions={versions}
+                            currentVersion={currentVersion}
+                            setCurrentVersion={(v) => {
+                                setSelectedApiId(-1);
+                                setCurrentVersion(v);
+                            }}
                         />
-                    ) : (
-                        <Detail
-                            loading={apiLoading}
-                            apiDetail={apiDetail}
-                        />
-                    )}
-                </Layout.Content>
-            </Layout>
+                    </Layout.Header>
+
+                    <Layout>
+                        {/* 左侧 API 列表 */}
+                        <Layout.Sider
+                            style={{
+                                width: 300,
+                                paddingBottom: 12,
+                            }}
+                        >
+                            <ApiList
+                                inIteration={inIteration}
+                                isLatest={isLatest}
+                                treeData={treeData}
+                                setSelectedApiId={(id) => {
+                                    setSelectedApiId(id);
+                                }}
+                                handleAddCategory={handleAddCategory}
+                                handleUpdateApiCategory={
+                                    handleUpdateApiCategory
+                                }
+                                handleDeleteCategory={handleDeleteCategory}
+                                handleStartIteration={() => {
+                                    handleStartIteration();
+                                }}
+                                handleCompleteIteration={() => {
+                                    handleCompleteIteration();
+                                }}
+                            />
+                        </Layout.Sider>
+                        <Layout.Content>
+                            {/* 右侧详情 */}
+                            <Detail
+                                loading={apiLoading}
+                                apiDetail={apiDetail}
+                            />
+                        </Layout.Content>
+                    </Layout>
+                </>
+            )}
         </Layout>
     );
 };

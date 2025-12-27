@@ -14,6 +14,7 @@ import type {
     RestoreServiceByIdResponse,
     DeleteIterationByIdRequest,
     DeleteIterationByIdResponse,
+    GetIterationByIdResponse,
     StartIterationRequest,
     StartIterationResponse,
     CommitIterationRequest,
@@ -125,6 +126,11 @@ export const DeleteIterationById = async (data: DeleteIterationByIdRequest) => {
         `${prefix}/deleteIterationById`,
         data
     );
+};
+
+// 通过id获取服务迭代详情
+export const GetIterationById = async (id: number) => {
+    return api.get<GetIterationByIdResponse>(`${prefix}/getIterationById`, { id });
 };
 
 // 发起 service 迭代流程

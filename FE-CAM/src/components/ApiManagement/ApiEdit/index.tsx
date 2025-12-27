@@ -14,18 +14,20 @@ import RequestParamsEdit from "./RequestParamsEdit";
 import type { ApiDetail, ApiDraftDetail } from "@/services/api/types";
 
 interface ApiEditProps {
+    loading: boolean;
     apiDetail: ApiDetail | ApiDraftDetail;
     iterationId: number;
     onSuccess: () => void;
 }
 
 const ApiEdit: React.FC<ApiEditProps> = ({
+    loading,
     apiDetail,
     iterationId,
     onSuccess,
 }) => {
     const [form] = Form.useForm();
-    const [loading, setLoading] = useState(false);
+    const [editLoading, setEditLoading] = useState(false);
     const [isDraft, setIsDraft] = useState(true);
 
     useEffect(() => {
@@ -46,6 +48,10 @@ const ApiEdit: React.FC<ApiEditProps> = ({
         }
     };
 
+    if (loading || !apiDetail) {
+        return null;
+    }
+
     return (
         <div className={styles.content}>
             <div className={styles.header}>
@@ -55,7 +61,7 @@ const ApiEdit: React.FC<ApiEditProps> = ({
                         type="default"
                         status="success"
                         onClick={handleSubmit}
-                        loading={loading}
+                        loading={editLoading}
                         disabled={!isDraft}
                     >
                         {isDraft ? "保存当前 API" : "当前 API 已保存"}

@@ -31,7 +31,7 @@ const useApi = (apiId: number, isLatest: boolean) => {
         } finally {
             setLoading(false);
         }
-    }, [apiId, isLatest]);
+    }, [apiId]);
 
     useEffect(() => {
         fetchApiDetail();
