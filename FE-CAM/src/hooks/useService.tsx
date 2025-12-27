@@ -40,9 +40,14 @@ import AddCategoryForm from "@/components/ApiManagement/ApiList/AddCategoryForm"
 import {
     AddCategoryByServiceId,
     DeleteCategoryById,
+    UpdateApiByApiDraftId,
     UpdateApiCategoryById,
 } from "@/services/api";
 import CompleteIterationForm from "@/components/ApiManagement/ApiList/CompleteIterationForm";
+import type {
+    UpdateApiByApiDraftIdRequest,
+    UpdateApiByApiDraftIdResponse,
+} from "@/services/api/types";
 
 const { Text } = Typography;
 
@@ -306,28 +311,36 @@ export const useThisService = (service_uuid: string) => {
     const fetchServiceDetail = useCallback(
         async (version: string) => {
             setLoading(true);
-            const res = await GetServiceByUuidAndVersion(service_uuid, version);
-            if (res.status !== 200) {
-                setServiceDetail({} as ServiceDetail);
-                Message.warning(res.message || "获取服务详情失败");
-                setLoading(false);
-                return;
-            }
-            setServiceDetail(res.service || {});
-            setIsLatest(res.is_latest);
-            if ("api_categories" in res.service) {
-                setApiCategories(res.service.api_categories || []);
-            }
-            if ("apis" in res.service || "api_drafts" in res.service) {
-                setApis(
-                    ("apis" in res.service
-                        ? res.service.apis
-                        : "api_drafts" in res.service
-                        ? res.service.api_drafts
-                        : []) || []
+            try {
+                const res = await GetServiceByUuidAndVersion(
+                    service_uuid,
+                    version
                 );
+                if (res.status !== 200) {
+                    setServiceDetail({} as ServiceDetail);
+                    throw new Error(res.message || "获取服务详情失败");
+                }
+                setServiceDetail(res.service || {});
+                setIsLatest(res.is_latest);
+                if ("api_categories" in res.service) {
+                    setApiCategories(res.service.api_categories || []);
+                }
+                if ("apis" in res.service || "api_drafts" in res.service) {
+                    setApis(
+                        ("apis" in res.service
+                            ? res.service.apis
+                            : "api_drafts" in res.service
+                            ? res.service.api_drafts
+                            : []) || []
+                    );
+                }
+            } catch (err: unknown) {
+                const msg =
+                    err instanceof Error ? err.message : "获取服务详情失败";
+                Message.warning(msg || "获取服务详情失败");
+            } finally {
+                setLoading(false);
             }
-            setLoading(false);
         },
         [service_uuid]
     );
@@ -426,21 +439,31 @@ export const useThisService = (service_uuid: string) => {
 
     const handleUpdateApiCategory = useCallback(
         async (api_id: number, category_id: number) => {
-            const res = await UpdateApiCategoryById({ api_id, category_id });
-            if (res.status !== 200) {
-                throw new Error(res.message || "API 分类更新失败");
+            try {
+                const res = await UpdateApiCategoryById({
+                    api_id,
+                    category_id,
+                });
+                if (res.status !== 200) {
+                    throw new Error(res.message || "API 分类更新失败");
+                }
+                setApis((prev) =>
+                    prev.map((api) =>
+                        api.id === api_id
+                            ? {
+                                  ...api,
+                                  category_id:
+                                      category_id >= 0 ? category_id : null,
+                              }
+                            : api
+                    )
+                );
+            } catch (err: unknown) {
+                const msg =
+                    err instanceof Error ? err.message : "API 分类更新失败";
+                Message.error(msg);
+                throw err;
             }
-            setApis((prev) =>
-                prev.map((api) =>
-                    api.id === api_id
-                        ? {
-                              ...api,
-                              category_id:
-                                  category_id >= 0 ? category_id : null,
-                          }
-                        : api
-                )
-            );
         },
         [currentVersion, fetchServiceDetail]
     );
@@ -564,18 +587,23 @@ export const useServiceIteration = (
     const fetchIterationDetail = useCallback(async () => {
         if (iterationId <= 0) return;
         setLoading(true);
-        const res = await GetIterationById(iterationId);
-        if (res.status !== 200) {
-            setIterationDetail({} as ServiceIterationDetail);
-            Message.warning(res.message || "获取当前迭代详情失败");
+        try {
+            const res = await GetIterationById(iterationId);
+            if (res.status !== 200) {
+                setIterationDetail({} as ServiceIterationDetail);
+                throw new Error(res.message || "获取当前迭代详情失败");
+            }
+            setIterationDetail(res.iteration || {});
+            if ("api_drafts" in res.iteration) {
+                setApiDrafts(res.iteration.api_drafts || [] || []);
+            }
+        } catch (err: unknown) {
+            const msg =
+                err instanceof Error ? err.message : "获取当前迭代详情失败";
+            Message.error(msg);
+        } finally {
             setLoading(false);
-            return;
         }
-        setIterationDetail(res.iteration || {});
-        if ("api_drafts" in res.iteration) {
-            setApiDrafts(res.iteration.api_drafts || [] || []);
-        }
-        setLoading(false);
     }, [iterationId]);
 
     useEffect(() => {
@@ -636,11 +664,28 @@ export const useServiceIteration = (
         return [...Array.from(categoryMap.values()), uncategorizedGroup];
     }, [apiCategories, apiDrafts]);
 
+    const handleSaveApiDraft = useCallback(
+        async (
+            data: Omit<UpdateApiByApiDraftIdRequest, "service_iteration_id">
+        ): Promise<UpdateApiByApiDraftIdResponse> => {
+            const res = await UpdateApiByApiDraftId({
+                ...data,
+                service_iteration_id: iterationId,
+            });
+            if (res.status !== 200) {
+                throw new Error(res.message || "API 保存失败");
+            }
+            return res;
+        },
+        [iterationId, fetchIterationDetail]
+    );
+
     return {
         loading,
         iterationDetail,
         apiDrafts,
         iterationTreeData,
         fetchIterationDetail,
+        handleSaveApiDraft,
     };
 };

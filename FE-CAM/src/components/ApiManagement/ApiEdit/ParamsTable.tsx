@@ -6,12 +6,15 @@ import {
     Switch,
     Button,
     Space,
-    IconPlus,
-    IconDelete,
 } from "@cloud-materials/common";
+import { IconPlus, IconDelete } from "@cloud-materials/common";
+import { TYPES } from "./types";
 import type { ParamItem } from "./types";
-
-const generateId = () => Math.random().toString(36).substring(2, 9);
+import {
+    updateTreeItem,
+    addTreeItem,
+    deleteTreeItem,
+} from "./utils";
 
 interface ParamsTableProps {
     value?: ParamItem[];
@@ -30,80 +33,23 @@ const ParamsTable: React.FC<ParamsTableProps> = ({
         onChange?.(newData);
     };
 
-    const updateItem = (
-        id: string,
-        field: keyof ParamItem,
-        val: any,
-        list: ParamItem[]
-    ): ParamItem[] => {
-        return list.map((item) => {
-            if (item.id === id) {
-                return { ...item, [field]: val };
-            }
-            if (item.children) {
-                return {
-                    ...item,
-                    children: updateItem(id, field, val, item.children),
-                };
-            }
-            return item;
-        });
-    };
-
     const handleFieldChange = (
         id: string,
         field: keyof ParamItem,
         val: any
     ) => {
-        const newData = updateItem(id, field, val, data);
+        const newData = updateTreeItem(data, id, field, val);
         handleChange(newData);
     };
 
     const addItem = (parentId?: string) => {
-        const newItem: ParamItem = {
-            id: generateId(),
-            name: "",
-            type: "string",
-            required: true,
-            description: "",
-            example: "",
-        };
-
-        if (!parentId) {
-            handleChange([...data, newItem]);
-        } else {
-            const addChildren = (list: ParamItem[]): ParamItem[] => {
-                return list.map((item) => {
-                    if (item.id === parentId) {
-                        return {
-                            ...item,
-                            children: [...(item.children || []), newItem],
-                        };
-                    }
-                    if (item.children) {
-                        return {
-                            ...item,
-                            children: addChildren(item.children),
-                        };
-                    }
-                    return item;
-                });
-            };
-            handleChange(addChildren(data));
-        }
+        const newData = addTreeItem(data, parentId);
+        handleChange(newData);
     };
 
     const deleteItem = (id: string) => {
-        const deleteFromList = (list: ParamItem[]): ParamItem[] => {
-            return list.filter((item) => {
-                if (item.id === id) return false;
-                if (item.children) {
-                    item.children = deleteFromList(item.children);
-                }
-                return true;
-            });
-        };
-        handleChange(deleteFromList(data));
+        const newData = deleteTreeItem(data, id);
+        handleChange(newData);
     };
 
     const columns = [

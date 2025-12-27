@@ -40,13 +40,14 @@ const ApiManagement: React.FC = () => {
 
     const { loading: apiLoading, apiDetail } = useApi(
         selectedApiId,
-        inIteration ? false : isLatest      // 如果在迭代中，则 isLatest 为false
+        inIteration ? false : isLatest // 如果在迭代中，则 isLatest 为false
     );
 
     const {
         loading: iterationLoading,
         iterationDetail,
         iterationTreeData,
+        handleSaveApiDraft,
     } = useServiceIteration(iterationId, apiCategories);
 
     if (
@@ -117,8 +118,7 @@ const ApiManagement: React.FC = () => {
                             <ApiEdit
                                 loading={iterationLoading}
                                 apiDetail={apiDetail}
-                                iterationId={iterationId}
-                                onSuccess={() => {}}
+                                handleSaveApiDraft={handleSaveApiDraft}
                             />
                         </Layout.Content>
                     </Layout>

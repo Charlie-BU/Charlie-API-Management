@@ -11,20 +11,31 @@ import styles from "../index.module.less";
 import BriefInfoEdit from "./BriefInfoEdit";
 import ResponseParamsEdit from "./ResponseParamsEdit";
 import RequestParamsEdit from "./RequestParamsEdit";
-import type { ApiDetail, ApiDraftDetail } from "@/services/api/types";
+import {
+    transformReqParamsToApiInput,
+    transformRespParamsToApiInput,
+} from "./utils";
+import type {
+    ApiDetail,
+    ApiDraftDetail,
+    ApiReqParamInput,
+    ApiRespParamInput,
+    UpdateApiByApiDraftIdRequest,
+    UpdateApiByApiDraftIdResponse,
+} from "@/services/api/types";
 
 interface ApiEditProps {
     loading: boolean;
     apiDetail: ApiDetail | ApiDraftDetail;
-    iterationId: number;
-    onSuccess: () => void;
+    handleSaveApiDraft: (
+        data: Omit<UpdateApiByApiDraftIdRequest, "service_iteration_id">
+    ) => Promise<UpdateApiByApiDraftIdResponse>;
 }
 
 const ApiEdit: React.FC<ApiEditProps> = ({
     loading,
     apiDetail,
-    iterationId,
-    onSuccess,
+    handleSaveApiDraft,
 }) => {
     const [form] = Form.useForm();
     const [editLoading, setEditLoading] = useState(false);
@@ -36,16 +47,35 @@ const ApiEdit: React.FC<ApiEditProps> = ({
     }, [apiDetail, form]);
 
     const handleSubmit = async () => {
+        const values = await form.validate();
+        setEditLoading(true);
+
+        const req_params: ApiReqParamInput[] = transformReqParamsToApiInput(
+            values.requestParams
+        );
+        const resp_params: ApiRespParamInput[] = transformRespParamsToApiInput(
+            values.responseParams
+        );
+        const data: Omit<UpdateApiByApiDraftIdRequest, "service_iteration_id"> =
+            {
+                api_draft_id: apiDetail.id,
+                name: values.name,
+                method: values.method,
+                path: values.path,
+                description: values.description,
+                level: apiDetail.level || "P2",
+                req_params,
+                resp_params,
+            };
         try {
-            const values = await form.validate();
-            console.log("Form values:", values);
-            // TODO: Call API update service here
+            const res = await handleSaveApiDraft(data);
             setIsDraft(false);
-            Message.success("保存成功");
-            onSuccess();
+            Message.success(res.message || "API 保存成功");
         } catch (error) {
-            console.error("Validation failed:", error);
+            const msg = error instanceof Error ? error.message : "API 保存失败";
+            Message.error(msg);
         }
+        setEditLoading(false);
     };
 
     if (loading || !apiDetail) {
@@ -73,9 +103,8 @@ const ApiEdit: React.FC<ApiEditProps> = ({
                 layout="vertical"
                 scrollToFirstError
                 initialValues={apiDetail}
-                onValuesChange={(_, allValues) => {
+                onValuesChange={() => {
                     setIsDraft(true);
-                    console.log("Form values:", allValues);
                 }}
             >
                 <BriefInfoEdit />
