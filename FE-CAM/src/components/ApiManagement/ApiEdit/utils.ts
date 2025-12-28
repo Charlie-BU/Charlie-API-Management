@@ -32,11 +32,12 @@ const processReqItems = (
         type: item.type as ParamType,
         location: location,
         required: item.required,
+        default_value: item.default_value || null,
         description: item.description,
         example: item.example,
         array_child_type: (item.array_child_type as ParamType) || null,
-        children: item.children
-            ? processReqItems(item.children, location)
+        children: (item.children || (item as any).children_params)
+            ? processReqItems((item.children || (item as any).children_params), location)
             : undefined,
     }));
 };
@@ -105,6 +106,7 @@ export const addTreeItem = (
         type: "string",
         required: true,
         description: "",
+        default_value: "",
         example: "",
     };
 

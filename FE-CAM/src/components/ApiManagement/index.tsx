@@ -36,6 +36,7 @@ const ApiManagement: React.FC = () => {
             : serviceDetail?.service?.service_uuid || "";
     }, [serviceDetail]);
 
+    // 用于控制当前 API 相关逻辑
     const [selectedApiId, setSelectedApiId] = useState<number>(-1);
 
     const { loading: apiLoading, apiDetail } = useApi(
@@ -49,6 +50,10 @@ const ApiManagement: React.FC = () => {
         iterationTreeData,
         handleSaveApiDraft,
     } = useServiceIteration(iterationId, apiCategories);
+
+    const inIterationWarning = () => {
+        Message.warning("当前在迭代中，请先完成当前迭代");
+    };
 
     if (
         loading ||
@@ -66,117 +71,73 @@ const ApiManagement: React.FC = () => {
 
     return (
         <Layout className={styles.apiPage}>
-            {inIteration && iterationDetail ? (
-                // 迭代中
-                <>
-                    <Layout.Header>
-                        <Header
-                            loading={loading}
-                            serviceUuid={serviceUuid}
-                            versions={versions}
-                            currentVersion={currentVersion}
-                            setCurrentVersion={() => {
-                                Message.warning(
-                                    "当前在迭代中，请先完成当前迭代"
-                                );
+            <>
+                <Layout.Header>
+                    <Header
+                        loading={loading}
+                        serviceUuid={serviceUuid}
+                        versions={versions}
+                        currentVersion={currentVersion}
+                        setCurrentVersion={
+                            inIteration && iterationDetail
+                                ? inIterationWarning
+                                : (v) => {
+                                      setSelectedApiId(-1);
+                                      setCurrentVersion(v);
+                                  }
+                        }
+                    />
+                </Layout.Header>
+                <Layout>
+                    {/* 左侧 API 列表 */}
+                    <Layout.Sider
+                        style={{
+                            width: 300,
+                            paddingBottom: 12,
+                        }}
+                    >
+                        <ApiList
+                            inIteration={inIteration}
+                            isLatest={isLatest}
+                            treeData={
+                                inIteration && iterationDetail
+                                    ? iterationTreeData
+                                    : treeData
+                            }
+                            setSelectedApiId={(id) => {
+                                setSelectedApiId(id);
+                            }}
+                            handleAddCategory={handleAddCategory}
+                            handleUpdateApiCategory={
+                                inIteration && iterationDetail
+                                    ? inIterationWarning
+                                    : handleUpdateApiCategory
+                            }
+                            handleDeleteCategory={handleDeleteCategory}
+                            handleStartIteration={() => {
+                                handleStartIteration();
+                            }}
+                            handleCompleteIteration={() => {
+                                handleCompleteIteration();
                             }}
                         />
-                    </Layout.Header>
-
-                    <Layout>
-                        {/* 左侧 API 列表 */}
-                        <Layout.Sider
-                            style={{
-                                width: 300,
-                                paddingBottom: 12,
-                            }}
-                        >
-                            <ApiList
-                                inIteration={inIteration}
-                                isLatest={isLatest}
-                                treeData={iterationTreeData}
-                                setSelectedApiId={(id) => {
-                                    setSelectedApiId(id);
-                                }}
-                                handleAddCategory={handleAddCategory}
-                                handleUpdateApiCategory={() => {
-                                    Message.warning(
-                                        "当前在迭代中，请先完成当前迭代"
-                                    );
-                                }}
-                                handleDeleteCategory={handleDeleteCategory}
-                                handleStartIteration={() => {
-                                    handleStartIteration();
-                                }}
-                                handleCompleteIteration={() => {
-                                    handleCompleteIteration();
-                                }}
-                            />
-                        </Layout.Sider>
-                        <Layout.Content>
-                            {/* 右侧 API 编辑 */}
+                    </Layout.Sider>
+                    <Layout.Content>
+                        {inIteration && iterationDetail ? (
                             <ApiEdit
                                 loading={iterationLoading}
                                 apiDetail={apiDetail}
                                 handleSaveApiDraft={handleSaveApiDraft}
                             />
-                        </Layout.Content>
-                    </Layout>
-                </>
-            ) : (
-                // 非迭代中
-                <>
-                    <Layout.Header>
-                        <Header
-                            loading={loading}
-                            serviceUuid={serviceUuid}
-                            versions={versions}
-                            currentVersion={currentVersion}
-                            setCurrentVersion={(v) => {
-                                setSelectedApiId(-1);
-                                setCurrentVersion(v);
-                            }}
-                        />
-                    </Layout.Header>
-
-                    <Layout>
-                        {/* 左侧 API 列表 */}
-                        <Layout.Sider
-                            style={{
-                                width: 300,
-                                paddingBottom: 12,
-                            }}
-                        >
-                            <ApiList
-                                inIteration={inIteration}
-                                isLatest={isLatest}
-                                treeData={treeData}
-                                setSelectedApiId={(id) => {
-                                    setSelectedApiId(id);
-                                }}
-                                handleAddCategory={handleAddCategory}
-                                handleUpdateApiCategory={
-                                    handleUpdateApiCategory
-                                }
-                                handleDeleteCategory={handleDeleteCategory}
-                                handleStartIteration={() => {
-                                    handleStartIteration();
-                                }}
-                                handleCompleteIteration={() => {
-                                    handleCompleteIteration();
-                                }}
-                            />
-                        </Layout.Sider>
-                        <Layout.Content>
-                            {/* 右侧详情 */}
+                        ) : (
                             <Detail
                                 loading={apiLoading}
                                 apiDetail={apiDetail}
                             />
-                        </Layout.Content>
-                    </Layout>
-                </>
-            )}
+                        )}
+                    </Layout.Content>
+                </Layout>
+            </>
         </Layout>
     );
 };

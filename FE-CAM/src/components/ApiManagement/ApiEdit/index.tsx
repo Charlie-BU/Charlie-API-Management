@@ -9,8 +9,8 @@ import {
 } from "@cloud-materials/common";
 import styles from "../index.module.less";
 import BriefInfoEdit from "./BriefInfoEdit";
-import ResponseParamsEdit from "./ResponseParamsEdit";
-import RequestParamsEdit from "./RequestParamsEdit";
+// import ResponseParamsEdit from "./ResponseParamsEdit";
+// import RequestParamsEdit from "./RequestParamsEdit";
 import {
     transformReqParamsToApiInput,
     transformRespParamsToApiInput,
@@ -23,6 +23,8 @@ import type {
     UpdateApiByApiDraftIdRequest,
     UpdateApiByApiDraftIdResponse,
 } from "@/services/api/types";
+import RequestParamsEdit from "./RequestParamsEdit";
+import ResponseParamsEdit from "./ResponseParamsEdit";
 
 interface ApiEditProps {
     loading: boolean;
@@ -39,11 +41,11 @@ const ApiEdit: React.FC<ApiEditProps> = ({
 }) => {
     const [form] = Form.useForm();
     const [editLoading, setEditLoading] = useState(false);
-    const [isDraft, setIsDraft] = useState(true);
+    const [isDraft, setIsDraft] = useState(false);
 
     useEffect(() => {
         form.setFieldsValue(apiDetail);
-        setIsDraft(true);
+        setIsDraft(false);
     }, [apiDetail, form]);
 
     const handleSubmit = async () => {
@@ -51,7 +53,7 @@ const ApiEdit: React.FC<ApiEditProps> = ({
         setEditLoading(true);
 
         const req_params: ApiReqParamInput[] = transformReqParamsToApiInput(
-            values.requestParams
+            values.request_params_by_location
         );
         const resp_params: ApiRespParamInput[] = transformRespParamsToApiInput(
             values.responseParams
@@ -109,9 +111,9 @@ const ApiEdit: React.FC<ApiEditProps> = ({
             >
                 <BriefInfoEdit />
                 <Divider />
-                <RequestParamsEdit />
+                <RequestParamsEdit apiDetail={apiDetail} />
                 <Divider />
-                <ResponseParamsEdit />
+                <ResponseParamsEdit apiDetail={apiDetail} />
             </Form>
         </div>
     );
