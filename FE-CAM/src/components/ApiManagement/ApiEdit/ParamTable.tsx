@@ -17,27 +17,28 @@ const { Option } = Select;
 
 const ParamTable = ({
     name,
-    parentName, // For identifying nesting depth if needed
+    paramList,
 }: {
-    name: (string | number)[];
-    parentName?: string;
+    name: string;
+    paramList: any[];
 }) => {
+    console.log("paramList", paramList);
     const { form } = Form.useFormContext();
 
     const toPath = (path: (string | number)[]) => path.join(".");
 
     const getColumns = (
-        baseName: (string | number)[],
+        baseName: string,
         _add: (defaultValue?: any, index?: number) => void,
         remove: (index: number) => void
     ) => [
         {
             title: "参数名称",
             dataIndex: "name",
-            width: 200,
+            width: 150,
             render: (_: any, field: any) => {
-                const fieldName = [...baseName, field.name, "name"];
-
+                console.log("field", field);
+                const fieldName = [baseName, field.name, "name"];
                 return (
                     <Space>
                         <Form.Item
@@ -45,10 +46,7 @@ const ParamTable = ({
                             noStyle
                             rules={[{ required: true, message: "请输入名称" }]}
                         >
-                            <Input
-                                placeholder="参数名称"
-                                style={{ width: 140 }}
-                            />
+                            <Input placeholder="参数名称" value={field.name} />
                         </Form.Item>
 
                         <Form.Item
@@ -58,7 +56,7 @@ const ParamTable = ({
                             {() => {
                                 const children = form.getFieldValue(
                                     toPath([
-                                        ...baseName,
+                                        baseName,
                                         field.name,
                                         "children_params",
                                     ])
@@ -75,11 +73,8 @@ const ParamTable = ({
                                                     }}
                                                 >
                                                     <ParamTable
-                                                        name={[
-                                                            ...baseName,
-                                                            field.name,
-                                                            "children_params",
-                                                        ]}
+                                                        name={`req_params_${name}`} // todo
+                                                        paramList={children}
                                                     />
                                                 </div>
                                             }
@@ -87,7 +82,7 @@ const ParamTable = ({
                                             <Button
                                                 type="text"
                                                 size="mini"
-                                                icon={<IconCommon />} // Using IconCommon as placeholder for "View Children"
+                                                icon={<IconCommon />}
                                             >
                                                 子参数
                                             </Button>
@@ -104,15 +99,15 @@ const ParamTable = ({
         {
             title: "参数类型",
             dataIndex: "type",
-            width: 200,
+            width: 100,
             render: (_: any, field: any) => (
                 <Space>
                     <Form.Item
-                        field={toPath([...baseName, field.name, "type"])}
+                        field={toPath([baseName, field.name, "type"])}
                         noStyle
                         rules={[{ required: true }]}
                     >
-                        <Select placeholder="类型" style={{ width: 100 }}>
+                        <Select placeholder="类型" style={{ width: 120 }}>
                             {PARAM_TYPES.map((t) => (
                                 <Option key={t} value={t}>
                                     {t}
@@ -123,13 +118,13 @@ const ParamTable = ({
                     <Form.Item noStyle shouldUpdate={(_prev, _curr) => true}>
                         {() => {
                             const type = form.getFieldValue(
-                                toPath([...baseName, field.name, "type"])
+                                toPath([baseName, field.name, "type"])
                             );
                             if (type === "array") {
                                 return (
                                     <Form.Item
                                         field={toPath([
-                                            ...baseName,
+                                            baseName,
                                             field.name,
                                             "array_child_type",
                                         ])}
@@ -137,7 +132,7 @@ const ParamTable = ({
                                     >
                                         <Select
                                             placeholder="子类型"
-                                            style={{ width: 100 }}
+                                            style={{ width: 120 }}
                                         >
                                             {PARAM_TYPES.map((t) => (
                                                 <Option key={t} value={t}>
@@ -160,7 +155,7 @@ const ParamTable = ({
             width: 100,
             render: (_: any, field: any) => (
                 <Form.Item
-                    field={toPath([...baseName, field.name, "required"])}
+                    field={toPath([baseName, field.name, "required"])}
                     noStyle
                     initialValue={false}
                     triggerPropName="checked"
@@ -175,7 +170,7 @@ const ParamTable = ({
             width: 200,
             render: (_: any, field: any) => (
                 <Form.Item
-                    field={toPath([...baseName, field.name, "description"])}
+                    field={toPath([baseName, field.name, "description"])}
                     noStyle
                 >
                     <Input placeholder="描述" />
@@ -185,10 +180,10 @@ const ParamTable = ({
         {
             title: "默认值",
             dataIndex: "default_value",
-            width: 120,
+            width: 150,
             render: (_: any, field: any) => (
                 <Form.Item
-                    field={toPath([...baseName, field.name, "default_value"])}
+                    field={toPath([baseName, field.name, "default_value"])}
                     noStyle
                 >
                     <Input placeholder="默认值" />
@@ -201,7 +196,7 @@ const ParamTable = ({
             width: 150,
             render: (_: any, field: any) => (
                 <Form.Item
-                    field={toPath([...baseName, field.name, "example"])}
+                    field={toPath([baseName, field.name, "example"])}
                     noStyle
                 >
                     <Input placeholder="示例值" />
@@ -212,12 +207,13 @@ const ParamTable = ({
             title: "操作",
             dataIndex: "operation",
             width: 100,
+            align: "center" as const,
             render: (_: any, field: any) => (
                 <Space>
                     <Form.Item noStyle shouldUpdate={(_prev, _curr) => true}>
                         {() => {
                             const type = form.getFieldValue(
-                                toPath([...baseName, field.name, "type"])
+                                toPath([baseName, field.name, "type"])
                             );
                             if (type === "object") {
                                 return (
@@ -228,7 +224,7 @@ const ParamTable = ({
                                         icon={<IconPlus />}
                                         onClick={() => {
                                             const currentPath = toPath([
-                                                ...baseName,
+                                                baseName,
                                                 field.name,
                                                 "children_params",
                                             ]);
@@ -265,7 +261,7 @@ const ParamTable = ({
     ];
 
     return (
-        <Form.List field={toPath(name)}>
+        <Form.List field={name}>
             {(fields, { add, remove }) => (
                 <Space direction="vertical" style={{ width: "100%" }}>
                     <Table

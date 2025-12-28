@@ -9,7 +9,7 @@ import type { ParamItem } from "./types";
 export const generateId = () => Math.random().toString(36).substring(2, 9);
 
 export const transformReqParamsToApiInput = (
-    requestParams: Record<string, ParamItem[]>
+    requestParams: Record<ParamLocation, ParamItem[]>
 ): ApiReqParamInput[] => {
     const req_params: ApiReqParamInput[] = [];
     if (!requestParams) return req_params;
@@ -36,9 +36,13 @@ const processReqItems = (
         description: item.description,
         example: item.example,
         array_child_type: (item.array_child_type as ParamType) || null,
-        children: (item.children || (item as any).children_params)
-            ? processReqItems((item.children || (item as any).children_params), location)
-            : undefined,
+        children:
+            item.children || (item as any).children_params
+                ? processReqItems(
+                      item.children || (item as any).children_params,
+                      location
+                  )
+                : undefined,
     }));
 };
 
@@ -134,10 +138,7 @@ export const addTreeItem = (
     return addChildren(list);
 };
 
-export const deleteTreeItem = (
-    list: ParamItem[],
-    id: string
-): ParamItem[] => {
+export const deleteTreeItem = (list: ParamItem[], id: string): ParamItem[] => {
     return list.filter((item) => {
         if (item.id === id) return false;
         if (item.children) {

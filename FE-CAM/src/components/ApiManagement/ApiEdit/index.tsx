@@ -9,8 +9,6 @@ import {
 } from "@cloud-materials/common";
 import styles from "../index.module.less";
 import BriefInfoEdit from "./BriefInfoEdit";
-// import ResponseParamsEdit from "./ResponseParamsEdit";
-// import RequestParamsEdit from "./RequestParamsEdit";
 import {
     transformReqParamsToApiInput,
     transformRespParamsToApiInput,
@@ -50,6 +48,7 @@ const ApiEdit: React.FC<ApiEditProps> = ({
 
     const handleSubmit = async () => {
         const values = await form.validate();
+        console.log(values);
         setEditLoading(true);
 
         const req_params: ApiReqParamInput[] = transformReqParamsToApiInput(
