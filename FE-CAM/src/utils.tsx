@@ -76,6 +76,9 @@ export const handleConfirm = (
         content: confirmText || `是否确认${action || "执行此操作"}？`,
         cancelText: t("common.cancel"),
         okText: t("common.confirm"),
+        okButtonProps: {
+            status: action?.includes("删除") || action?.toLowerCase().includes("delete") ? "danger" : "default",
+        },
         onOk: async () => {
             try {
                 await onOk();

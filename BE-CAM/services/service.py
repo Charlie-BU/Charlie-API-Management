@@ -238,16 +238,20 @@ def serviceGetAllVersionsByUuid(db: Session, service_uuid: str, user_id: int) ->
             "status": -2,
             "message": "You are not the owner of this service",
         }
-    versions = [{
-        "version": curr_service.version,
-        "is_latest": True,
-    }]
+    versions = [
+        {
+            "version": curr_service.version,
+            "is_latest": True,
+        }
+    ]
     for service in service_iterations:
         if service.version != versions[0]["version"]:
-            versions.append({
-                "version": service.version,
-                "is_latest": False,
-            })
+            versions.append(
+                {
+                    "version": service.version,
+                    "is_latest": False,
+                }
+            )
     return {
         "status": 200,
         "message": "Get service versions success",
@@ -411,6 +415,33 @@ def serviceDeleteIterationById(
 
 
 # ---- ⚠️ 以下为service迭代流程相关方法 ----
+# 通过id获取服务迭代详情
+def serviceGetServiceIterationById(db: Session, id: int, user_id: int) -> dict:
+    iteration = db.get(ServiceIteration, id)
+    if not iteration:
+        return {
+            "status": -1,
+            "message": "Service iteration not found",
+        }
+    user = db.get(User, user_id)
+    # 非L0用户，为当前service owner或当前迭代creator，才有权限查看
+    if iteration.creator_id != user_id and iteration.service.owner_id != user_id and user.level.value != 0:  # type: ignore
+        return {
+            "status": -2,
+            "message": "You are neither the owner of this service, nor the creator of this service iteration",
+        }
+    if iteration.is_committed:
+        return {
+            "status": -3,
+            "message": "Service iteration has been committed",
+        }
+    return {
+        "status": 200,
+        "message": "Get service iteration success",
+        "iteration": iteration.toJson(include_relations=True),
+    }
+
+
 # 发起service迭代流程
 def serviceStartIteration(db: Session, service_id: int, user_id: int) -> dict:
     # 检查服务是否存在
@@ -440,8 +471,9 @@ def serviceStartIteration(db: Session, service_id: int, user_id: int) -> dict:
     )
     if existing_new_iteration:
         return {
-            "status": -3,
+            "status": 201,
             "message": "You have an uncommitted service iteration in progress",
+            "service_iteration_id": existing_new_iteration.id,
         }
     # 符合发起迭代条件
     new_iteration = ServiceIteration(

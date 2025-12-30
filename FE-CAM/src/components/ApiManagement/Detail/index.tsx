@@ -1,5 +1,4 @@
 import {
-    Button,
     Space,
     Typography,
     Divider,
@@ -33,11 +32,6 @@ const Detail: React.FC<{
                         {apiDetail.path}
                     </Space>
                 </Title>
-                <Space>
-                    <Button type="secondary">编辑</Button>
-                    <Button type="secondary">Mock</Button>
-                    <Button type="primary">测试</Button>
-                </Space>
             </div>
             <BriefInfo apiDetail={apiDetail} />
             <Divider />

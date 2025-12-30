@@ -127,6 +127,10 @@ export interface DeleteIterationByIdRequest {
 
 export type DeleteIterationByIdResponse = BaseResponse;
 
+export interface GetIterationByIdResponse extends BaseResponse {
+    iteration: ServiceIterationDetail;
+}
+
 export interface StartIterationRequest {
     service_id: number;
 }

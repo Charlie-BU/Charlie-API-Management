@@ -105,7 +105,7 @@ def apiGetApiById(
         ):
             return {
                 "status": -4,
-                "message": "You are neither the owner of this service draft, nor the creator of this service iteration",
+                "message": "You are neither the owner of this service, nor the creator of this service iteration",
             }
     # 满足查询条件
     # 处理request_params

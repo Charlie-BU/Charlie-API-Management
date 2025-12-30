@@ -4,18 +4,19 @@ import {
     Space,
     Table,
     Tag,
-    Tooltip,
     Typography,
 } from "@cloud-materials/common";
 
 import type {
     ApiDetail,
     ApiDraftDetail,
+    ParamType,
     ResponseParam,
     ResponseParamDraft,
 } from "@/services/api/types";
 import { genStatusCodeTag } from "@/utils";
 import styles from "../index.module.less";
+import { getParamTypeTag } from "./utils";
 
 const { Text } = Typography;
 
@@ -30,7 +31,7 @@ const responseColumns = [
                 return v;
             }
             return (
-                <Tooltip content="点击查看子参数">
+                <Popover content="点击查看子参数">
                     <Popover
                         trigger="click"
                         content={
@@ -51,7 +52,7 @@ const responseColumns = [
                             {v}
                         </Text>
                     </Popover>
-                </Tooltip>
+                </Popover>
             );
         },
     },
@@ -59,17 +60,8 @@ const responseColumns = [
         title: "参数类型",
         dataIndex: "type",
         width: 150,
-        render: (v: string, record: ResponseParam | ResponseParamDraft) =>
-            v === "array" && record.array_child_type ? (
-                <Tag>
-                    {v}
-                    {"<"}
-                    {record.array_child_type}
-                    {">"}
-                </Tag>
-            ) : (
-                <Tag>{v}</Tag>
-            ),
+        render: (v: ParamType, record: ResponseParam | ResponseParamDraft) =>
+            getParamTypeTag(v, record.array_child_type ?? undefined),
     },
     {
         title: "是否必填",

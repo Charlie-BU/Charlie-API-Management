@@ -57,13 +57,13 @@ export interface RequestParam {
     id: number;
     api_id: number;
     name: string;
-    location: ParamLocation | string;
-    type: ParamType | string;
+    location: ParamLocation;
+    type: ParamType;
     required: boolean;
     default_value?: string | null;
     description?: string | null;
     example?: string | null;
-    array_child_type?: ParamType | string | null;
+    array_child_type?: ParamType | null;
     parent_param_id?: number | null;
     children_params?: RequestParam[];
 }
@@ -73,11 +73,11 @@ export interface ResponseParam {
     api_id: number;
     status_code: number;
     name: string;
-    type: ParamType | string;
+    type: ParamType;
     required: boolean;
     description?: string | null;
     example?: string | null;
-    array_child_type?: ParamType | string | null;
+    array_child_type?: ParamType | null;
     parent_param_id?: number | null;
     children_params?: ResponseParam[];
 }
@@ -102,12 +102,12 @@ export interface RequestParamDraft {
     api_draft_id: number;
     name: string;
     location: ParamLocation | string;
-    type: ParamType | string;
+    type: ParamType;
     required: boolean;
     default_value?: string | null;
     description?: string | null;
     example?: string | null;
-    array_child_type?: ParamType | string | null;
+    array_child_type?: ParamType | null;
     parent_param_id?: number | null;
     children_params?: RequestParamDraft[];
 }
@@ -117,11 +117,11 @@ export interface ResponseParamDraft {
     api_draft_id: number;
     status_code: number;
     name: string;
-    type: ParamType | string;
+    type: ParamType;
     required: boolean;
     description?: string | null;
     example?: string | null;
-    array_child_type?: ParamType | string | null;
+    array_child_type?: ParamType | null;
     parent_param_id?: number | null;
     children_params?: ResponseParamDraft[];
 }
@@ -236,24 +236,24 @@ export type DeleteApiByApiDraftIdResponse = BaseResponse;
 // 更新 API 草稿时携带的参数输入结构（会被 stringify 传给后端）
 export interface ApiReqParamInput {
     name: string;
-    type: ParamType | string;
-    location?: ParamLocation | string; // 顶层必填，子参数继承
+    type: ParamType;
+    location?: ParamLocation; // 顶层必填，子参数继承
     required?: boolean;
     default_value?: string | null;
     description?: string | null;
     example?: string | null;
-    array_child_type?: ParamType | string | null;
+    array_child_type?: ParamType | null;
     children?: ApiReqParamInput[]; // object 类型支持嵌套
 }
 
 export interface ApiRespParamInput {
     status_code?: number; // 默认 200
     name: string;
-    type: ParamType | string;
+    type: ParamType;
     required?: boolean;
     description?: string | null;
     example?: string | null;
-    array_child_type?: ParamType | string | null;
+    array_child_type?: ParamType | null;
     children?: ApiRespParamInput[]; // object 类型支持嵌套
 }
 
