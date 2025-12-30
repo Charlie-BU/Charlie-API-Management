@@ -48,14 +48,14 @@ const ApiEdit: React.FC<ApiEditProps> = ({
 
     const handleSubmit = async () => {
         const values = await form.validate();
-        console.log(values);
         setEditLoading(true);
+        console.log("values", values);
 
         const req_params: ApiReqParamInput[] = transformReqParamsToApiInput(
             values.request_params_by_location
         );
         const resp_params: ApiRespParamInput[] = transformRespParamsToApiInput(
-            values.responseParams
+            values.response_params_by_status_code
         );
         const data: Omit<UpdateApiByApiDraftIdRequest, "service_iteration_id"> =
             {
@@ -68,6 +68,7 @@ const ApiEdit: React.FC<ApiEditProps> = ({
                 req_params,
                 resp_params,
             };
+        console.log("data", data);
         try {
             const res = await handleSaveApiDraft(data);
             setIsDraft(false);
@@ -110,9 +111,9 @@ const ApiEdit: React.FC<ApiEditProps> = ({
             >
                 <BriefInfoEdit />
                 <Divider />
-                <RequestParamsEdit apiDetail={apiDetail} />
+                <RequestParamsEdit />
                 <Divider />
-                <ResponseParamsEdit apiDetail={apiDetail} />
+                <ResponseParamsEdit />
             </Form>
         </div>
     );
