@@ -37,7 +37,7 @@ const RequestParamsEdit = () => {
                             triggerPropName="value"
                             noStyle
                         >
-                            <ParamTable />
+                            <ParamTable type="request" />
                         </Form.Item>
                     </div>
                 ))}

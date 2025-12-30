@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo } from "react";
 import {
     Space,
     Input,
@@ -17,12 +17,14 @@ import { generateId } from "./utils";
 const { Option } = Select;
 
 interface ParamTableProps {
+    type: "request" | "response";
     value?: any[];
     onChange?: (value: any[]) => void;
     readOnly?: boolean;
 }
 
 const ParamTable: React.FC<ParamTableProps> = ({
+    type,
     value = [],
     onChange,
     readOnly = false,
@@ -59,72 +61,83 @@ const ParamTable: React.FC<ParamTableProps> = ({
         onChange?.([...value, newItem]);
     };
 
+    const hasArrayParam = useMemo(
+        () => value.some((item) => item.type === "array"),
+        [value]
+    );
+
     const columns = [
         {
             title: "参数名称",
             dataIndex: "name",
-            width: 150,
-            render: (val: string, record: any) => (
-                <Space>
-                    <Input
-                        placeholder="参数名称"
-                        value={val}
-                        onChange={(v) =>
-                            handleFieldChange(record.id, "name", v)
-                        }
-                        disabled={readOnly}
-                    />
-                    {(record.children_params &&
+            width: 220,
+            fixed: "left" as const,
+            render: (val: string, record: any) => {
+                const showSubParams =
+                    (record.children_params &&
                         record.children_params.length > 0) ||
-                    record.type === "object" ? (
-                        <Popover
-                            trigger="click"
-                            content={
-                                <div
-                                    style={{
-                                        width: 1000,
-                                        maxWidth: 1000,
-                                    }}
-                                >
-                                    <ParamTable
-                                        value={record.children_params || []}
-                                        onChange={(newChildren) =>
-                                            handleFieldChange(
-                                                record.id,
-                                                "children_params",
-                                                newChildren
-                                            )
-                                        }
-                                        readOnly={readOnly}
-                                    />
-                                </div>
+                    record.type === "object";
+                return (
+                    <Space size={4}>
+                        <Input
+                            placeholder="参数名称"
+                            value={val}
+                            onChange={(v) =>
+                                handleFieldChange(record.id, "name", v)
                             }
-                        >
-                            <Button
-                                type="text"
-                                size="mini"
-                                icon={<IconCommon />}
+                            disabled={readOnly}
+                            style={{ width: showSubParams && 120 }}
+                        />
+                        {showSubParams && (
+                            <Popover
+                                trigger="click"
+                                content={
+                                    <div
+                                        style={{
+                                            width: 1000,
+                                            maxWidth: 1000,
+                                        }}
+                                    >
+                                        <ParamTable
+                                            type={type}
+                                            value={record.children_params || []}
+                                            onChange={(newChildren) =>
+                                                handleFieldChange(
+                                                    record.id,
+                                                    "children_params",
+                                                    newChildren
+                                                )
+                                            }
+                                            readOnly={readOnly}
+                                        />
+                                    </div>
+                                }
                             >
-                                子参数
-                            </Button>
-                        </Popover>
-                    ) : null}
-                </Space>
-            ),
+                                <Button type="text" size="mini">
+                                    <Space size={4}>
+                                        <IconCommon />
+                                        子参数
+                                    </Space>
+                                </Button>
+                            </Popover>
+                        )}
+                    </Space>
+                );
+            },
         },
         {
             title: "参数类型",
             dataIndex: "type",
-            width: 130,
+            width: hasArrayParam ? 260 : 150,
             render: (val: string, record: any) => (
                 <Space size={4}>
                     <Select
                         placeholder="类型"
-                        style={{ width: 100 }}
+                        style={{ width: 120 }}
                         value={val}
-                        onChange={(v) =>
-                            handleFieldChange(record.id, "type", v)
-                        }
+                        onChange={(v) => {
+                            handleFieldChange(record.id, "type", v);
+                        }}
                         disabled={readOnly}
                     >
                         {PARAM_TYPES.map((t) => (
@@ -136,7 +149,7 @@ const ParamTable: React.FC<ParamTableProps> = ({
                     {val === "array" && (
                         <Select
                             placeholder="子类型"
-                            style={{ width: 100 }}
+                            style={{ width: 120 }}
                             value={record.array_child_type}
                             onChange={(v) =>
                                 handleFieldChange(
@@ -160,7 +173,7 @@ const ParamTable: React.FC<ParamTableProps> = ({
         {
             title: "是否必填",
             dataIndex: "required",
-            width: 80,
+            width: 100,
             render: (val: boolean, record: any) => (
                 <Switch
                     checked={val}
@@ -176,7 +189,6 @@ const ParamTable: React.FC<ParamTableProps> = ({
         {
             title: "描述",
             dataIndex: "description",
-            width: 150,
             render: (val: string, record: any) => (
                 <Input
                     placeholder="描述"
@@ -188,32 +200,36 @@ const ParamTable: React.FC<ParamTableProps> = ({
                 />
             ),
         },
-        {
-            title: "默认值",
-            dataIndex: "default_value",
-            width: 120,
-            render: (val: string, record: any) => (
-                <Input
-                    placeholder="默认值"
-                    value={val}
-                    onChange={(v) =>
-                        handleFieldChange(record.id, "default_value", v)
-                    }
-                    disabled={readOnly}
-                />
-            ),
-        },
+        ...(type === "request"
+            ? [
+                  {
+                      title: "默认值",
+                      dataIndex: "default_value",
+                      render: (val: string, record: any) => (
+                          <Input
+                              placeholder="默认值"
+                              value={val}
+                              onChange={(v) =>
+                                  handleFieldChange(
+                                      record.id,
+                                      "default_value",
+                                      v
+                                  )
+                              }
+                              disabled={readOnly}
+                          />
+                      ),
+                  },
+              ]
+            : []),
         {
             title: "示例值",
             dataIndex: "example",
-            width: 120,
             render: (val: string, record: any) => (
                 <Input
                     placeholder="示例值"
                     value={val}
-                    onChange={(v) =>
-                        handleFieldChange(record.id, "example", v)
-                    }
+                    onChange={(v) => handleFieldChange(record.id, "example", v)}
                     disabled={readOnly}
                 />
             ),
@@ -222,7 +238,7 @@ const ParamTable: React.FC<ParamTableProps> = ({
             title: "操作",
             dataIndex: "operation",
             width: 100,
-            align: "center" as const,
+            fixed: "right" as const,
             render: (_: any, record: any) => (
                 <Space>
                     {record.type === "object" && (
@@ -264,7 +280,7 @@ const ParamTable: React.FC<ParamTableProps> = ({
     ];
 
     return (
-        <Space direction="vertical" style={{ width: "100%" }}>
+        <Space direction="vertical">
             <Table
                 pagination={false}
                 columns={columns}
@@ -272,6 +288,8 @@ const ParamTable: React.FC<ParamTableProps> = ({
                 rowKey="id"
                 size="small"
                 border={false}
+                scroll={{ x: 1200 }}
+                noDataElement={<></>}
             />
             {!readOnly && (
                 <Button

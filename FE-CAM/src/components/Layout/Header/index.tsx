@@ -13,7 +13,7 @@ import {
 } from "@cloud-materials/common";
 import { useTranslation } from "react-i18next";
 import styles from "./index.module.less";
-import { Logo } from "@/assets/icons";
+import { LogoCAM } from "@/assets/icons";
 import Profile from "@/components/User/Profile";
 import type { UserProfile } from "@/services/user/types";
 
@@ -60,7 +60,7 @@ const Header: React.FC<HeaderProps> = (props: HeaderProps) => {
                 >
                     <img
                         alt="avatar"
-                        src={Logo}
+                        src={LogoCAM}
                         style={{ width: 32, height: 32 }}
                     />
                     <div

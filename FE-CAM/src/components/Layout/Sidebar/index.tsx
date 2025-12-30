@@ -2,12 +2,12 @@ import React from "react";
 import { Menu } from "@cloud-materials/common";
 import {
     IconHouseDashboard,
-    IconExamineeInformation,
 } from "@cloud-materials/common/ve-o-iconbox";
 
 import { useNavigate, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import styles from "./index.module.less";
+import { ApiIconCAM } from "@/assets/icons";
 
 const MenuItem = Menu.Item;
 
@@ -23,7 +23,13 @@ const Sidebar: React.FC = () => {
         },
         {
             key: "/service",
-            icon: <IconExamineeInformation style={{ width: 18, height: 18 }} />,
+            icon: (
+                <img
+                    alt="avatar"
+                    src={ApiIconCAM}
+                    style={{ width: 18, height: 18, marginRight: 8, marginLeft: 1 }}
+                />
+            ),
             title: t("nav.apiDefinition"),
         },
     ];

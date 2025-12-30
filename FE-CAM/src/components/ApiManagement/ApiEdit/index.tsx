@@ -7,7 +7,7 @@ import {
     Form,
     Message,
 } from "@cloud-materials/common";
-import styles from "../index.module.less";
+import sharedStyles from "../index.module.less";
 import BriefInfoEdit from "./BriefInfoEdit";
 import {
     transformReqParamsToApiInput,
@@ -85,8 +85,8 @@ const ApiEdit: React.FC<ApiEditProps> = ({
     }
 
     return (
-        <div className={styles.content}>
-            <div className={styles.header}>
+        <div className={sharedStyles.content}>
+            <div className={sharedStyles.header}>
                 <Typography.Title heading={5}>Service 迭代</Typography.Title>
                 <Space>
                     <Button
