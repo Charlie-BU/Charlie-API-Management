@@ -109,7 +109,7 @@ const ApiEdit: React.FC<ApiEditProps> = ({
 
     return (
         <div className={sharedStyles.content}>
-            <Spin size={40} loading={loading}>
+            <Spin size={40} loading={loading || !apiDetail}>
                 <div className={sharedStyles.header}>
                     <Typography.Title heading={5}>
                         Service 迭代
