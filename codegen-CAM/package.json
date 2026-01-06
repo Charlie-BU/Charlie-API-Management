@@ -1,0 +1,25 @@
+{
+  "name": "codegen-cam",
+  "version": "0.0.1",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "bin": {
+    "cam-gen": "dist/cli.js"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "tsc"
+  },
+  "keywords": [
+    "codegen",
+    "cam",
+    "typescript",
+    "api management"
+  ],
+  "author": "Charlie. BU",
+  "license": "ISC",
+  "description": "",
+  "devDependencies": {
+    "typescript": "^5.9.3"
+  }
+}
