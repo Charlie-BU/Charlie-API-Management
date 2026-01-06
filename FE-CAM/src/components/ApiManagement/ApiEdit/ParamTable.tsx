@@ -13,6 +13,7 @@ import {
 } from "@cloud-materials/common";
 import { PARAM_TYPES } from "./types";
 import { generateId } from "./utils";
+import styles from "./index.module.less";
 
 const { Option } = Select;
 
@@ -280,7 +281,7 @@ const ParamTable: React.FC<ParamTableProps> = ({
     ];
 
     return (
-        <Space direction="vertical">
+        <Space direction="vertical" className={styles.paramTable}>
             <Table
                 pagination={false}
                 columns={columns}
