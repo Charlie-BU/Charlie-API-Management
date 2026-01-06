@@ -37,7 +37,10 @@ import CreateServiceForm from "@/components/ServiceManagement/CreateServiceForm"
 import type { UserProfile } from "@/services/user/types";
 import { genApiMethodTag, handleConfirm } from "@/utils";
 import AddCategoryForm from "@/components/ApiManagement/ApiList/AddCategoryForm";
+import AddApiForm from "@/components/ApiManagement/ApiList/AddApiForm";
+
 import {
+    AddApi,
     AddCategoryByServiceId,
     DeleteCategoryById,
     UpdateApiByApiDraftId,
@@ -45,6 +48,7 @@ import {
 } from "@/services/api";
 import CompleteIterationForm from "@/components/ApiManagement/ApiList/CompleteIterationForm";
 import type {
+    AddApiRequest,
     UpdateApiByApiDraftIdRequest,
     UpdateApiByApiDraftIdResponse,
 } from "@/services/api/types";
@@ -542,6 +546,10 @@ export const useThisService = (service_uuid: string) => {
                     Message.success(res.message || "迭代提交成功");
                     // 显式关闭弹窗，避免依赖隐式行为
                     modal.close();
+                    // 刷新
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 500);
                 } catch (err: unknown) {
                     const msg =
                         err instanceof Error ? err.message : "迭代提交失败";
@@ -664,6 +672,46 @@ export const useServiceIteration = (
         return [...Array.from(categoryMap.values()), uncategorizedGroup];
     }, [apiCategories, apiDrafts]);
 
+    const handleAddApi = useCallback(() => {
+        const modal = CModal.openArcoForm({
+            title: "添加API",
+            content: <AddApiForm apiCategories={apiCategories} />,
+            cancelText: t("common.cancel"),
+            okText: "确定",
+            onOk: async (values, form) => {
+                try {
+                    await form.validate();
+                    let data: AddApiRequest = {
+                        service_iteration_id: iterationId,
+                        name: values.name,
+                        method: values.method,
+                        path: values.path,
+                        description: values?.description || "",
+                        level: values.level || "P2",
+                    };
+                    if (values.category_id > 0) {
+                        data.category_id = values.category_id;
+                    }
+                    const res = await AddApi(data);
+                    if (res.status !== 200) {
+                        throw new Error(res.message || "API 添加失败");
+                    }
+                    Message.success(res.message || "API 添加成功");
+                    // 显式关闭弹窗，避免依赖隐式行为
+                    modal.close();
+                    // todo: 刷新
+                    // setApiCategories((prev) => [...prev, res.category || {}]);
+                } catch (err: unknown) {
+                    const msg =
+                        err instanceof Error ? err.message : "API 添加失败";
+                    Message.error(msg);
+                    // 抛出错误以阻止弹窗自动关闭（库内有相关处理）
+                    throw err;
+                }
+            },
+        });
+    }, [iterationId, fetchIterationDetail]);
+
     const handleSaveApiDraft = useCallback(
         async (
             data: Omit<UpdateApiByApiDraftIdRequest, "service_iteration_id">
@@ -686,6 +734,7 @@ export const useServiceIteration = (
         apiDrafts,
         iterationTreeData,
         fetchIterationDetail,
+        handleAddApi,
         handleSaveApiDraft,
     };
 };

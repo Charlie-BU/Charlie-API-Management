@@ -92,7 +92,7 @@ const ApiEdit: React.FC<ApiEditProps> = ({
                 method: values.method,
                 path: values.path,
                 description: values.description,
-                level: apiDetail.level || "P2",
+                level: values.level || "P2",
                 req_params,
                 resp_params,
             };

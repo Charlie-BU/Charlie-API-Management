@@ -1,15 +1,14 @@
 import {
     Space,
-    Avatar,
     Button,
     Typography,
-    Popover,
 } from "@cloud-materials/common";
 import { useTranslation } from "react-i18next";
 
 import styles from "./index.module.less";
 import { useUser } from "@/hooks/useUser";
 import type { UserProfile } from "@/services/user/types";
+import { userAvatar } from "@/utils";
 
 const { Title, Text } = Typography;
 
@@ -23,13 +22,7 @@ const WelcomeLoggedIn: React.FC<{
     return (
         <div className={styles.hero}>
             <Space size={12} align="center">
-                <Popover
-                    content={`${user.nickname} (${user.username}) - ${user.email}`}
-                >
-                    <Avatar size={40} style={{ backgroundColor: "#ecf2ff" }}>
-                        {displayName[0]}
-                    </Avatar>
-                </Popover>
+                {userAvatar(user as UserProfile, 40)}
                 <div>
                     <Title heading={4} className={styles.title}>
                         {t("service.welcomeTitle")}

@@ -1,7 +1,8 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
-import { Avatar, Form, Input, Popover } from "@cloud-materials/common";
+import { Form, Input } from "@cloud-materials/common";
 import type { UserProfile } from "@/services/user/types";
+import { userAvatar } from "@/utils";
 
 const CreateServiceForm: React.FC<{ owner?: UserProfile }> = ({ owner }) => {
     const { i18n, t } = useTranslation();
@@ -58,14 +59,7 @@ const CreateServiceForm: React.FC<{ owner?: UserProfile }> = ({ owner }) => {
                     },
                 ]}
             >
-                <Popover
-                    content={`${owner?.nickname} (${owner?.username}) - ${owner?.email}`}
-                >
-                    <Avatar size={30} style={{ backgroundColor: "#ecf2ff" }}>
-                        {owner?.nickname?.[0] || owner?.username?.[0] || "-"}
-                    </Avatar>
-                </Popover>
-                {/* <Input value={t("service.ownerName")} disabled /> */}
+                {userAvatar(owner as UserProfile, 30)}
             </Form.Item>
             <Form.Item
                 label={t("service.description")}

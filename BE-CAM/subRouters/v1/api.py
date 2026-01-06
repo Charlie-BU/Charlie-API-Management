@@ -165,7 +165,7 @@ def addApi(request: Request):
             path=path,
             description=description,
             level=level,
-            category_id=int(category_id),
+            category_id=int(category_id) if category_id else None,
         )
     return res
 

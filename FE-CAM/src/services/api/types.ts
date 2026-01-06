@@ -1,5 +1,7 @@
 // api 模块：请求与响应类型定义
 
+import type { UserProfile } from "../user/types";
+
 export interface BaseResponse {
     status: number;
     message: string;
@@ -19,15 +21,6 @@ export type ParamType =
     | "binary";
 
 // 复用在 api 模块内的基础对象
-export interface UserBrief {
-    id: number;
-    username: string;
-    nickname?: string | null;
-    email?: string | null;
-    role?: string;
-    level?: string;
-}
-
 export interface ServiceItem {
     id: number;
     service_uuid: string;
@@ -87,7 +80,7 @@ export interface ApiDetail extends ApiBrief {
     owner_id: number;
     created_at?: string;
     updated_at?: string;
-    owner?: UserBrief | null;
+    owner?: UserProfile | null;
     category?: ApiCategory | null;
     service?: ServiceItem | null;
     request_params?: RequestParam[];
@@ -139,7 +132,7 @@ export interface ApiDraftItem {
     is_enabled?: boolean;
     created_at?: string;
     updated_at?: string;
-    owner?: UserBrief | null;
+    owner?: UserProfile | null;
     category?: ApiCategory | null;
 }
 

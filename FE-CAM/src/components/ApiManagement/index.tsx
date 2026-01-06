@@ -1,13 +1,14 @@
 import React, { useMemo, useState } from "react";
 import styles from "./index.module.less";
 import { useSearchParams } from "react-router-dom";
-import { useServiceIteration, useThisService } from "@/hooks/useService";
+import { useThisService, useServiceIteration } from "@/hooks/useService";
 import useApi from "@/hooks/useApi";
 import Detail from "./Detail";
 import Header from "./Header";
 import ApiList from "./ApiList";
 import ApiEdit from "./ApiEdit";
 import { Layout, Message, Spin } from "@cloud-materials/common";
+import type { UserProfile } from "@/services/user/types";
 
 const ApiManagement: React.FC = () => {
     const [searchParams] = useSearchParams();
@@ -36,6 +37,14 @@ const ApiManagement: React.FC = () => {
             : serviceDetail?.service?.service_uuid || "";
     }, [serviceDetail]);
 
+    const creator = useMemo(() => {
+        return "owner" in serviceDetail
+            ? (serviceDetail.owner as UserProfile)
+            : "creator" in serviceDetail
+            ? (serviceDetail.creator as UserProfile)
+            : ({} as UserProfile);
+    }, [serviceDetail]);
+
     // 用于控制当前 API 相关逻辑
     const [selectedApiId, setSelectedApiId] = useState<number>(-1);
 
@@ -48,6 +57,7 @@ const ApiManagement: React.FC = () => {
         loading: iterationLoading,
         iterationDetail,
         iterationTreeData,
+        handleAddApi,
         handleSaveApiDraft,
     } = useServiceIteration(iterationId, apiCategories);
 
@@ -79,7 +89,9 @@ const ApiManagement: React.FC = () => {
                     loading={loading}
                     serviceUuid={serviceUuid}
                     versions={versions}
+                    isLatest={isLatest}
                     currentVersion={currentVersion}
+                    creator={creator}
                     setCurrentVersion={
                         inIteration && iterationDetail
                             ? inIterationWarning
@@ -109,18 +121,16 @@ const ApiManagement: React.FC = () => {
                         setSelectedApiId={(id) => {
                             setSelectedApiId(id);
                         }}
-                        handleAddCategory={handleAddCategory}
-                        handleUpdateApiCategory={
-                            inIteration && iterationDetail
-                                ? inIterationWarning
-                                : handleUpdateApiCategory
-                        }
-                        handleDeleteCategory={handleDeleteCategory}
-                        handleStartIteration={() => {
-                            handleStartIteration();
-                        }}
-                        handleCompleteIteration={() => {
-                            handleCompleteIteration();
+                        handlers={{
+                            handleAddApi,
+                            handleAddCategory,
+                            handleUpdateApiCategory:
+                                inIteration && iterationDetail
+                                    ? inIterationWarning
+                                    : handleUpdateApiCategory,
+                            handleDeleteCategory,
+                            handleStartIteration,
+                            handleCompleteIteration,
                         }}
                     />
                 </Layout.Sider>

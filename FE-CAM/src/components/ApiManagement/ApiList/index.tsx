@@ -12,32 +12,40 @@ import styles from "../index.module.less";
 
 const { Search } = Input;
 
-const ApiList: React.FC<{
-    inIteration: boolean;
-    isLatest: boolean;
-    treeData: any[];
-    setSelectedApiId: (apiId: number) => void;
+interface ApiListHandlers {
+    handleAddApi: () => void;
     handleAddCategory: () => void;
     handleUpdateApiCategory: (apiId: number, categoryId: number) => void;
     handleDeleteCategory: (categoryId: number) => void;
     handleStartIteration: () => void;
     handleCompleteIteration: () => void;
-}> = (props) => {
+}
+
+interface ApiListProps {
+    inIteration: boolean;
+    isLatest: boolean;
+    treeData: any[];
+    handlers: ApiListHandlers;
+    setSelectedApiId: (apiId: number) => void;
+}
+
+const ApiList: React.FC<ApiListProps> = (props) => {
+    const { inIteration, isLatest, treeData, handlers, setSelectedApiId } =
+        props;
+
     const {
-        inIteration,
-        isLatest,
-        treeData,
-        setSelectedApiId,
+        handleAddApi,
         handleAddCategory,
         handleUpdateApiCategory,
         handleDeleteCategory,
         handleStartIteration,
         handleCompleteIteration,
-    } = props;
+    } = handlers;
 
     const firstOptionKey = useMemo(
         () =>
-            treeData.filter((item) => item.children?.length > 0)?.[0]?.children?.[0]?.key || "",
+            treeData.filter((item) => item.children?.length > 0)?.[0]
+                ?.children?.[0]?.key || "",
         [treeData]
     );
     useEffect(() => {
@@ -54,9 +62,10 @@ const ApiList: React.FC<{
 
     const otherOperations = (
         <Menu style={{ width: 100 }}>
-            {/* todo */}
-            <Menu.Item key="1">创建 API</Menu.Item>
-            <Menu.Item key="1" onClick={handleAddCategory}>
+            <Menu.Item key="1" onClick={handleAddApi}>
+                创建 API
+            </Menu.Item>
+            <Menu.Item key="2" onClick={handleAddCategory}>
                 添加分类
             </Menu.Item>
         </Menu>
