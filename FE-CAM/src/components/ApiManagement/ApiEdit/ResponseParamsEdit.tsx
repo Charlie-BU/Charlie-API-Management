@@ -1,4 +1,4 @@
-import { useMemo, useState, useRef, useEffect } from "react";
+import { useMemo, useState, useRef } from "react";
 import {
     IconCommon,
     Space,
@@ -36,12 +36,7 @@ const ResponseParamsEdit = () => {
         [responseParamsByStatusCode]
     );
 
-    const [activeTab, setActiveTab] = useState(statusCodes[0]);
-    // useEffect(() => {
-    //     if (statusCodes.length > 0) {
-    //         setActiveTab(statusCodes[0]);
-    //     }
-    // }, [statusCodes]);
+    const [activeTab, setActiveTab] = useState(statusCodes[0] ?? "");
 
     const handleDeleteTab = (tab: string) => {
         handleConfirm(

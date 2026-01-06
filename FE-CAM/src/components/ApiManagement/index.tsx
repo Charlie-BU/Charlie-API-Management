@@ -125,7 +125,7 @@ const ApiManagement: React.FC = () => {
                     <Layout.Content>
                         {inIteration && iterationDetail ? (
                             <ApiEdit
-                                loading={iterationLoading}
+                                loading={iterationLoading || apiLoading}
                                 apiDetail={apiDetail}
                                 handleSaveApiDraft={handleSaveApiDraft}
                             />

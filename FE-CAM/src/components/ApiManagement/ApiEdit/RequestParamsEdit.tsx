@@ -1,24 +1,25 @@
-import { useState } from "react";
 import { IconCommon, Space, Tabs, Form } from "@cloud-materials/common";
 import ParamTable from "./ParamTable";
+import { tabs } from "./index";
 
-const RequestParamsEdit = () => {
-    const [activeTab, setActiveTab] = useState("query");
+interface RequestParamsEditProps {
+    reqParamsActiveTab: string;
+    setReqParamsActiveTab: (key: string) => void;
+}
 
-    const tabs = [
-        { key: "query", title: "Query 参数" },
-        { key: "path", title: "Path 参数" },
-        { key: "body", title: "Body 参数" },
-        { key: "header", title: "Header 参数" },
-        { key: "cookie", title: "Cookie 参数" },
-    ];
-
+const RequestParamsEdit = ({
+    reqParamsActiveTab,
+    setReqParamsActiveTab,
+}: RequestParamsEditProps) => {
     return (
         <Space direction="vertical" size={12}>
             <div style={{ fontSize: 13, fontWeight: 500 }}>
                 <IconCommon /> 请求参数
             </div>
-            <Tabs activeTab={activeTab} onChange={setActiveTab}>
+            <Tabs
+                activeTab={reqParamsActiveTab}
+                onChange={setReqParamsActiveTab}
+            >
                 {tabs.map((tab) => (
                     <Tabs.TabPane key={tab.key} title={tab.title} />
                 ))}
@@ -29,7 +30,10 @@ const RequestParamsEdit = () => {
                     <div
                         key={tab.key}
                         style={{
-                            display: activeTab === tab.key ? "block" : "none",
+                            display:
+                                reqParamsActiveTab === tab.key
+                                    ? "block"
+                                    : "none",
                         }}
                     >
                         <Form.Item

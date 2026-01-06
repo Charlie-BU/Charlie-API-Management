@@ -6,6 +6,7 @@ import {
     Divider,
     Form,
     Message,
+    Spin,
 } from "@cloud-materials/common";
 import sharedStyles from "../index.module.less";
 import BriefInfoEdit from "./BriefInfoEdit";
@@ -18,11 +19,21 @@ import type {
     ApiDraftDetail,
     ApiReqParamInput,
     ApiRespParamInput,
+    ParamLocation,
     UpdateApiByApiDraftIdRequest,
     UpdateApiByApiDraftIdResponse,
 } from "@/services/api/types";
 import RequestParamsEdit from "./RequestParamsEdit";
 import ResponseParamsEdit from "./ResponseParamsEdit";
+
+// 把请求参数tabs相关逻辑提到本层，便于根据apiDetail处理首个activeTab
+export const tabs = [
+    { key: "query", title: "Query 参数" },
+    { key: "path", title: "Path 参数" },
+    { key: "body", title: "Body 参数" },
+    { key: "header", title: "Header 参数" },
+    { key: "cookie", title: "Cookie 参数" },
+];
 
 interface ApiEditProps {
     loading: boolean;
@@ -40,16 +51,33 @@ const ApiEdit: React.FC<ApiEditProps> = ({
     const [form] = Form.useForm();
     const [editLoading, setEditLoading] = useState(false);
     const [isDraft, setIsDraft] = useState(false);
+    const [reqParamsActiveTab, setReqParamsActiveTab] = useState("query");
+
+    const getFirstTabWithValue = () => {
+        if (!apiDetail.request_params_by_location) {
+            return "query";
+        }
+        for (const tab of tabs) {
+            if (
+                apiDetail.request_params_by_location[tab.key as ParamLocation]
+                    .length > 0
+            ) {
+                return tab.key;
+            }
+        }
+        return "query";
+    };
 
     useEffect(() => {
         form.setFieldsValue(apiDetail);
         setIsDraft(false);
+        setReqParamsActiveTab(getFirstTabWithValue());
     }, [apiDetail, form]);
 
+    // 提交本次apiDraft改动
     const handleSubmit = async () => {
         const values = await form.validate();
         setEditLoading(true);
-        console.log("values", values);
 
         const req_params: ApiReqParamInput[] = transformReqParamsToApiInput(
             values.request_params_by_location
@@ -68,7 +96,6 @@ const ApiEdit: React.FC<ApiEditProps> = ({
                 req_params,
                 resp_params,
             };
-        console.log("data", data);
         try {
             const res = await handleSaveApiDraft(data);
             setIsDraft(false);
@@ -80,41 +107,44 @@ const ApiEdit: React.FC<ApiEditProps> = ({
         setEditLoading(false);
     };
 
-    if (loading || !apiDetail) {
-        return null;
-    }
-
     return (
         <div className={sharedStyles.content}>
-            <div className={sharedStyles.header}>
-                <Typography.Title heading={5}>Service 迭代</Typography.Title>
-                <Space>
-                    <Button
-                        type="default"
-                        status="success"
-                        onClick={handleSubmit}
-                        loading={editLoading}
-                        disabled={!isDraft}
-                    >
-                        {isDraft ? "保存当前 API" : "当前 API 已保存"}
-                    </Button>
-                </Space>
-            </div>
-            <Form
-                form={form}
-                layout="vertical"
-                scrollToFirstError
-                initialValues={apiDetail}
-                onValuesChange={() => {
-                    setIsDraft(true);
-                }}
-            >
-                <BriefInfoEdit />
-                <Divider />
-                <RequestParamsEdit />
-                <Divider />
-                <ResponseParamsEdit />
-            </Form>
+            <Spin size={40} loading={loading}>
+                <div className={sharedStyles.header}>
+                    <Typography.Title heading={5}>
+                        Service 迭代
+                    </Typography.Title>
+                    <Space>
+                        <Button
+                            type="default"
+                            status="success"
+                            onClick={handleSubmit}
+                            loading={editLoading}
+                            disabled={!isDraft}
+                        >
+                            {isDraft ? "保存当前 API" : "当前 API 已保存"}
+                        </Button>
+                    </Space>
+                </div>
+                <Form
+                    form={form}
+                    layout="vertical"
+                    scrollToFirstError
+                    initialValues={apiDetail}
+                    onValuesChange={() => {
+                        setIsDraft(true);
+                    }}
+                >
+                    <BriefInfoEdit />
+                    <Divider />
+                    <RequestParamsEdit
+                        reqParamsActiveTab={reqParamsActiveTab}
+                        setReqParamsActiveTab={setReqParamsActiveTab}
+                    />
+                    <Divider />
+                    <ResponseParamsEdit />
+                </Form>
+            </Spin>
         </div>
     );
 };
