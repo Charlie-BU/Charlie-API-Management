@@ -25,6 +25,7 @@ import type {
 } from "@/services/api/types";
 import RequestParamsEdit from "./RequestParamsEdit";
 import ResponseParamsEdit from "./ResponseParamsEdit";
+import { handleConfirm } from "@/utils";
 
 // 把请求参数tabs相关逻辑提到本层，便于根据apiDetail处理首个activeTab
 export const tabs = [
@@ -41,12 +42,14 @@ interface ApiEditProps {
     handleSaveApiDraft: (
         data: Omit<UpdateApiByApiDraftIdRequest, "service_iteration_id">
     ) => Promise<UpdateApiByApiDraftIdResponse>;
+    handleDeleteApi: (apiDraftId: number) => Promise<void>;
 }
 
 const ApiEdit: React.FC<ApiEditProps> = ({
     loading,
     apiDetail,
     handleSaveApiDraft,
+    handleDeleteApi,
 }) => {
     const [form] = Form.useForm();
     const [editLoading, setEditLoading] = useState(false);
@@ -123,6 +126,19 @@ const ApiEdit: React.FC<ApiEditProps> = ({
                             disabled={!isDraft}
                         >
                             {isDraft ? "保存当前 API" : "当前 API 已保存"}
+                        </Button>
+                        <Button
+                            type="default"
+                            status="danger"
+                            onClick={() =>
+                                handleConfirm(
+                                    () => handleDeleteApi(apiDetail.id),
+                                    "删除",
+                                    "确认删除当前 API？"
+                                )
+                            }
+                        >
+                            删除当前 API
                         </Button>
                     </Space>
                 </div>

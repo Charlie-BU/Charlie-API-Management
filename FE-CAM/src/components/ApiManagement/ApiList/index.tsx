@@ -9,6 +9,7 @@ import {
 } from "@cloud-materials/common";
 
 import styles from "../index.module.less";
+import { handleConfirm } from "@/utils";
 
 const { Search } = Input;
 
@@ -147,7 +148,16 @@ const ApiList: React.FC<ApiListProps> = (props) => {
                     </Dropdown.Button>
                 ) : (
                     isLatest && (
-                        <Button type="outline" onClick={handleStartIteration}>
+                        <Button
+                            type="outline"
+                            onClick={() =>
+                                handleConfirm(
+                                    handleStartIteration,
+                                    "开始迭代",
+                                    "确认开始新的迭代？"
+                                )
+                            }
+                        >
                             发起迭代
                         </Button>
                     )
@@ -177,13 +187,18 @@ const ApiList: React.FC<ApiListProps> = (props) => {
                             return (
                                 <Button
                                     onClick={() =>
-                                        handleDeleteCategory(
-                                            Number(
-                                                node?._key?.replace(
-                                                    "category-",
-                                                    ""
-                                                ) ?? -1
-                                            )
+                                        handleConfirm(
+                                            () =>
+                                                handleDeleteCategory(
+                                                    Number(
+                                                        node?._key?.replace(
+                                                            "category-",
+                                                            ""
+                                                        ) ?? -1
+                                                    )
+                                                ),
+                                            "删除",
+                                            "确认删除当前 API？"
                                         )
                                     }
                                     type="outline"

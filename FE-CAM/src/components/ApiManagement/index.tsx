@@ -59,6 +59,7 @@ const ApiManagement: React.FC = () => {
         iterationTreeData,
         handleAddApi,
         handleSaveApiDraft,
+        handleDeleteApi,
     } = useServiceIteration(iterationId, apiCategories);
 
     const inIterationWarning = () => {
@@ -140,6 +141,7 @@ const ApiManagement: React.FC = () => {
                             loading={iterationLoading || apiLoading}
                             apiDetail={apiDetail}
                             handleSaveApiDraft={handleSaveApiDraft}
+                            handleDeleteApi={handleDeleteApi}
                         />
                     ) : (
                         <Detail loading={apiLoading} apiDetail={apiDetail} />
