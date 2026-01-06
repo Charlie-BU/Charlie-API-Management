@@ -1,8 +1,4 @@
-import {
-    Space,
-    Typography,
-    Divider,
-} from "@cloud-materials/common";
+import { Space, Typography, Divider, Spin } from "@cloud-materials/common";
 
 import styles from "../index.module.less";
 import { genApiMethodTag } from "@/utils";
@@ -19,25 +15,28 @@ const Detail: React.FC<{
 }> = (props) => {
     const { loading, apiDetail } = props;
 
-    if (loading || !apiDetail || Object.keys(apiDetail).length === 0) {
-        return null;
-    }
-
     return (
         <div className={styles.content}>
-            <div className={styles.header}>
-                <Title heading={5} className={styles.pathTitle}>
-                    <Space size={10}>
-                        {genApiMethodTag(apiDetail?.method, "medium")}
-                        {apiDetail.path}
-                    </Space>
-                </Title>
-            </div>
-            <BriefInfo apiDetail={apiDetail} />
-            <Divider />
-            <RequestParams apiDetail={apiDetail} />
-            <Divider />
-            <ResponseParams apiDetail={apiDetail} />
+            <Spin
+                size={40}
+                loading={
+                    loading || !apiDetail || Object.keys(apiDetail).length === 0
+                }
+            >
+                <div className={styles.header}>
+                    <Title heading={5} className={styles.pathTitle}>
+                        <Space size={10}>
+                            {genApiMethodTag(apiDetail?.method, "medium")}
+                            {apiDetail.path}
+                        </Space>
+                    </Title>
+                </div>
+                <BriefInfo apiDetail={apiDetail} />
+                <Divider />
+                <RequestParams apiDetail={apiDetail} />
+                <Divider />
+                <ResponseParams apiDetail={apiDetail} />
+            </Spin>
         </div>
     );
 };

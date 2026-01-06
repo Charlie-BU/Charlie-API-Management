@@ -73,9 +73,13 @@ const processRespItems = (
         description: item.description,
         example: item.example,
         array_child_type: (item.array_child_type as ParamType) || null,
-        children: item.children
-            ? processRespItems(item.children, statusCode)
-            : undefined,
+        children:
+            item.children || (item as any).children_params
+                ? processRespItems(
+                      item.children || (item as any).children_params,
+                      statusCode
+                  )
+                : undefined,
     }));
 };
 

@@ -44,6 +44,10 @@
     flex: 1;
     padding: 16px 20px;
     min-height: 100vh;
+
+    :global(.arco-spin) {
+        display: block;
+    }
 }
 
 .header {
@@ -102,6 +106,10 @@
     padding: 16px 20px;
     border-bottom: 1px solid var(--color-neutral-3, #e5e6eb);
     line-height: 30px;
+
+    :global(.arco-select-view) {
+        padding: 0 !important;
+    }
 }
 
 .serviceBreadcrumb {
@@ -117,6 +125,7 @@
 .serviceVersion {
     font-size: 14px;
     color: #4e5969;
+    margin-right: 8px;
 }
 
 .loadingCenter {

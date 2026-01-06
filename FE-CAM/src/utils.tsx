@@ -1,6 +1,7 @@
-import { Modal, Tag } from "@cloud-materials/common";
+import { Avatar, Modal, Popover, Tag } from "@cloud-materials/common";
 import { t } from "i18next";
 import type { ApiLevel, HttpMethod } from "./services/api/types";
+import type { UserProfile } from "./services/user/types";
 
 const pad = (n: number, length = 2) => String(n).padStart(length, "0");
 
@@ -77,7 +78,11 @@ export const handleConfirm = (
         cancelText: t("common.cancel"),
         okText: t("common.confirm"),
         okButtonProps: {
-            status: action?.includes("删除") || action?.toLowerCase().includes("delete") ? "danger" : "default",
+            status:
+                action?.includes("删除") ||
+                action?.toLowerCase().includes("delete")
+                    ? "danger"
+                    : "default",
         },
         onOk: async () => {
             try {
@@ -88,6 +93,25 @@ export const handleConfirm = (
         },
         closable: true,
     });
+};
+
+export const userAvatar = (user: UserProfile, size: number) => {
+    if (!user) return null;
+    return (
+        <Popover
+            content={
+                <span style={{ cursor: "default" }}>
+                    {user.nickname} ({user.username}) - {user.email}
+                </span>
+            }
+        >
+            <Avatar size={size} style={{ backgroundColor: "#ecf2ff" }}>
+                <span style={{ cursor: "default" }}>
+                    {user.nickname?.[0] || user.username?.[0] || "-"}
+                </span>
+            </Avatar>
+        </Popover>
+    );
 };
 
 export const genApiMethodTag = (
@@ -145,4 +169,34 @@ export const genStatusCodeTag = (
             {code}
         </Tag>
     );
+};
+
+export const inIterationWarning = (
+    action: Function,
+    inIteration: boolean,
+    type: "warning" | "reject"
+) => {
+    if (!inIteration) return action();
+    if (type === "warning") {
+        const modal = Modal.warning({
+            title: "注意",
+            content: "当前在迭代中，请确保已保存当前改动",
+            okText: "继续",
+            onOk: async () => {
+                try {
+                    action();
+                } catch (error: any) {
+                    modal.close();
+                }
+            },
+        });
+        return;
+    } else if (type === "reject") {
+        Modal.warning({
+            title: "注意",
+            content: "当前在迭代中，请先退出当前迭代",
+            okText: "返回",
+        });
+        return;
+    }
 };

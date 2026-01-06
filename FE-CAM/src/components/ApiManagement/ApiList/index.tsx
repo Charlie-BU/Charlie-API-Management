@@ -9,67 +9,83 @@ import {
 } from "@cloud-materials/common";
 
 import styles from "../index.module.less";
+import { handleConfirm, inIterationWarning } from "@/utils";
 
 const { Search } = Input;
 
-const ApiList: React.FC<{
-    inIteration: boolean;
-    isLatest: boolean;
-    treeData: any[];
-    setSelectedApiId: (apiId: number) => void;
+interface ApiListHandlers {
+    handleAddApi: () => void;
     handleAddCategory: () => void;
     handleUpdateApiCategory: (apiId: number, categoryId: number) => void;
     handleDeleteCategory: (categoryId: number) => void;
     handleStartIteration: () => void;
     handleCompleteIteration: () => void;
-}> = (props) => {
+}
+
+interface ApiListProps {
+    inIteration: boolean;
+    isLatest: boolean;
+    treeData: any[];
+    handlers: ApiListHandlers;
+    setSelectedApiId: (apiId: number) => void;
+}
+
+const ApiList: React.FC<ApiListProps> = (props) => {
+    const { inIteration, isLatest, treeData, handlers, setSelectedApiId } =
+        props;
+
     const {
-        inIteration,
-        isLatest,
-        treeData,
-        setSelectedApiId,
+        handleAddApi,
         handleAddCategory,
         handleUpdateApiCategory,
         handleDeleteCategory,
         handleStartIteration,
         handleCompleteIteration,
-    } = props;
+    } = handlers;
 
     const firstOptionKey = useMemo(
         () =>
-            treeData.filter((item) => item.children?.length > 0)?.[0]?.children?.[0]?.key || "",
+            treeData.filter((item) => item.children?.length > 0)?.[0]
+                ?.children?.[0]?.key || "",
         [treeData]
     );
+
+    // 用于控制树节点选中状态
+    const [selectedKeys, setSelectedKeys] = useState<string[]>([]);
+
     useEffect(() => {
         if (!firstOptionKey) {
             return;
         }
         setSelectedApiId(Number(firstOptionKey));
+        setSelectedKeys([firstOptionKey]);
     }, [firstOptionKey]);
-
-    // 用于设置树节点选中状态
-    const [selectedKeys, setSelectedKeys] = useState<string[]>([
-        firstOptionKey,
-    ]);
 
     const otherOperations = (
         <Menu style={{ width: 100 }}>
-            {/* todo */}
-            <Menu.Item key="1">创建 API</Menu.Item>
-            <Menu.Item key="1" onClick={handleAddCategory}>
+            <Menu.Item key="1" onClick={handleAddApi}>
+                创建 API
+            </Menu.Item>
+            <Menu.Item key="2" onClick={handleAddCategory}>
                 添加分类
             </Menu.Item>
         </Menu>
     );
 
     const handleSelectApi = (keys: string[]) => {
-        const apiId = Number(keys[0]);
-        if (Number.isNaN(apiId) || apiId <= 0) {
-            setSelectedApiId(-1);
-            return;
-        }
-        setSelectedApiId(apiId);
-        setSelectedKeys(keys);
+        inIterationWarning(
+            () => {
+                const apiId = Number(keys[0]);
+                if (Number.isNaN(apiId) || apiId <= 0) {
+                    setSelectedApiId(-1);
+                    return;
+                }
+                setSelectedApiId(apiId);
+                setSelectedKeys(keys);
+            },
+            inIteration,
+            "warning"
+        );
     };
 
     const handleDrag = (info: any) => {
@@ -138,7 +154,16 @@ const ApiList: React.FC<{
                     </Dropdown.Button>
                 ) : (
                     isLatest && (
-                        <Button type="outline" onClick={handleStartIteration}>
+                        <Button
+                            type="outline"
+                            onClick={() =>
+                                handleConfirm(
+                                    handleStartIteration,
+                                    "开始迭代",
+                                    "确认开始新的迭代？"
+                                )
+                            }
+                        >
                             发起迭代
                         </Button>
                     )
@@ -168,13 +193,18 @@ const ApiList: React.FC<{
                             return (
                                 <Button
                                     onClick={() =>
-                                        handleDeleteCategory(
-                                            Number(
-                                                node?._key?.replace(
-                                                    "category-",
-                                                    ""
-                                                ) ?? -1
-                                            )
+                                        handleConfirm(
+                                            () =>
+                                                handleDeleteCategory(
+                                                    Number(
+                                                        node?._key?.replace(
+                                                            "category-",
+                                                            ""
+                                                        ) ?? -1
+                                                    )
+                                                ),
+                                            "删除",
+                                            "确认删除当前分类？"
                                         )
                                     }
                                     type="outline"

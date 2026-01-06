@@ -1,4 +1,4 @@
-import type { HttpMethod, UserBrief } from "../api/types";
+import type { HttpMethod } from "../api/types";
 import type { UserProfile } from "../user/types";
 
 export interface BaseResponse {
@@ -53,7 +53,7 @@ export interface ServiceIteration {
 export interface ServiceDetail extends ServiceItem {
     owner_id: number;
     owner?: UserProfile | null;
-    maintainers?: UserBrief[];
+    maintainers?: UserProfile[];
     apis?: ApiBrief[];
     api_categories?: ApiCategory[];
     iterations?: ServiceIteration[];
@@ -65,7 +65,7 @@ export interface ServiceDetail extends ServiceItem {
 
 export interface ServiceIterationDetail extends ServiceIteration {
     service?: ServiceItem;
-    creator: UserBrief;
+    creator: UserProfile;
     api_drafts?: ApiBrief[];
 }
 

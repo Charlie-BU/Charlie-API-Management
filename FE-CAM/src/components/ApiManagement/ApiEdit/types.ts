@@ -1,4 +1,4 @@
-import type { ParamType } from "@/services/api/types";
+import type { HttpMethod, ParamType } from "@/services/api/types";
 
 export interface ParamItem {
     id: string;
@@ -11,6 +11,14 @@ export interface ParamItem {
     children?: ParamItem[];
     array_child_type?: ParamType | string;
 }
+
+export const HTTP_METHODS: HttpMethod[] = [
+    "GET",
+    "POST",
+    "PUT",
+    "DELETE",
+    "PATCH",
+];
 
 export const PARAM_TYPES: ParamType[] = [
     "string",

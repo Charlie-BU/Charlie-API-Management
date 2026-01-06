@@ -3,14 +3,12 @@ import type {
     ServiceItem,
     ServiceRange,
 } from "@/services/service/types";
-import { formatDateOrDateTime, handleConfirm } from "@/utils";
+import { formatDateOrDateTime, handleConfirm, userAvatar } from "@/utils";
 import {
-    Avatar,
     Table,
     Typography,
     Tag,
     Button,
-    Popover,
     Space,
     type TableColumnProps,
 } from "@cloud-materials/common";
@@ -85,20 +83,7 @@ const ServiceList: React.FC<{
                 } else if (item.owner_id !== user?.id && item.owner) {
                     owner = item.owner;
                 }
-                return (
-                    <Popover
-                        content={`${owner?.nickname} (${owner?.username}) - ${owner?.email}`}
-                    >
-                        <Avatar
-                            size={30}
-                            style={{ backgroundColor: "#ecf2ff" }}
-                        >
-                            {owner?.nickname?.[0] ||
-                                owner?.username?.[0] ||
-                                "-"}
-                        </Avatar>
-                    </Popover>
-                );
+                return userAvatar(owner as UserProfile, 30);
             },
         },
         {

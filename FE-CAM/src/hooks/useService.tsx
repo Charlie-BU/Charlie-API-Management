@@ -35,16 +35,21 @@ import type {
 } from "@/services/service/types";
 import CreateServiceForm from "@/components/ServiceManagement/CreateServiceForm";
 import type { UserProfile } from "@/services/user/types";
-import { genApiMethodTag, handleConfirm } from "@/utils";
+import { genApiMethodTag } from "@/utils";
 import AddCategoryForm from "@/components/ApiManagement/ApiList/AddCategoryForm";
+import AddApiForm from "@/components/ApiManagement/ApiList/AddApiForm";
+
 import {
+    AddApi,
     AddCategoryByServiceId,
+    DeleteApiByApiDraftId,
     DeleteCategoryById,
     UpdateApiByApiDraftId,
     UpdateApiCategoryById,
 } from "@/services/api";
 import CompleteIterationForm from "@/components/ApiManagement/ApiList/CompleteIterationForm";
 import type {
+    AddApiRequest,
     UpdateApiByApiDraftIdRequest,
     UpdateApiByApiDraftIdResponse,
 } from "@/services/api/types";
@@ -469,27 +474,21 @@ export const useThisService = (service_uuid: string) => {
     );
 
     const handleDeleteCategory = useCallback(
-        async (category_id: number) =>
-            handleConfirm(
-                async () => {
-                    try {
-                        const res = await DeleteCategoryById({ category_id });
-                        if (res.status !== 200) {
-                            throw new Error(res.message || "分类删除失败");
-                        }
-                        Message.success(res.message || "分类删除成功");
-                        setApiCategories((prev) =>
-                            prev.filter((cat) => cat.id !== category_id)
-                        );
-                    } catch (err: unknown) {
-                        const msg =
-                            err instanceof Error ? err.message : "分类删除失败";
-                        Message.error(msg);
-                    }
-                },
-                "删除",
-                "确认删除当前分类？"
-            ),
+        async (category_id: number) => {
+            try {
+                const res = await DeleteCategoryById({ category_id });
+                if (res.status !== 200) {
+                    throw new Error(res.message || "分类删除失败");
+                }
+                Message.success(res.message || "分类删除成功");
+                setApiCategories((prev) =>
+                    prev.filter((cat) => cat.id !== category_id)
+                );
+            } catch (err: unknown) {
+                const msg = err instanceof Error ? err.message : "分类删除失败";
+                Message.error(msg);
+            }
+        },
         [currentVersion, fetchServiceDetail]
     );
 
@@ -497,31 +496,22 @@ export const useThisService = (service_uuid: string) => {
     const [inIteration, setInIteration] = useState(false);
     const [iterationId, setIterationId] = useState<number>(-1);
 
-    const handleStartIteration = useCallback(
-        async () =>
-            handleConfirm(
-                async () => {
-                    try {
-                        const res = await StartIteration({
-                            service_id: serviceDetail.id,
-                        });
-                        if (res.status !== 200 && res.status !== 201) {
-                            throw new Error(res.message || "迭代开始失败");
-                        }
-                        Message.success(res.message || "迭代开始成功");
-                        setInIteration(true);
-                        setIterationId(res.service_iteration_id);
-                    } catch (err: unknown) {
-                        const msg =
-                            err instanceof Error ? err.message : "迭代开始失败";
-                        Message.error(msg);
-                    }
-                },
-                "开始迭代",
-                "确认开始新的迭代？"
-            ),
-        [serviceDetail.id, currentVersion, fetchServiceDetail]
-    );
+    const handleStartIteration = useCallback(async () => {
+        try {
+            const res = await StartIteration({
+                service_id: serviceDetail.id,
+            });
+            if (res.status !== 200 && res.status !== 201) {
+                throw new Error(res.message || "迭代开始失败");
+            }
+            Message.success(res.message || "迭代开始成功");
+            setInIteration(true);
+            setIterationId(res.service_iteration_id);
+        } catch (err: unknown) {
+            const msg = err instanceof Error ? err.message : "迭代开始失败";
+            Message.error(msg);
+        }
+    }, [serviceDetail.id, currentVersion, fetchServiceDetail]);
 
     const handleCompleteIteration = useCallback(async () => {
         const modal = CModal.openArcoForm({
@@ -542,6 +532,10 @@ export const useThisService = (service_uuid: string) => {
                     Message.success(res.message || "迭代提交成功");
                     // 显式关闭弹窗，避免依赖隐式行为
                     modal.close();
+                    // 刷新
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 500);
                 } catch (err: unknown) {
                     const msg =
                         err instanceof Error ? err.message : "迭代提交失败";
@@ -552,6 +546,11 @@ export const useThisService = (service_uuid: string) => {
             },
         });
     }, [iterationId, currentVersion, fetchServiceDetail]);
+
+    const exitIteration = () => {
+        setInIteration(false);
+        setIterationId(-1);
+    };
 
     return {
         loading,
@@ -571,6 +570,7 @@ export const useThisService = (service_uuid: string) => {
         setInIteration,
         handleStartIteration,
         handleCompleteIteration,
+        exitIteration,
     };
 };
 
@@ -664,6 +664,68 @@ export const useServiceIteration = (
         return [...Array.from(categoryMap.values()), uncategorizedGroup];
     }, [apiCategories, apiDrafts]);
 
+    const handleAddApi = useCallback(() => {
+        const modal = CModal.openArcoForm({
+            title: "添加API",
+            content: <AddApiForm apiCategories={apiCategories} />,
+            cancelText: t("common.cancel"),
+            okText: "确定",
+            onOk: async (values, form) => {
+                try {
+                    await form.validate();
+                    let data: AddApiRequest = {
+                        service_iteration_id: iterationId,
+                        name: values.name,
+                        method: values.method,
+                        path: values.path,
+                        description: values?.description || "",
+                        level: values.level || "P2",
+                    };
+                    if (values.category_id > 0) {
+                        data.category_id = values.category_id;
+                    }
+                    const res = await AddApi(data);
+                    if (res.status !== 200) {
+                        throw new Error(res.message || "API 添加失败");
+                    }
+                    Message.success(res.message || "API 添加成功");
+                    // 显式关闭弹窗，避免依赖隐式行为
+                    modal.close();
+                    // 刷新
+                    /* 
+                        这里应当加await：
+                        1. 异步函数 ： fetchIterationDetail 是一个 async 函数（定义在第 595 行），它返回一个 Promise。
+                        2. 执行顺序 ：加上 await 可以确保在 onOk 函数结束前，数据刷新操作已经完成。虽然在此处弹窗已经关闭（ modal.close() ），但等待刷新完成可以保证后续逻辑（如果有）是在数据更新后执行的。
+                        3. 代码规范 ：在 async 函数中调用另一个 async 函数时，通常建议使用 await ，除非明确希望“触发即忘”（Fire-and-forget）。这有助于避免潜在的竞态条件，并使执行流程更清晰。
+                    */
+                    await fetchIterationDetail();
+                } catch (err: unknown) {
+                    const msg =
+                        err instanceof Error ? err.message : "API 添加失败";
+                    Message.error(msg);
+                    // 抛出错误以阻止弹窗自动关闭（库内有相关处理）
+                    throw err;
+                }
+            },
+        });
+    }, [iterationId, fetchIterationDetail]);
+
+    const handleDeleteApi = useCallback(
+        async (apiDraftId: number) => {
+            const res = await DeleteApiByApiDraftId({
+                service_iteration_id: iterationId,
+                api_draft_id: apiDraftId,
+            });
+            if (res.status !== 200) {
+                throw new Error(res.message || "API 删除失败");
+            }
+            Message.success(res.message || "API 删除成功");
+            // 刷新
+            await fetchIterationDetail();
+        },
+        [iterationId, fetchIterationDetail]
+    );
+
     const handleSaveApiDraft = useCallback(
         async (
             data: Omit<UpdateApiByApiDraftIdRequest, "service_iteration_id">
@@ -686,6 +748,8 @@ export const useServiceIteration = (
         apiDrafts,
         iterationTreeData,
         fetchIterationDetail,
+        handleAddApi,
+        handleDeleteApi,
         handleSaveApiDraft,
     };
 };

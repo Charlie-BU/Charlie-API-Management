@@ -1,13 +1,12 @@
 import {
-    Avatar,
     Descriptions,
     IconCommon,
-    Popover,
     Space,
 } from "@cloud-materials/common";
 
 import type { ApiDetail, ApiDraftDetail, ApiLevel } from "@/services/api/types";
-import { genApiLevelTag, formatDateOrDateTime } from "@/utils";
+import { genApiLevelTag, formatDateOrDateTime, userAvatar } from "@/utils";
+import type { UserProfile } from "@/services/user/types";
 
 const BriefInfo = (props: { apiDetail: ApiDetail | ApiDraftDetail }) => {
     const { apiDetail } = props;
@@ -18,17 +17,7 @@ const BriefInfo = (props: { apiDetail: ApiDetail | ApiDraftDetail }) => {
         },
         {
             label: "接口 Owner",
-            value: (
-                <Popover
-                    content={`${apiDetail.owner?.nickname} (${apiDetail.owner?.username}) - ${apiDetail.owner?.email}`}
-                >
-                    <Avatar size={25} style={{ backgroundColor: "#ecf2ff" }}>
-                        {apiDetail.owner?.nickname?.[0] ||
-                            apiDetail.owner?.username?.[0] ||
-                            "-"}
-                    </Avatar>
-                </Popover>
-            ),
+            value: userAvatar(apiDetail.owner as UserProfile, 25),
         },
         {
             label: "接口等级",
