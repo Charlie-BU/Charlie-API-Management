@@ -36,20 +36,23 @@ export const tabs = [
     { key: "cookie", title: "Cookie 参数" },
 ];
 
-interface ApiEditProps {
-    loading: boolean;
-    apiDetail: ApiDetail | ApiDraftDetail;
+interface ApiEditHandlers {
     handleSaveApiDraft: (
         data: Omit<UpdateApiByApiDraftIdRequest, "service_iteration_id">
     ) => Promise<UpdateApiByApiDraftIdResponse>;
     handleDeleteApi: (apiDraftId: number) => Promise<void>;
 }
 
+interface ApiEditProps {
+    loading: boolean;
+    apiDetail: ApiDetail | ApiDraftDetail;
+    handlers: ApiEditHandlers;
+}
+
 const ApiEdit: React.FC<ApiEditProps> = ({
     loading,
     apiDetail,
-    handleSaveApiDraft,
-    handleDeleteApi,
+    handlers: { handleSaveApiDraft, handleDeleteApi },
 }) => {
     const [form] = Form.useForm();
     const [editLoading, setEditLoading] = useState(false);
@@ -88,6 +91,7 @@ const ApiEdit: React.FC<ApiEditProps> = ({
         const resp_params: ApiRespParamInput[] = transformRespParamsToApiInput(
             values.response_params_by_status_code
         );
+
         const data: Omit<UpdateApiByApiDraftIdRequest, "service_iteration_id"> =
             {
                 api_draft_id: apiDetail.id,

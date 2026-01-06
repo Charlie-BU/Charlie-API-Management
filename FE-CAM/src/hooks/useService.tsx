@@ -35,7 +35,7 @@ import type {
 } from "@/services/service/types";
 import CreateServiceForm from "@/components/ServiceManagement/CreateServiceForm";
 import type { UserProfile } from "@/services/user/types";
-import { genApiMethodTag, handleConfirm } from "@/utils";
+import { genApiMethodTag } from "@/utils";
 import AddCategoryForm from "@/components/ApiManagement/ApiList/AddCategoryForm";
 import AddApiForm from "@/components/ApiManagement/ApiList/AddApiForm";
 
@@ -547,6 +547,11 @@ export const useThisService = (service_uuid: string) => {
         });
     }, [iterationId, currentVersion, fetchServiceDetail]);
 
+    const exitIteration = () => {
+        setInIteration(false);
+        setIterationId(-1);
+    };
+
     return {
         loading,
         versions,
@@ -565,6 +570,7 @@ export const useThisService = (service_uuid: string) => {
         setInIteration,
         handleStartIteration,
         handleCompleteIteration,
+        exitIteration,
     };
 };
 

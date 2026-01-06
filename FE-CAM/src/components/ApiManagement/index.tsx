@@ -7,8 +7,9 @@ import Detail from "./Detail";
 import Header from "./Header";
 import ApiList from "./ApiList";
 import ApiEdit from "./ApiEdit";
-import { Layout, Message, Spin } from "@cloud-materials/common";
+import { Layout, Spin } from "@cloud-materials/common";
 import type { UserProfile } from "@/services/user/types";
+import { inIterationWarning } from "@/utils";
 
 const ApiManagement: React.FC = () => {
     const [searchParams] = useSearchParams();
@@ -29,6 +30,7 @@ const ApiManagement: React.FC = () => {
         handleDeleteCategory,
         handleStartIteration,
         handleCompleteIteration,
+        exitIteration,
     } = useThisService(uuid);
 
     const serviceUuid = useMemo(() => {
@@ -62,10 +64,6 @@ const ApiManagement: React.FC = () => {
         handleDeleteApi,
     } = useServiceIteration(iterationId, apiCategories);
 
-    const inIterationWarning = () => {
-        Message.warning("当前在迭代中，请先完成当前迭代");
-    };
-
     const isLoading =
         loading ||
         !versions ||
@@ -93,14 +91,19 @@ const ApiManagement: React.FC = () => {
                     isLatest={isLatest}
                     currentVersion={currentVersion}
                     creator={creator}
-                    setCurrentVersion={
-                        inIteration && iterationDetail
-                            ? inIterationWarning
-                            : (v) => {
-                                  setSelectedApiId(-1);
-                                  setCurrentVersion(v);
-                              }
-                    }
+                    inIteration={inIteration}
+                    handlers={{
+                        setCurrentVersion: (v) =>
+                            inIterationWarning(
+                                () => {
+                                    setSelectedApiId(-1);
+                                    setCurrentVersion(v);
+                                },
+                                inIteration,
+                                "reject"
+                            ),
+                        exitIteration,
+                    }}
                 />
             </Layout.Header>
             <Layout>
@@ -125,10 +128,7 @@ const ApiManagement: React.FC = () => {
                         handlers={{
                             handleAddApi,
                             handleAddCategory,
-                            handleUpdateApiCategory:
-                                inIteration && iterationDetail
-                                    ? inIterationWarning
-                                    : handleUpdateApiCategory,
+                            handleUpdateApiCategory,
                             handleDeleteCategory,
                             handleStartIteration,
                             handleCompleteIteration,
@@ -140,8 +140,10 @@ const ApiManagement: React.FC = () => {
                         <ApiEdit
                             loading={iterationLoading || apiLoading}
                             apiDetail={apiDetail}
-                            handleSaveApiDraft={handleSaveApiDraft}
-                            handleDeleteApi={handleDeleteApi}
+                            handlers={{
+                                handleSaveApiDraft,
+                                handleDeleteApi,
+                            }}
                         />
                     ) : (
                         <Detail loading={apiLoading} apiDetail={apiDetail} />

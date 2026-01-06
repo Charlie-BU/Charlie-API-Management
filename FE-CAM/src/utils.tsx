@@ -99,7 +99,11 @@ export const userAvatar = (user: UserProfile, size: number) => {
     if (!user) return null;
     return (
         <Popover
-            content={`${user.nickname} (${user.username}) - ${user.email}`}
+            content={
+                <span style={{ cursor: "default" }}>
+                    {user.nickname} ({user.username}) - {user.email}
+                </span>
+            }
         >
             <Avatar size={size} style={{ backgroundColor: "#ecf2ff" }}>
                 <span style={{ cursor: "default" }}>
@@ -165,4 +169,34 @@ export const genStatusCodeTag = (
             {code}
         </Tag>
     );
+};
+
+export const inIterationWarning = (
+    action: Function,
+    inIteration: boolean,
+    type: "warning" | "reject"
+) => {
+    if (!inIteration) return action();
+    if (type === "warning") {
+        const modal = Modal.warning({
+            title: "注意",
+            content: "当前在迭代中，请确保已保存当前改动",
+            okText: "继续",
+            onOk: async () => {
+                try {
+                    action();
+                } catch (error: any) {
+                    modal.close();
+                }
+            },
+        });
+        return;
+    } else if (type === "reject") {
+        Modal.warning({
+            title: "注意",
+            content: "当前在迭代中，请先退出当前迭代",
+            okText: "返回",
+        });
+        return;
+    }
 };

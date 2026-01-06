@@ -9,7 +9,7 @@ import {
 } from "@cloud-materials/common";
 
 import styles from "../index.module.less";
-import { handleConfirm } from "@/utils";
+import { handleConfirm, inIterationWarning } from "@/utils";
 
 const { Search } = Input;
 
@@ -49,17 +49,17 @@ const ApiList: React.FC<ApiListProps> = (props) => {
                 ?.children?.[0]?.key || "",
         [treeData]
     );
+
+    // 用于控制树节点选中状态
+    const [selectedKeys, setSelectedKeys] = useState<string[]>([]);
+
     useEffect(() => {
         if (!firstOptionKey) {
             return;
         }
         setSelectedApiId(Number(firstOptionKey));
+        setSelectedKeys([firstOptionKey]);
     }, [firstOptionKey]);
-
-    // 用于设置树节点选中状态
-    const [selectedKeys, setSelectedKeys] = useState<string[]>([
-        firstOptionKey,
-    ]);
 
     const otherOperations = (
         <Menu style={{ width: 100 }}>
@@ -73,13 +73,19 @@ const ApiList: React.FC<ApiListProps> = (props) => {
     );
 
     const handleSelectApi = (keys: string[]) => {
-        const apiId = Number(keys[0]);
-        if (Number.isNaN(apiId) || apiId <= 0) {
-            setSelectedApiId(-1);
-            return;
-        }
-        setSelectedApiId(apiId);
-        setSelectedKeys(keys);
+        inIterationWarning(
+            () => {
+                const apiId = Number(keys[0]);
+                if (Number.isNaN(apiId) || apiId <= 0) {
+                    setSelectedApiId(-1);
+                    return;
+                }
+                setSelectedApiId(apiId);
+                setSelectedKeys(keys);
+            },
+            inIteration,
+            "warning"
+        );
     };
 
     const handleDrag = (info: any) => {
@@ -198,7 +204,7 @@ const ApiList: React.FC<ApiListProps> = (props) => {
                                                     )
                                                 ),
                                             "删除",
-                                            "确认删除当前 API？"
+                                            "确认删除当前分类？"
                                         )
                                     }
                                     type="outline"
