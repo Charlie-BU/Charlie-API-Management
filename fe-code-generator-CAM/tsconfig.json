@@ -4,7 +4,6 @@
     "outDir": "./dist",
     "module": "CommonJS",
     "target": "ES2019",
-    "types": [],
     "sourceMap": true,
     "declaration": true,
     "declarationMap": true,

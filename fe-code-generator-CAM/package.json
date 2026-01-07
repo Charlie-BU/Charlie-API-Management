@@ -1,14 +1,18 @@
 {
-  "name": "codegen-cam",
-  "version": "0.0.1",
+  "name": "cam-fe-code-generator",
+  "version": "0.0.2",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "bin": {
-    "cam-gen": "dist/cli.js"
+    "cam": "dist/cli.js"
   },
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "tsc"
+    "build": "tsc",
+    "prepublishOnly": "npm run build"
   },
   "keywords": [
     "codegen",
@@ -20,6 +24,13 @@
   "license": "ISC",
   "description": "",
   "devDependencies": {
+    "@types/node": "^25.0.3",
     "typescript": "^5.9.3"
+  },
+  "dependencies": {
+    "commander": "^14.0.2"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }
