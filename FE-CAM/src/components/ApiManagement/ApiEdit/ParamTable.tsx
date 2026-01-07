@@ -75,9 +75,9 @@ const ParamTable: React.FC<ParamTableProps> = ({
             fixed: "left" as const,
             render: (val: string, record: any) => {
                 const showSubParams =
-                    (record.children_params &&
-                        record.children_params.length > 0) ||
-                    record.type === "object";
+                    record.type === "object" ||
+                    (record.type === "array" &&
+                        record?.array_child_type === "object");
                 return (
                     <Space size={4}>
                         <Input
@@ -87,7 +87,7 @@ const ParamTable: React.FC<ParamTableProps> = ({
                                 handleFieldChange(record.id, "name", v)
                             }
                             disabled={readOnly}
-                            style={{ width: showSubParams && 120 }}
+                            style={{ width: showSubParams ? 120 : undefined }}
                         />
                         {showSubParams && (
                             <Popover
@@ -242,7 +242,7 @@ const ParamTable: React.FC<ParamTableProps> = ({
             fixed: "right" as const,
             render: (_: any, record: any) => (
                 <Space>
-                    {record.type === "object" && (
+                    {/* {record.type === "object" && (
                         <Button
                             type="outline"
                             shape="circle"
@@ -265,7 +265,7 @@ const ParamTable: React.FC<ParamTableProps> = ({
                             }}
                             disabled={readOnly}
                         />
-                    )}
+                    )} */}
                     <Button
                         type="outline"
                         shape="circle"

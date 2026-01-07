@@ -29,8 +29,12 @@ const requestColumns = [
             if (!childrenParams || childrenParams.length === 0) {
                 return v;
             }
+            const popoverText =
+                record.type === "array" && record.array_child_type === "object"
+                    ? "点击查看数组元素子参数"
+                    : "点击查看子参数";
             return (
-                <Popover content="点击查看子参数">
+                <Popover content={popoverText}>
                     <Popover
                         trigger="click"
                         content={

@@ -91,6 +91,8 @@ const ApiEdit: React.FC<ApiEditProps> = ({
         const resp_params: ApiRespParamInput[] = transformRespParamsToApiInput(
             values.response_params_by_status_code
         );
+        console.log("req_params", req_params);
+        console.log("resp_params", resp_params);
 
         const data: Omit<UpdateApiByApiDraftIdRequest, "service_iteration_id"> =
             {

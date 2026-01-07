@@ -499,6 +499,7 @@ def apiDeleteApiByApiDraftId(
 说明：
 - 对于object类型的参数，使用children字段存储子参数
 - 对于array类型的参数，使用array_child_type指定数组元素类型
+- 对于array类型的参数，若array_child_type为object类型，则children字段存储数组元素子参数
 - 子参数不需要location字段，会继承父参数的location
 - children为null表示该参数没有子参数
 """
@@ -580,8 +581,12 @@ def _process_params_recursively(
         db.add(param_record)
         db.flush()  # 获取新创建记录的ID
 
-        # 如果是object类型且有子参数，递归处理子参数
-        if param_type_enum == ParamType.OBJECT and param_children:
+        # 如果是object类型且有子参数，或array类型且array_child_type为object且有子参数，递归处理子参数
+        if (param_type_enum == ParamType.OBJECT and param_children) or (
+            param_type_enum == ParamType.ARRAY
+            and param_array_child_type_enum == ParamType.OBJECT
+            and param_children
+        ):
             _process_params_recursively(
                 db=db,
                 params=param_children,
