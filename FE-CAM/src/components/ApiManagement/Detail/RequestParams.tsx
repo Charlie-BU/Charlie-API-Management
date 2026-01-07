@@ -74,7 +74,7 @@ const requestColumns = [
             <Tag color={v ? "red" : "gray"}>{v ? "必填" : "选填"}</Tag>
         ),
     },
-    { title: "描述", dataIndex: "description", placeholder: "-" },
+    { title: "描述", dataIndex: "description", width: 240, placeholder: "-" },
     {
         title: "默认值",
         dataIndex: "default_value",

@@ -58,6 +58,7 @@ const ApiEdit: React.FC<ApiEditProps> = ({
     const [editLoading, setEditLoading] = useState(false);
     const [isDraft, setIsDraft] = useState(false);
     const [reqParamsActiveTab, setReqParamsActiveTab] = useState("query");
+    const [rejectSubmit, setRejectSubmit] = useState(false); // 是否由于表单填写不全拒绝提交
 
     const getFirstTabWithValue = () => {
         if (!apiDetail.request_params_by_location) {
@@ -82,6 +83,9 @@ const ApiEdit: React.FC<ApiEditProps> = ({
 
     // 提交本次apiDraft改动
     const handleSubmit = async () => {
+        if (rejectSubmit) {
+            return;
+        }
         const values = await form.validate();
         setEditLoading(true);
 
@@ -91,8 +95,6 @@ const ApiEdit: React.FC<ApiEditProps> = ({
         const resp_params: ApiRespParamInput[] = transformRespParamsToApiInput(
             values.response_params_by_status_code
         );
-        console.log("req_params", req_params);
-        console.log("resp_params", resp_params);
 
         const data: Omit<UpdateApiByApiDraftIdRequest, "service_iteration_id"> =
             {
@@ -129,7 +131,7 @@ const ApiEdit: React.FC<ApiEditProps> = ({
                             status="success"
                             onClick={handleSubmit}
                             loading={editLoading}
-                            disabled={!isDraft}
+                            disabled={!isDraft || rejectSubmit}
                         >
                             {isDraft ? "保存当前 API" : "当前 API 已保存"}
                         </Button>
@@ -162,9 +164,10 @@ const ApiEdit: React.FC<ApiEditProps> = ({
                     <RequestParamsEdit
                         reqParamsActiveTab={reqParamsActiveTab}
                         setReqParamsActiveTab={setReqParamsActiveTab}
+                        setRejectSubmit={setRejectSubmit}
                     />
                     <Divider />
-                    <ResponseParamsEdit />
+                    <ResponseParamsEdit setRejectSubmit={setRejectSubmit} />
                 </Form>
             </Spin>
         </div>

@@ -5,11 +5,13 @@ import { tabs } from "./index";
 interface RequestParamsEditProps {
     reqParamsActiveTab: string;
     setReqParamsActiveTab: (key: string) => void;
+    setRejectSubmit: (reject: boolean) => void;
 }
 
 const RequestParamsEdit = ({
     reqParamsActiveTab,
     setReqParamsActiveTab,
+    setRejectSubmit,
 }: RequestParamsEditProps) => {
     return (
         <Space direction="vertical" size={12}>
@@ -41,7 +43,10 @@ const RequestParamsEdit = ({
                             triggerPropName="value"
                             noStyle
                         >
-                            <ParamTable type="request" />
+                            <ParamTable
+                                type="request"
+                                setRejectSubmit={setRejectSubmit}
+                            />
                         </Form.Item>
                     </div>
                 ))}

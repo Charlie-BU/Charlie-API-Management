@@ -63,11 +63,16 @@ const ApiList: React.FC<ApiListProps> = (props) => {
 
     const otherOperations = (
         <Menu style={{ width: 100 }}>
+            <Menu.Item key="1" onClick={handleAddCategory}>
+                添加分类
+            </Menu.Item>
+        </Menu>
+    );
+
+    const inIterationOperations = (
+        <Menu style={{ width: 100 }}>
             <Menu.Item key="1" onClick={handleAddApi}>
                 创建 API
-            </Menu.Item>
-            <Menu.Item key="2" onClick={handleAddCategory}>
-                添加分类
             </Menu.Item>
         </Menu>
     );
@@ -145,7 +150,7 @@ const ApiList: React.FC<ApiListProps> = (props) => {
                 {inIteration ? (
                     <Dropdown.Button
                         type="outline"
-                        droplist={otherOperations}
+                        droplist={inIterationOperations}
                         position="bl"
                         trigger="click"
                         onClick={handleCompleteIteration}
@@ -154,8 +159,11 @@ const ApiList: React.FC<ApiListProps> = (props) => {
                     </Dropdown.Button>
                 ) : (
                     isLatest && (
-                        <Button
+                        <Dropdown.Button
                             type="outline"
+                            droplist={otherOperations}
+                            position="bl"
+                            trigger="click"
                             onClick={() =>
                                 handleConfirm(
                                     handleStartIteration,
@@ -165,7 +173,7 @@ const ApiList: React.FC<ApiListProps> = (props) => {
                             }
                         >
                             发起迭代
-                        </Button>
+                        </Dropdown.Button>
                     )
                 )}
             </div>

@@ -75,7 +75,7 @@ const responseColumns = [
             <Tag color={v ? "red" : "gray"}>{v ? "必填" : "选填"}</Tag>
         ),
     },
-    { title: "描述", dataIndex: "description", placeholder: "-" },
+    { title: "描述", dataIndex: "description", width: 240, placeholder: "-" },
     { title: "示例值", dataIndex: "example", placeholder: "-" },
 ];
 
