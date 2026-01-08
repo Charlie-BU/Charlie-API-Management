@@ -17,3 +17,35 @@ export const loginRequired = (fn: (...args: any[]) => Promise<void> | void) => {
         }
     };
 };
+
+export const isValidVersion = (value: string): boolean => {
+    if (!value) {
+        return false;
+    }
+    if (value === "latest") {
+        return true;
+    }
+    const versionRegex = /^\d+\.\d+\.\d+$/;
+    if (!versionRegex.test(value)) {
+        return false;
+    }
+    return true;
+};
+
+export const isValidFilename = (filename: string): boolean => {
+    if (!filename) {
+        return false;
+    }
+    // Check for invalid characters (Windows/Unix reserved)
+    // < > : " / \ | ? * and control characters
+    // eslint-disable-next-line no-control-regex
+    const invalidChars = /[<>:"\/\\|?*\x00-\x1F]/;
+    if (invalidChars.test(filename)) {
+        return false;
+    }
+    // Check for reserved names
+    if (filename === "." || filename === "..") {
+        return false;
+    }
+    return true;
+};
