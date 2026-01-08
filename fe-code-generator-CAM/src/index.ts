@@ -1,4 +1,4 @@
 // src/index.ts
 export function hello() {
-  console.log('hello cam codegen')
+    console.log("hello cam codegen");
 }

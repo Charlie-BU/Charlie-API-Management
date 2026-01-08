@@ -129,3 +129,142 @@ npm publish
     -   -> 自动触发 `prepublishOnly` (`npm run build`)
     -   -> 编译 TS 到 `dist/`
     -   -> 上传包到 npm
+
+## 开发过程如何调试？
+
+在本地开发 CLI 工具时，有三种常用的测试方法。推荐使用 **方案二 (`npm link`)**，因为它最能模拟真实用户的使用场景。
+
+### 方案一：直接执行（最简单，适合快速调试）
+
+不需要任何配置，直接编译后用 node 运行生成的文件。
+
+1.  **编译代码**：
+    ```bash
+    npm run build
+    ```
+2.  **执行命令**：
+
+    ```bash
+    # 在项目根目录下测试
+    node dist/cli.js init
+
+    # 或者去其他目录测试
+    cd ../some-test-dir
+    node /path/to/your/project/dist/cli.js init
+    ```
+
+---
+
+### 方案二：npm link（推荐，模拟真实安装）
+
+`npm link` 会把您的本地包“软链接”到全局 npm 目录中。这样您就可以像已经安装了该包一样，在终端的任何位置直接使用 `cam` 命令。
+
+1.  **构建项目**：
+    ```bash
+    npm run build
+    ```
+2.  **创建链接**（在项目根目录 `fe-code-generator-CAM` 下执行）：
+
+    ```bash
+    npm link
+    ```
+
+    _这会读取 `package.json` 中的 `bin` 配置，把 `cam` 命令注册到系统全局。_
+
+3.  **验证使用**（在任意目录）：
+
+    ```bash
+    mkdir ~/Desktop/test-cam
+    cd ~/Desktop/test-cam
+    cam init  # 直接使用 cam 命令！
+    ```
+
+4.  **取消链接**（测试完后）：
+    ```bash
+    # 在项目根目录下执行
+    npm unlink
+    ```
+
+---
+
+### 方案三：使用 ts-node（开发效率最高）
+
+如果您不想每次修改代码都运行 `npm run build`，可以安装 `ts-node` 直接运行 TS 代码。
+
+1.  **安装依赖**：
+    ```bash
+    npm install -D ts-node
+    ```
+2.  **直接运行源码**：
+    ```bash
+    # 直接运行 ts 文件，省去编译步骤
+    npx ts-node src/cli.ts init
+    ```
+    _注意：这种方式适合开发逻辑调试，但发布前务必还是用方案二验证一下编译后的产物是否正常。_
+
+### 总结
+
+-   **开发逻辑时**：用 **方案三** 或 **方案一**。
+-   **发布前验证**：务必用 **方案二**，确保 `package.json` 的 `bin` 配置和 `dist` 产物都没有问题。
+
+## cam 登录过程：在 cli 中输入用户名和密码，发请求返回一个 token。token 保存在哪里？每次进行 cli 操作时怎么鉴权？
+
+在 CLI 工具中，由于没有浏览器的自动 Cookie 管理，我们通常使用**本地配置文件**来持久化 Token。
+
+以下是为您实现的完整方案：
+
+### 1. 存储位置：`~/.camrc`
+
+Token 会保存在用户主目录下的 `.camrc` 文件中。这是一个隐藏文件，类似于 `.npmrc` 或 `.gitconfig`。
+
+### 2. 核心组件实现
+
+-   **[TokenManager](file:///Users/bytedance/Desktop/work/CAM/fe-code-generator-CAM/src/utils/token-manager.ts)**：专门负责读写 Token。
+    -   使用 `os.homedir()` 获取用户主目录。
+    -   写入时设置权限为 `0o600`（仅当前用户可读写），提高安全性。
+-   **[cam login 命令](file:///Users/bytedance/Desktop/work/CAM/fe-code-generator-CAM/src/cli/login.ts)**：
+    -   使用 `inquirer` 提供交互式输入界面（输入密码时会显示 `*`）。
+    -   登录成功后，通过 `TokenManager` 将 Token 写入本地。
+
+### 3. 如何在后续操作中鉴权？
+
+当您需要发送需要授权的请求时，只需调用 `TokenManager.getToken()` 即可。
+
+**示例逻辑：**
+
+```typescript
+import { TokenManager } from "../utils/token-manager";
+import axios from "axios";
+
+async function fetchData() {
+    const tokenManager = new TokenManager();
+    const token = tokenManager.getToken();
+
+    if (!token) {
+        console.error("请先运行 cam login 进行登录");
+        return;
+    }
+
+    const response = await axios.get("https://your-api.com/data", {
+        headers: {
+            Authorization: `Bearer ${token}`, // 在请求头中携带 Token
+        },
+    });
+}
+```
+
+### 4. 本地测试
+
+我已经完成了代码编写和编译，您可以直接在终端尝试：
+
+1.  运行登录命令：
+    ```bash
+    cam login
+    ```
+2.  按照提示输入用户名和密码。
+3.  验证文件是否生成：
+    ```bash
+    cat ~/.camrc
+    ```
+
+这样，您的 CLI 工具就拥有了持久化的身份认证能力！如果您后续需要对接真实的 API，只需在 [login.ts](file:///Users/bytedance/Desktop/work/CAM/fe-code-generator-CAM/src/cli/login.ts) 中将 mock 逻辑替换为真实的 `axios.post` 请求即可。
