@@ -163,8 +163,8 @@ def serviceGetServiceByUuidAndVersion(
             "status": -1,
             "message": "Service not found",
         }
-    # 判断是否最新版本（当前version是否与curr_service版本一致）
-    if curr_service.version == version:  # type: ignore
+    # 判断是否最新版本（当前version是否与curr_service版本一致，或version为latest）
+    if curr_service.version == version or version == "latest":  # type: ignore
         is_latest = True
         service = curr_service
     else:
@@ -183,10 +183,12 @@ def serviceGetServiceByUuidAndVersion(
                 "message": "Service version not found",
             }
 
+    print(service.toJson())
+
     user = db.get(User, user_id)
     # 非L0用户，为当前service owner或当前迭代creator，才有权限查看
     if curr_service.owner_id != user_id and user.level.value != 0:  # type: ignore
-        if service.creator_id is None:  # 最新版
+        if is_latest:  # 最新版
             return {
                 "status": -3,
                 "message": "You are not the owner of this service",

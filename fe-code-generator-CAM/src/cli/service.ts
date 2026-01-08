@@ -1,5 +1,6 @@
 import { Command } from "commander";
 import { isValidFilename, isValidVersion, loginRequired } from "../utils/utils";
+import { storeServiceInfo, removeService } from "../services/code-generate";
 
 const addService = async (serviceIdentifier: string) => {
     const parts = serviceIdentifier.split("@");
@@ -36,6 +37,8 @@ const addService = async (serviceIdentifier: string) => {
     console.log(`Service Name: ${serviceName}`);
     console.log(`Service UUID: ${serviceUuid}`);
     console.log(`Version: ${version}`);
+
+    await storeServiceInfo(serviceName, serviceUuid, version);
 };
 
 export const registerAddServiceCommand = (program: Command) => {
@@ -45,4 +48,11 @@ export const registerAddServiceCommand = (program: Command) => {
             "Add a new service. Usage: cam add <service_name>:<service_uuid>@<version | latest>"
         )
         .action(loginRequired(addService));
+};
+
+export const registerRemoveServiceCommand = (program: Command) => {
+    program
+        .command("remove <service_name>")
+        .description("Remove a service. Usage: cam remove <service_name>")
+        .action(loginRequired(removeService));
 };

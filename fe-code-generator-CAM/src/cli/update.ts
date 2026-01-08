@@ -4,7 +4,7 @@ import * as path from "path";
 import { CONFIG_FILE_CONTENT, CONFIG_FILE_NAME } from "../templates/init";
 import { loginRequired } from "../utils/utils";
 
-const init = async () => {
+const update = async () => {
     const targetPath = path.join(process.cwd(), CONFIG_FILE_NAME);
     if (fs.existsSync(targetPath)) {
         console.warn(
@@ -24,7 +24,7 @@ const init = async () => {
 
 export const registerInitCommand = (program: Command) => {
     program
-        .command("init")
-        .description("Initialize a new configuration file")
-        .action(loginRequired(init));
+        .command("update")
+        .description("Update and generate code for all services")
+        .action(loginRequired(update));
 };

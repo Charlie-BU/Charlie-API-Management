@@ -8,7 +8,10 @@ import {
     registerLogoutCommand,
     registerWhoamiCommand,
 } from "./user";
-import { registerAddServiceCommand } from "./add-service";
+import {
+    registerAddServiceCommand,
+    registerRemoveServiceCommand,
+} from "./service";
 
 const program = new Command();
 
@@ -22,5 +25,6 @@ registerLoginCommand(program);
 registerLogoutCommand(program);
 registerWhoamiCommand(program);
 registerAddServiceCommand(program);
+registerRemoveServiceCommand(program);
 
 program.parse(process.argv);

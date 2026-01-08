@@ -1,5 +1,5 @@
 import { login } from "../cli/user";
-import { TokenManager } from "./token-manager";
+import { TokenManager } from "./data-manager";
 
 export const loginRequired = (fn: (...args: any[]) => Promise<void> | void) => {
     return async (...args: any[]) => {
