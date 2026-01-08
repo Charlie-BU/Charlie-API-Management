@@ -1,7 +1,6 @@
 import { Command } from "commander";
 import * as fs from "fs";
 import * as path from "path";
-import { VERSION } from "../version";
 import { CONFIG_FILE_CONTENT, CONFIG_FILE_NAME } from "../templates/init";
 import { loginRequired } from "../utils/utils";
 
@@ -16,9 +15,7 @@ const init = async () => {
     }
     try {
         fs.writeFileSync(targetPath, CONFIG_FILE_CONTENT);
-        console.log(
-            `version: ${VERSION}\nSuccessfully initialized ${CONFIG_FILE_NAME}`
-        );
+        console.log(`Successfully initialized ${CONFIG_FILE_NAME}`);
     } catch (error) {
         console.error(`Failed to initialize ${CONFIG_FILE_NAME}:`, error);
         process.exit(1);

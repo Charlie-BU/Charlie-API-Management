@@ -192,6 +192,10 @@ class Api(Base, SerializableMixin):
     __table_args__ = (
         UniqueConstraint("service_id", "method", "path", name="uq_api_method_path"),
     )
+    # API名称和方法组合唯一约束
+    __table_args__ = (
+        UniqueConstraint("service_id", "method", "name", name="uq_api_method_name"),
+    )
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     service_id = Column(Integer, ForeignKey("service.id"), nullable=False, index=True)
@@ -294,6 +298,12 @@ class ApiDraft(Base, SerializableMixin):
     __table_args__ = (
         UniqueConstraint(
             "service_iteration_id", "method", "path", name="uq_api_method_path_draft"
+        ),
+    )
+    # API名称和方法组合唯一约束
+    __table_args__ = (
+        UniqueConstraint(
+            "service_iteration_id", "method", "name", name="uq_api_method_name_draft"
         ),
     )
 

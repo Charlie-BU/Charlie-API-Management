@@ -1,9 +1,9 @@
 import { Command } from "commander";
 import * as inquirer from "inquirer";
-import { TokenManager } from "../utils/token-manager";
+import { TokenManager } from "../utils/data-manager";
 import axios from "axios";
-import { GetMyInfo, UserLogin } from "../services";
-import { UserProfile } from "../services/types";
+import { GetMyInfo, UserLogin } from "../services/apis/user";
+import { UserProfile } from "../services/apis/user/types";
 import Table from "cli-table3";
 
 export const login = async () => {
