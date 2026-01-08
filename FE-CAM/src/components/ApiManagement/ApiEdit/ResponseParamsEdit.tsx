@@ -15,7 +15,11 @@ import type { ResponseParam, ResponseParamDraft } from "@/services/api/types";
 import ParamTable from "./ParamTable";
 import { handleConfirm } from "@/utils";
 
-const ResponseParamsEdit = () => {
+interface ResponseParamsEditProps {
+    setRejectSubmit: (reject: boolean) => void;
+}
+
+const ResponseParamsEdit = ({ setRejectSubmit }: ResponseParamsEditProps) => {
     const { form } = Form.useFormContext();
     const newStatusCodeRef = useRef("");
 
@@ -142,7 +146,10 @@ const ResponseParamsEdit = () => {
                             triggerPropName="value"
                             noStyle
                         >
-                            <ParamTable type="response" />
+                            <ParamTable
+                                type="response"
+                                setRejectSubmit={setRejectSubmit}
+                            />
                         </Form.Item>
                     </div>
                 ))}

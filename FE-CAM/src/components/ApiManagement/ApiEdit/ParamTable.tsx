@@ -17,11 +17,14 @@ import styles from "./index.module.less";
 
 const { Option } = Select;
 
+const requiredFields = ["name", "type", "required"];
+
 interface ParamTableProps {
     type: "request" | "response";
     value?: any[];
     onChange?: (value: any[]) => void;
     readOnly?: boolean;
+    setRejectSubmit?: (reject: boolean) => void;
 }
 
 const ParamTable: React.FC<ParamTableProps> = ({
@@ -29,7 +32,28 @@ const ParamTable: React.FC<ParamTableProps> = ({
     value = [],
     onChange,
     readOnly = false,
+    setRejectSubmit,
 }) => {
+    // 校验必填数据是否为空或包含空格
+    const isLegalValue = (value: any) => {
+        if (value === undefined || value === null || value === "") {
+            return false;
+        }
+        if (typeof value === "string" && /\s/.test(value)) {
+            return false;
+        }
+        return true;
+    };
+    const validateData = (data: any[]) => {
+        const hasError = data.some((item) =>
+            requiredFields.some((field) => {
+                const val = item[field];
+                return !isLegalValue(val);
+            })
+        );
+        setRejectSubmit?.(hasError);
+    };
+
     const handleFieldChange = (
         id: string | number,
         field: string,
@@ -41,11 +65,13 @@ const ParamTable: React.FC<ParamTableProps> = ({
             }
             return item;
         });
+        validateData(newData);
         onChange?.(newData);
     };
 
     const handleRemove = (id: string | number) => {
         const newData = value.filter((item) => item.id !== id);
+        validateData(newData);
         onChange?.(newData);
     };
 
@@ -54,12 +80,14 @@ const ParamTable: React.FC<ParamTableProps> = ({
             id: generateId(),
             name: "",
             type: "string",
-            required: false,
+            required: true,
             description: "",
             default_value: "",
             example: "",
         };
-        onChange?.([...value, newItem]);
+        const newData = [...value, newItem];
+        validateData(newData);
+        onChange?.(newData);
     };
 
     const hasArrayParam = useMemo(
@@ -75,9 +103,9 @@ const ParamTable: React.FC<ParamTableProps> = ({
             fixed: "left" as const,
             render: (val: string, record: any) => {
                 const showSubParams =
-                    (record.children_params &&
-                        record.children_params.length > 0) ||
-                    record.type === "object";
+                    record.type === "object" ||
+                    (record.type === "array" &&
+                        record?.array_child_type === "object");
                 return (
                     <Space size={4}>
                         <Input
@@ -87,7 +115,8 @@ const ParamTable: React.FC<ParamTableProps> = ({
                                 handleFieldChange(record.id, "name", v)
                             }
                             disabled={readOnly}
-                            style={{ width: showSubParams && 120 }}
+                            style={{ width: showSubParams ? 120 : undefined }}
+                            status={isLegalValue(val) ? undefined : "error"}
                         />
                         {showSubParams && (
                             <Popover
@@ -140,6 +169,7 @@ const ParamTable: React.FC<ParamTableProps> = ({
                             handleFieldChange(record.id, "type", v);
                         }}
                         disabled={readOnly}
+                        status={val ? undefined : "error"}
                     >
                         {PARAM_TYPES.map((t) => (
                             <Option key={t} value={t}>
@@ -242,7 +272,7 @@ const ParamTable: React.FC<ParamTableProps> = ({
             fixed: "right" as const,
             render: (_: any, record: any) => (
                 <Space>
-                    {record.type === "object" && (
+                    {/* {record.type === "object" && (
                         <Button
                             type="outline"
                             shape="circle"
@@ -265,7 +295,7 @@ const ParamTable: React.FC<ParamTableProps> = ({
                             }}
                             disabled={readOnly}
                         />
-                    )}
+                    )} */}
                     <Button
                         type="outline"
                         shape="circle"

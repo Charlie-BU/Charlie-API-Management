@@ -54,7 +54,7 @@ import type {
     UpdateApiByApiDraftIdResponse,
 } from "@/services/api/types";
 
-const { Text } = Typography;
+const { Text, Ellipsis } = Typography;
 
 // 服务列表hook
 export const useService = () => {
@@ -389,11 +389,23 @@ export const useThisService = (service_uuid: string) => {
                     <Space style={{ fontWeight: 500 }}>
                         {genApiMethodTag(api.method, "small")}
                         {api.name}
-                        <Text style={{ color: "#6e7687", fontSize: 10 }}>
+                        <Ellipsis
+                            style={{
+                                color: "#6e7687",
+                                fontSize: 10,
+                            }}
+                            rows={1}
+                            showTooltip
+                        >
                             {api.path}
-                        </Text>
+                        </Ellipsis>
                     </Space>
                 ),
+                style: {
+                    maxWidth: "100%",
+                    overflow: "auto",
+                    scrollbarWidth: "none",
+                },
             };
             if (api.category_id == null) {
                 uncategorizedGroup.children.push(node);
@@ -643,9 +655,17 @@ export const useServiceIteration = (
                     <Space style={{ fontWeight: 500 }}>
                         {genApiMethodTag(apiDraft.method, "small")}
                         {apiDraft.name}
-                        <Text style={{ color: "#6e7687", fontSize: 10 }}>
+                        <Ellipsis
+                            style={{
+                                color: "#6e7687",
+                                fontSize: 10,
+                                maxWidth: 160,
+                            }}
+                            rows={1}
+                            showTooltip
+                        >
                             {apiDraft.path}
-                        </Text>
+                        </Ellipsis>
                     </Space>
                 ),
             };

@@ -30,8 +30,12 @@ const responseColumns = [
             if (!childrenParams || childrenParams.length === 0) {
                 return v;
             }
+            const popoverText =
+                record.type === "array" && record.array_child_type === "object"
+                    ? "点击查看数组元素子参数"
+                    : "点击查看子参数";
             return (
-                <Popover content="点击查看子参数">
+                <Popover content={popoverText}>
                     <Popover
                         trigger="click"
                         content={
@@ -71,14 +75,8 @@ const responseColumns = [
             <Tag color={v ? "red" : "gray"}>{v ? "必填" : "选填"}</Tag>
         ),
     },
-    { title: "描述", dataIndex: "description", placeholder: "-" },
-    {
-        title: "默认值",
-        dataIndex: "default_value",
-        width: 200,
-        placeholder: "-",
-    },
-    { title: "示例值", dataIndex: "example", width: 200, placeholder: "-" },
+    { title: "描述", dataIndex: "description", width: 240, placeholder: "-" },
+    { title: "示例值", dataIndex: "example", placeholder: "-" },
 ];
 
 const ResponseParams = (props: { apiDetail: ApiDetail | ApiDraftDetail }) => {
