@@ -1,5 +1,5 @@
 // service层：只关心http请求，不关心业务逻辑
-import { api } from "@/api";
+import { api } from "@/request";
 import type {
     GetAllCategoriesByServiceIdResponse,
     GetAllApisByServiceIdResponse,

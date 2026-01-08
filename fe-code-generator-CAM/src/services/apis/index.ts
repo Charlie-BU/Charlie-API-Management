@@ -1,4 +1,4 @@
-import { api } from "../api";
+import { api } from "../../request";
 import type { LoginRequest, LoginResponse, UserResponse } from "./types";
 
 const prefix = "/v1/user";
