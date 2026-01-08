@@ -668,6 +668,11 @@ export const useServiceIteration = (
                         </Ellipsis>
                     </Space>
                 ),
+                style: {
+                    maxWidth: "100%",
+                    overflow: "auto",
+                    scrollbarWidth: "none",
+                },
             };
             if (apiDraft.category_id == null) {
                 uncategorizedGroup.children.push(node);

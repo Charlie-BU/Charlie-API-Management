@@ -26,6 +26,7 @@ import type {
 import RequestParamsEdit from "./RequestParamsEdit";
 import ResponseParamsEdit from "./ResponseParamsEdit";
 import { handleConfirm } from "@/utils";
+import BlankPage from "@/components/BlankPage";
 
 // 把请求参数tabs相关逻辑提到本层，便于根据apiDetail处理首个activeTab
 export const tabs = [
@@ -118,9 +119,13 @@ const ApiEdit: React.FC<ApiEditProps> = ({
         setEditLoading(false);
     };
 
+    if (!apiDetail || Object.keys(apiDetail).length === 0) {
+        return <BlankPage message="暂无 API，请点击左侧 ··· 创建 API" />;
+    }
+
     return (
         <div className={sharedStyles.content}>
-            <Spin size={40} loading={loading || !apiDetail}>
+            <Spin size={40} loading={loading}>
                 <div className={sharedStyles.header}>
                     <Typography.Title heading={5}>
                         Service 迭代

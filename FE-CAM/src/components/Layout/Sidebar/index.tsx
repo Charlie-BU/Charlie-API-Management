@@ -1,8 +1,6 @@
 import React from "react";
-import { Menu } from "@cloud-materials/common";
-import {
-    IconHouseDashboard,
-} from "@cloud-materials/common/ve-o-iconbox";
+import { Menu, Message } from "@cloud-materials/common";
+import { IconHouseDashboard } from "@cloud-materials/common/ve-o-iconbox";
 
 import { useNavigate, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
@@ -27,7 +25,12 @@ const Sidebar: React.FC = () => {
                 <img
                     alt="avatar"
                     src={ApiIconCAM}
-                    style={{ width: 18, height: 18, marginRight: 8, marginLeft: 1 }}
+                    style={{
+                        width: 18,
+                        height: 18,
+                        marginRight: 8,
+                        marginLeft: 1,
+                    }}
                 />
             ),
             title: t("nav.apiDefinition"),
@@ -35,6 +38,11 @@ const Sidebar: React.FC = () => {
     ];
 
     const handleMenuClick = (key: string) => {
+        // 不支持直接点击service
+        if (key === "/service") {
+            Message.warning("请通过首页服务列表进入服务详情");
+            return;
+        }
         navigate(key);
     };
 
