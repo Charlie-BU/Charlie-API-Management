@@ -1,3 +1,5 @@
+import { ApiOption } from "../../templates/serviceClass";
+import { capitalizeFirstLetter } from "../../utils/utils";
 import {
     ApiDetail,
     ApiDraftDetail,
@@ -10,7 +12,7 @@ import {
 
 interface GeneratedCode {
     namespaces: string[];
-    functions: string;
+    apiOption: ApiOption;
 }
 
 const tsTypeMap = (type: string, arrayChildType?: string | null): string => {
@@ -38,10 +40,6 @@ const tsTypeMap = (type: string, arrayChildType?: string | null): string => {
         default:
             return "any";
     }
-};
-
-const capitalizeFirstLetter = (string: string) => {
-    return string.charAt(0).toUpperCase() + string.slice(1);
 };
 
 const generateInterface = (
@@ -113,6 +111,14 @@ export const generateTSCode = (
     let requestInterfaceName = "";
     let responseInterfaceName = "";
 
+    // 5类请求参数分别生成的interface名和所有类别响应参数生成的interface名
+    let reqBodyInterfaceName = "";
+    let reqQueryInterfaceName = "";
+    let reqPathInterfaceName = "";
+    let reqHeaderInterfaceName = "";
+    let reqCookieInterfaceName = "";
+    let respInterfaceNames: string[] = [];
+
     // 1. Generate Request Interface (Query, Body, etc.)
     const requestParams =
         api.request_params_by_location ||
@@ -130,6 +136,24 @@ export const generateTSCode = (
                 requestInterfaceName,
                 params
             );
+
+            switch (location) {
+                case "body":
+                    reqBodyInterfaceName = requestInterfaceName;
+                    break;
+                case "query":
+                    reqQueryInterfaceName = requestInterfaceName;
+                    break;
+                case "path":
+                    reqPathInterfaceName = requestInterfaceName;
+                    break;
+                case "header":
+                    reqHeaderInterfaceName = requestInterfaceName;
+                    break;
+                case "cookie":
+                    reqCookieInterfaceName = requestInterfaceName;
+                    break;
+            }
             namespaces.push(...reqInterfaces);
         }
     }
@@ -154,31 +178,41 @@ export const generateTSCode = (
                 responseInterfaceName,
                 params
             );
+            respInterfaceNames.push(responseInterfaceName);
             namespaces.push(...resInterfaces);
         }
     }
 
-    // todo: 3. Generate Function
-    const functionName = api.name;
-    const method = api.method.toLowerCase();
-    const url = api.path; // Note: Path params replacement logic might be needed if url contains :param
-
-    const reqType = requestInterfaceName ? `data: ${requestInterfaceName}` : "";
-    const resType = responseInterfaceName
-        ? `Promise<${responseInterfaceName}>`
-        : "Promise<any>";
-
-    const functionBody = `
-export const ${functionName} = (${reqType}): ${resType} => {
-  return request({
-    url: \`${url}\`,
-    method: '${method}',
-    ${requestInterfaceName ? "data," : ""}
-  });
-}`;
+    // 3. Generate Index Preparation
+    const apiOption: ApiOption = {
+        functionName: `${capitalizeFirstLetter(api.name)}${api.method}`,
+        apiMethod: api.method,
+        apiPath: api.path,
+        reqBodyInterfaceName,
+        reqQueryInterfaceName,
+        reqPathInterfaceName,
+        reqHeaderInterfaceName,
+        reqCookieInterfaceName,
+        respInterfaceNames,
+        reqBodyFields:
+            api.request_params_by_location?.body.map((param) => param.name) ||
+            [],
+        reqQueryFields:
+            api.request_params_by_location?.query.map((param) => param.name) ||
+            [],
+        reqPathFields:
+            api.request_params_by_location?.path.map((param) => param.name) ||
+            [],
+        reqHeaderFields:
+            api.request_params_by_location?.header.map((param) => param.name) ||
+            [],
+        reqCookieFields:
+            api.request_params_by_location?.cookie.map((param) => param.name) ||
+            [],
+    };
 
     return {
         namespaces,
-        functions: functionBody.trim(),
+        apiOption,
     };
 };

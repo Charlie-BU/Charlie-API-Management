@@ -1,3 +1,4 @@
+from sqlalchemy import or_
 from sqlalchemy.orm import Session
 
 from database.models import (
@@ -343,9 +344,16 @@ def apiAddApi(
     existing_api = (
         db.query(Api)
         .filter(
-            Api.service_id == service_iteration.service_id,
-            Api.method == method,
-            Api.path == path,
+            or_(
+                Api.service_id == service_iteration.service_id,
+                Api.method == method,
+                Api.path == path,
+            ),
+            (
+                Api.service_id == service_iteration.service_id,
+                Api.method == method,
+                Api.name == name,
+            ),
         )
         .first()
     )
@@ -353,16 +361,23 @@ def apiAddApi(
     existing_api_draft = (
         db.query(ApiDraft)
         .filter(
-            ApiDraft.service_iteration_id == service_iteration_id,
-            ApiDraft.method == method,
-            ApiDraft.path == path,
+            or_(
+                ApiDraft.service_iteration_id == service_iteration_id,
+                ApiDraft.method == method,
+                ApiDraft.path == path,
+            ),
+            (
+                ApiDraft.service_iteration_id == service_iteration_id,
+                ApiDraft.method == method,
+                ApiDraft.name == name,
+            ),
         )
         .first()
     )
     if existing_api or existing_api_draft:
         return {
             "status": -1,
-            "message": "Api method and path already exists in this service",
+            "message": "Api method and name/path already exists in this service",
         }
     # 符合新增条件
     try:

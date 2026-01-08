@@ -1,8 +1,124 @@
-const serviceClassCode = (serviceName: string, apis) =>
-    `
-export default class ${serviceName}Service<T> {
+import { HttpMethod } from "../services/apis/api/types";
+import { capitalizeFirstLetter } from "../utils/utils";
+
+export interface ApiOption {
+    functionName: string;
+    apiMethod: HttpMethod;
+    apiPath: string;
+    reqBodyInterfaceName: string;
+    reqQueryInterfaceName: string;
+    reqPathInterfaceName: string;
+    reqHeaderInterfaceName: string;
+    reqCookieInterfaceName: string;
+    respInterfaceNames: string[];
+    reqBodyFields: string[];
+    reqQueryFields: string[];
+    reqPathFields: string[];
+    reqHeaderFields: string[];
+    reqCookieFields: string[];
+}
+
+// 一个service有一个serviceClass
+export const serviceClassCode = (
+    serviceName: string,
+    apiOptions: ApiOption[]
+) => {
+    // 收集所有需要导入的接口
+    const allImportInterfaces = new Set<string>();
+
+    let methodsCode = "";
+
+    for (const option of apiOptions) {
+        const {
+            functionName,
+            apiMethod,
+            apiPath,
+            reqBodyInterfaceName,
+            reqQueryInterfaceName,
+            reqPathInterfaceName,
+            reqHeaderInterfaceName,
+            reqCookieInterfaceName,
+            respInterfaceNames,
+            reqBodyFields,
+            reqQueryFields,
+            reqPathFields,
+            reqHeaderFields,
+        } = option;
+
+        const reqInterfaceNameWithValue = [
+            reqBodyInterfaceName,
+            reqQueryInterfaceName,
+            reqPathInterfaceName,
+            reqHeaderInterfaceName,
+            reqCookieInterfaceName,
+        ].filter(Boolean);
+
+        // 添加到导入集合
+        reqInterfaceNameWithValue.forEach((name) =>
+            allImportInterfaces.add(name)
+        );
+        respInterfaceNames.forEach((name) => allImportInterfaces.add(name));
+
+        // 参数类型
+        const reqInterfaceName = reqInterfaceNameWithValue.join(" & ");
+        const respInterfaceName = respInterfaceNames.join(" & ") || "any";
+
+        // 生成5类参数代码
+        const bodyParamsCode = reqBodyFields
+            .map((field) => `${field}: _req["${field}"]`)
+            .join(", ");
+        const queryParamsCode = reqQueryFields
+            .map((field) => `${field}: _req["${field}"]`)
+            .join(", ");
+        const headerParamsCode = reqHeaderFields
+            .map((field) => `${field}: _req["${field}"]`)
+            .join(", ");
+
+        let urlCode = `let url = this.genBaseURL('${apiPath}');`;
+
+        // 处理 Path 参数替换
+        if (reqPathFields && reqPathFields.length > 0) {
+            reqPathFields.forEach((field) => {
+                // 假设 path 中的参数形式为 {field}
+                urlCode += `\n    url = url.replace('{${field}}', String(_req["${field}"]));`;
+            });
+        }
+
+        const reqParamDef = reqInterfaceName
+            ? `req: ${reqInterfaceName}`
+            : `req?: any`;
+
+        const apiFunctionCode = `
+  ${functionName}(${reqParamDef}, options?: T): Promise<${respInterfaceName}> {
+    const _req = req || {};
+    ${urlCode}
+    const method = '${apiMethod}';
+    const data = ${bodyParamsCode ? `{ ${bodyParamsCode} }` : "undefined"};
+    const params = ${queryParamsCode ? `{ ${queryParamsCode} }` : "undefined"};
+    const headers = ${
+        headerParamsCode ? `{ ${headerParamsCode} }` : "undefined"
+    };
+    return this.request({ url, method, data, params, headers }, options);
+  }
+        `;
+        methodsCode += apiFunctionCode;
+    }
+
+    // 生成最终代码
+    const importCode =
+        allImportInterfaces.size > 0
+            ? `import type { ${Array.from(allImportInterfaces).join(
+                  ", "
+              )} } from "./namespaces";\n`
+            : "";
+
+    let code = `
+${importCode}
+export default class ${capitalizeFirstLetter(serviceName)}Service<T> {
   private request: any = () => {
-    throw new Error('${serviceName}Service.request is undefined');
+    throw new Error('${capitalizeFirstLetter(
+        serviceName
+    )}Service.request is undefined');
   };
   private baseURL: string | ((path: string) => string) = '';
 
@@ -11,7 +127,7 @@ export default class ${serviceName}Service<T> {
     request?<R>(
       params: {
         url: string;
-        method: 'GET' | 'DELETE' | 'POST' | 'PUT' | 'PATCH';
+        method: 'GET' |  'POST' | 'PUT' |'DELETE' | 'PATCH';
         data?: any;
         params?: any;
         headers?: any;
@@ -28,19 +144,8 @@ export default class ${serviceName}Service<T> {
   }
 
   /* API Services */
-  CreateJob(req: job.CreateJobRequest, options?: T): Promise<job.JobIdResult> {
-    const _req = req;
-    const url = this.genBaseURL('/v1/open/CreateJob');
-    const method = 'ANY';
-    const data = {
-      Name: _req['Name'],
-      JobType: _req['JobType'],
-      BambooConfig: _req['BambooConfig'],
-      ProtenixConfig: _req['ProtenixConfig'],
-      QuantumChemistryConfig: _req['QuantumChemistryConfig'],
-      DryRun: _req['DryRun'],
-    };
-    return this.request({ url, method, data }, options);
-  }
-}
-`;
+${methodsCode}
+};
+    `;
+    return code;
+};
