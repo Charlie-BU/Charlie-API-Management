@@ -6,8 +6,6 @@ export interface CamConfig {
     services: Record<string, any>;
     outDir: string;
     generateConfig: {
-        param1: string;
-        param2: string;
         [key: string]: any;
     };
 }
