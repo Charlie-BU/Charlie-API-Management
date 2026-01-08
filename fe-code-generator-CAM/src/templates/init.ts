@@ -6,7 +6,7 @@ export const CONFIG_FILE_CONTENT = `
   "outDir": "cam-auto-generate",
   "generateConfig": {
     "param1": "",
-    "param2": "",
-  },
+    "param2": ""
+  }
 }
 `;
