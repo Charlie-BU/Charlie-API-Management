@@ -2,7 +2,7 @@ export const requestDemoCode = (demoServiceName: string) => `
 // This is a demo request code for how to use auto generated service class.
 // You can also use your own request instance like axios or fetch.
 
-import axios, { type AxiosRequestConfig } from "axios";
+import axios, { type AxiosRequestConfig } from "axios"; // Install axios if you haven't
 import ${demoServiceName}Service from "./${demoServiceName}/index";
 
 const BASE_URL = "http://localhost:3000"; // Change to the actual base URL

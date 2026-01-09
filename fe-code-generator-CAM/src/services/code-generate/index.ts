@@ -19,13 +19,17 @@ const autoGeneratePrefix = `
 
 const readConfig = () => {
     if (!fs.existsSync(CONFIG_FILE_NAME)) {
-        return {};
+        console.warn("You need to run `cam init` first");
+        process.exit(1);
     }
     try {
         const content = fs.readFileSync(CONFIG_FILE_NAME, "utf-8");
         return JSON.parse(content);
     } catch (error) {
-        return {};
+        console.warn(
+            "Failed to read config file, please delete it and run `cam init` again"
+        );
+        process.exit(1);
     }
 };
 
