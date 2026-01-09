@@ -1,4 +1,4 @@
-# CAM（Charlie API Management）产品需求文档（PRD）
+# 【PRD】CAM API Management
 
 ## 1. 背景与问题
 

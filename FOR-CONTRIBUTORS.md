@@ -1,4 +1,4 @@
-# CAM API 管理平台
+# CAM API Management
 
 CAM 是一套 API 定义与版本管理系统：后端把 Service、API、参数、迭代过程都当作数据进行管理；前端提供可视化的编辑与查看；同时提供一个 npm 包，用于把 CAM 中的定义拉取下来，生成 TypeScript 调用代码。
 
