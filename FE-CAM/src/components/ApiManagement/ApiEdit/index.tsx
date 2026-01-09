@@ -93,6 +93,38 @@ const ApiEdit: React.FC<ApiEditProps> = ({
         const req_params: ApiReqParamInput[] = transformReqParamsToApiInput(
             values.request_params_by_location
         );
+        // 检查是否有Path参数
+        const hasPathParams = req_params.some(
+            (param) => param.location === "path"
+        );
+        if (hasPathParams) {
+            // 检查apiPath是否包含{param}
+            const apiPath = values.path;
+            const allPathParams = req_params.filter(
+                (param) => param.location === "path"
+            );
+            // path参数不能为选填
+            if (allPathParams.some((param) => param.required === false)) {
+                Message.warning("Path 参数不能为选填");
+                setEditLoading(false);
+                return;
+            }
+            const allPathParamsShouldInPath = allPathParams.map(
+                (param) => `{${param.name}}`
+            );
+
+            if (
+                !allPathParamsShouldInPath.every((param) =>
+                    apiPath.includes(param)
+                )
+            ) {
+                Message.warning(
+                    "Path 参数必须用花括号包含在路径中，如：{param}"
+                );
+                setEditLoading(false);
+                return;
+            }
+        }
         const resp_params: ApiRespParamInput[] = transformRespParamsToApiInput(
             values.response_params_by_status_code
         );

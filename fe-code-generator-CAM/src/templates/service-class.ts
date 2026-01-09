@@ -65,13 +65,13 @@ export const serviceClassCode = (
 
         // 生成5类参数代码
         const bodyParamsCode = reqBodyFields
-            .map((field) => `${field}: _req["${field}"]`)
+            .map((field) => `'${field}': _req["${field}"]`)
             .join(", ");
         const queryParamsCode = reqQueryFields
-            .map((field) => `${field}: _req["${field}"]`)
+            .map((field) => `'${field}': _req["${field}"]`)
             .join(", ");
         const headerParamsCode = reqHeaderFields
-            .map((field) => `${field}: _req["${field}"]`)
+            .map((field) => `'${field}': _req["${field}"]`)
             .join(", ");
 
         let urlCode = `let url = this.genBaseURL('${apiPath}');`;
@@ -80,7 +80,10 @@ export const serviceClassCode = (
         if (reqPathFields && reqPathFields.length > 0) {
             reqPathFields.forEach((field) => {
                 // 假设 path 中的参数形式为 {field}
-                urlCode += `\n    url = url.replace('{${field}}', String(_req["${field}"]));`;
+                urlCode += `
+    if (_req["${field}"] !== undefined && _req["${field}" ] !== null) {
+      url = url.replace('{${field}}', String(_req["${field}"]));
+    }`;
             });
         }
 
@@ -140,7 +143,12 @@ export default class ${capitalizeFirstLetter(serviceName)}Service<T> {
   }
 
   private genBaseURL(path: string) {
-    return typeof this.baseURL === 'string' ? this.baseURL + path : this.baseURL(path);
+    if (typeof this.baseURL === 'string') {
+        const baseUrl = this.baseURL.trim().replace(/\\/+$/, "");
+        const apiPath = path.trim().replace(/^\\/+/, "");
+        return baseUrl + '/' + apiPath;
+    }
+    return this.baseURL(path);
   }
 
   /* API Services */

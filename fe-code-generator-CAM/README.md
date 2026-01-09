@@ -268,3 +268,8 @@ async function fetchData() {
     ```
 
 这样，您的 CLI 工具就拥有了持久化的身份认证能力！如果您后续需要对接真实的 API，只需在 [login.ts](file:///Users/bytedance/Desktop/work/CAM/fe-code-generator-CAM/src/cli/login.ts) 中将 mock 逻辑替换为真实的 `axios.post` 请求即可。
+
+## 潜在风险
+
+1. Request 参数扁平化冲突 :
+   目前的逻辑将 Body、Query、Header、Path 等所有参数合并到一个 req 对象中。如果不同位置有重名参数（例如 Query 和 Body 都有 type 字段），调用者只能传入一个值，且该值会被同时用于两个位置。这限制了 API 的灵活性，但在大多数规范的 API 设计中是可以接受的。

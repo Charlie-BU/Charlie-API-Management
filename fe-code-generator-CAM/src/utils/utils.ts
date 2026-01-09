@@ -1,3 +1,4 @@
+import prettier from "prettier";
 import { login } from "../cli/user";
 import { TokenManager } from "./data-manager";
 
@@ -52,4 +53,20 @@ export const isValidFilename = (filename: string): boolean => {
 
 export const capitalizeFirstLetter = (string: string) => {
     return string.charAt(0).toUpperCase() + string.slice(1);
+};
+
+export const formatCodeByPrettier = async (code: string) => {
+    let formattedCode = code;
+    try {
+        formattedCode = await prettier.format(code, {
+            parser: "typescript",
+            tabWidth: 2,
+            useTabs: false,
+            semi: true,
+            singleQuote: true,
+        });
+    } catch (error) {
+        console.warn(`Prettier format failed, using unformatted code.`);
+    }
+    return formattedCode;
 };
