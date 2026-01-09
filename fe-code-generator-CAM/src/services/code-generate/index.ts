@@ -7,7 +7,7 @@ import { ApiDetail } from "../apis/api/types";
 import { ApiDraftDetail } from "../apis/api/types";
 import { generateTSCode } from "./generator";
 import { ApiOption, serviceClassCode } from "../../templates/service-class";
-import { capitalizeFirstLetter, formatCodeByPrettier } from "../../utils/utils";
+import { formatCodeByPrettier } from "../../utils/utils";
 import { requestDemoCode } from "../../templates/request-demo";
 
 const autoGeneratePrefix = `
@@ -186,9 +186,10 @@ export const pullAllApisInAllServices = async () => {
     }
 
     // 生成request-demo.ts
-    const demoServiceName = capitalizeFirstLetter(
-        Object.keys(config.services)[0] || "Demo"
-    );
+    const demoServiceName = Object.keys(config.services)[0];
+    if (!demoServiceName) {
+        process.exit(1);
+    }
     const code = await formatCodeByPrettier(requestDemoCode(demoServiceName));
     fs.appendFileSync(path.join(outDir || ".", "request-demo.ts"), code);
 
