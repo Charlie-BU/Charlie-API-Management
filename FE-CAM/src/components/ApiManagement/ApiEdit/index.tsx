@@ -26,6 +26,7 @@ import type {
 import RequestParamsEdit from "./RequestParamsEdit";
 import ResponseParamsEdit from "./ResponseParamsEdit";
 import { handleConfirm } from "@/utils";
+import BlankPage from "@/components/BlankPage";
 
 // 把请求参数tabs相关逻辑提到本层，便于根据apiDetail处理首个activeTab
 export const tabs = [
@@ -92,6 +93,38 @@ const ApiEdit: React.FC<ApiEditProps> = ({
         const req_params: ApiReqParamInput[] = transformReqParamsToApiInput(
             values.request_params_by_location
         );
+        // 检查是否有Path参数
+        const hasPathParams = req_params.some(
+            (param) => param.location === "path"
+        );
+        if (hasPathParams) {
+            // 检查apiPath是否包含{param}
+            const apiPath = values.path;
+            const allPathParams = req_params.filter(
+                (param) => param.location === "path"
+            );
+            // path参数不能为选填
+            if (allPathParams.some((param) => param.required === false)) {
+                Message.warning("Path 参数不能为选填");
+                setEditLoading(false);
+                return;
+            }
+            const allPathParamsShouldInPath = allPathParams.map(
+                (param) => `{${param.name}}`
+            );
+
+            if (
+                !allPathParamsShouldInPath.every((param) =>
+                    apiPath.includes(param)
+                )
+            ) {
+                Message.warning(
+                    "Path 参数必须用花括号包含在路径中，如：{param}"
+                );
+                setEditLoading(false);
+                return;
+            }
+        }
         const resp_params: ApiRespParamInput[] = transformRespParamsToApiInput(
             values.response_params_by_status_code
         );
@@ -118,9 +151,13 @@ const ApiEdit: React.FC<ApiEditProps> = ({
         setEditLoading(false);
     };
 
+    if (!apiDetail || Object.keys(apiDetail).length === 0) {
+        return <BlankPage message="暂无 API，请点击左侧 ··· 创建 API" />;
+    }
+
     return (
         <div className={sharedStyles.content}>
-            <Spin size={40} loading={loading || !apiDetail}>
+            <Spin size={40} loading={loading}>
                 <div className={sharedStyles.header}>
                     <Typography.Title heading={5}>
                         Service 迭代

@@ -344,14 +344,10 @@ def apiAddApi(
     existing_api = (
         db.query(Api)
         .filter(
+            Api.service_id == service_iteration.service_id,
+            Api.method == method,
             or_(
-                Api.service_id == service_iteration.service_id,
-                Api.method == method,
                 Api.path == path,
-            ),
-            (
-                Api.service_id == service_iteration.service_id,
-                Api.method == method,
                 Api.name == name,
             ),
         )
@@ -361,14 +357,10 @@ def apiAddApi(
     existing_api_draft = (
         db.query(ApiDraft)
         .filter(
+            ApiDraft.service_iteration_id == service_iteration_id,
+            ApiDraft.method == method,
             or_(
-                ApiDraft.service_iteration_id == service_iteration_id,
-                ApiDraft.method == method,
                 ApiDraft.path == path,
-            ),
-            (
-                ApiDraft.service_iteration_id == service_iteration_id,
-                ApiDraft.method == method,
                 ApiDraft.name == name,
             ),
         )

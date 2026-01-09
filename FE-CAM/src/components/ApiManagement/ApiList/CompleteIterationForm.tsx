@@ -61,6 +61,7 @@ const CompleteIterationForm: React.FC<{ currentVersion: string }> = ({
                     currentLanguage === "en-US" ? { span: 17 } : undefined
                 }
                 field="new_version"
+                initialValue={suggestVersionPlaceholder}
                 rules={[
                     {
                         required: true,

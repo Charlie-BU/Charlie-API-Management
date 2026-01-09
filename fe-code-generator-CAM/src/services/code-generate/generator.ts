@@ -1,4 +1,4 @@
-import { ApiOption } from "../../templates/serviceClass";
+import { ApiOption } from "../../templates/service-class";
 import { capitalizeFirstLetter } from "../../utils/utils";
 import {
     ApiDetail,
@@ -64,7 +64,10 @@ const generateInterface = (
             param.children_params &&
             param.children_params.length > 0
         ) {
-            const childInterfaceName = `${capitalizeFirstLetter(fieldName)}`;
+            // 添加interfaceName前缀防止命名冲突
+            const childInterfaceName = `${interfaceName}${capitalizeFirstLetter(
+                fieldName
+            )}`;
             const childInterfaces = generateInterface(
                 childInterfaceName,
                 param.children_params,
@@ -79,7 +82,8 @@ const generateInterface = (
             param.children_params.length > 0
         ) {
             // Handle array of objects if needed
-            const childInterfaceName = `${capitalizeFirstLetter(
+            // 添加interfaceName前缀防止命名冲突
+            const childInterfaceName = `${interfaceName}${capitalizeFirstLetter(
                 fieldName
             )}Item`;
             const childInterfaces = generateInterface(
