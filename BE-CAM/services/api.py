@@ -435,6 +435,12 @@ def apiDeleteApiByApiDraftId(
             "message": "Api draft not belongs to this service iteration",
         }
     # 符合删除条件
+    db.query(RequestParamDraft).filter(
+        RequestParamDraft.api_draft_id == api_draft_id
+    ).delete(synchronize_session=False)
+    db.query(ResponseParamDraft).filter(
+        ResponseParamDraft.api_draft_id == api_draft_id
+    ).delete(synchronize_session=False)
     db.delete(api_draft)
     db.commit()
     return {
