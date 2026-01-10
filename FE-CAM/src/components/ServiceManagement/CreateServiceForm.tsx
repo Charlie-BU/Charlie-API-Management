@@ -59,7 +59,7 @@ const CreateServiceForm: React.FC<{ owner?: UserProfile }> = ({ owner }) => {
                     },
                 ]}
             >
-                {userAvatar(owner as UserProfile, 30)}
+                {userAvatar([owner] as UserProfile[], 30)}
             </Form.Item>
             <Form.Item
                 label={t("service.description")}

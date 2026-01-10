@@ -330,6 +330,48 @@ def serviceGetAllDeletedServicesByUserId(
     }
 
 
+# 通过服务id添加maintainer
+def serviceAddOrRemoveServiceMaintainerById(
+    db: Session, id: int, user_id: int, maintainer_id: int
+) -> dict:
+    service = db.get(Service, id)
+    if not service:
+        return {
+            "status": -1,
+            "message": "Service not found",
+        }
+    user = db.get(User, user_id)
+    # 非L0用户只能为自己的服务添加maintainer
+    if service.owner_id != user_id and user.level.value != 0:  # type: ignore
+        return {
+            "status": -2,
+            "message": "You are not the owner of this service",
+        }
+    if service.owner_id == maintainer_id:
+        return {
+            "status": -4,
+            "message": "Service owner cannot be added as a maintainer",
+        }
+    candidate = db.get(User, maintainer_id)
+    if not candidate:
+        return {
+            "status": -3,
+            "message": "Maintainer not found",
+        }
+    # 检查用户是否已为maintainer
+    if candidate in service.maintainers:  # type: ignore
+        service.maintainers.remove(candidate)  # type: ignore
+        message = "Remove service maintainer success"
+    else:
+        service.maintainers.append(candidate)  # type: ignore
+        message = "Add service maintainer success"
+    db.commit()
+    return {
+        "status": 200,
+        "message": message,
+    }
+
+
 # 通过服务id删除服务（最新版本），历史版本不动
 def serviceDeleteServiceById(db: Session, id: int, user_id: int) -> dict:
     service = db.get(Service, id)

@@ -154,6 +154,23 @@ def getAllDeletedServicesByUserId(request: Request):
     return res
 
 
+# 通过服务id添加或移除maintainer
+@serviceRouterV1.post("/addOrRemoveServiceMaintainerById", auth_required=True)
+def addOrRemoveServiceMaintainerById(request: Request):
+    data = request.json()
+    id = data["id"]
+    maintainer_id = data["maintainer_id"]
+    user_id = userGetUserIdByAccessToken(request=request)
+    with session() as db:
+        res = serviceAddOrRemoveServiceMaintainerById(
+            db=db,
+            id=id,
+            user_id=user_id,
+            maintainer_id=int(maintainer_id),
+        )
+    return res
+
+
 # 通过服务id删除服务（最新版本），历史版本不动
 @serviceRouterV1.post("/deleteServiceById", auth_required=True)
 def deleteServiceById(request: Request):

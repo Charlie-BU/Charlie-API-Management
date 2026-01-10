@@ -83,7 +83,7 @@ const ServiceList: React.FC<{
                 } else if (item.owner_id !== user?.id && item.owner) {
                     owner = item.owner;
                 }
-                return userAvatar(owner as UserProfile, 30);
+                return userAvatar([owner] as UserProfile[], 30);
             },
         },
         {

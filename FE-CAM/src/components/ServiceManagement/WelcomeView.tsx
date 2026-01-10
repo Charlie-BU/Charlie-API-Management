@@ -22,7 +22,7 @@ const WelcomeLoggedIn: React.FC<{
     return (
         <div className={styles.hero}>
             <Space size={12} align="center">
-                {userAvatar(user as UserProfile, 40)}
+                {userAvatar([user] as UserProfile[], 40)}
                 <div>
                     <Title heading={4} className={styles.title}>
                         {t("service.welcomeTitle")}

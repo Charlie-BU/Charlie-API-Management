@@ -95,22 +95,26 @@ export const handleConfirm = (
     });
 };
 
-export const userAvatar = (user: UserProfile, size: number) => {
-    if (!user) return null;
+export const userAvatar = (users: UserProfile[], size: number, maxCount: number = 5) => {
+    if (!users) return null;
     return (
-        <Popover
-            content={
-                <span style={{ cursor: "default" }}>
-                    {user.nickname} ({user.username}) - {user.email}
-                </span>
-            }
-        >
-            <Avatar size={size} style={{ backgroundColor: "#ecf2ff" }}>
-                <span style={{ cursor: "default" }}>
-                    {user.nickname?.[0] || user.username?.[0] || "-"}
-                </span>
-            </Avatar>
-        </Popover>
+        <Avatar.Group size={size} maxCount={maxCount}>
+            {users.map((user) => (
+                <Popover
+                    content={
+                        <span style={{ cursor: "default" }}>
+                            {user.nickname} ({user.username}) - {user.email}
+                        </span>
+                    }
+                >
+                    <Avatar size={size} style={{ backgroundColor: "#ecf2ff" }}>
+                        <span style={{ cursor: "default" }}>
+                            {user.nickname?.[0] || user.username?.[0] || "-"}
+                        </span>
+                    </Avatar>
+                </Popover>
+            ))}
+        </Avatar.Group>
     );
 };
 

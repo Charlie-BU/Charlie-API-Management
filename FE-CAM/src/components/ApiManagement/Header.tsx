@@ -1,6 +1,8 @@
 import {
+    Avatar,
     Breadcrumb,
     Divider,
+    Popover,
     Select,
     Space,
     Tag,
@@ -26,6 +28,7 @@ interface HeaderProps {
     isLatest: boolean;
     currentVersion: string;
     creator: UserProfile;
+    maintainers: UserProfile[];
     inIteration: boolean;
     handlers: HeaderHandlers;
 }
@@ -38,6 +41,7 @@ const Header: React.FC<HeaderProps> = (props) => {
         isLatest,
         currentVersion,
         creator,
+        maintainers,
         inIteration,
         handlers: { setCurrentVersion, exitIteration },
     } = props;
@@ -144,16 +148,22 @@ const Header: React.FC<HeaderProps> = (props) => {
                                     <Text className={styles.serviceVersion}>
                                         {item.version}
                                     </Text>
-                                    {/* {item.is_latest && (
-                                        <Tag size="small" color="green">
-                                            最新版本
-                                        </Tag>
-                                    )} */}
                                 </Space>
                             </Select.Option>
                         ))}
                 </Select>
-                <span>{userAvatar(creator, 32)}</span>
+                <span className={styles.userInfo}>
+                    <Text className={styles.serviceAvatarTip}>版本负责人</Text>
+                    {userAvatar([creator], 32)}
+                </span>
+                {maintainers.length > 0 && (
+                    <span className={styles.userInfo}>
+                        <Text className={styles.serviceAvatarTip}>
+                            服务维护者
+                        </Text>
+                        {userAvatar(maintainers, 32)}
+                    </span>
+                )}
             </Space>
         </div>
     );

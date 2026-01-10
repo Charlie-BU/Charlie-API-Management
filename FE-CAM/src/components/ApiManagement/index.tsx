@@ -91,6 +91,11 @@ const ApiManagement: React.FC = () => {
                     isLatest={isLatest}
                     currentVersion={currentVersion}
                     creator={creator}
+                    maintainers={
+                        "maintainers" in serviceDetail
+                            ? (serviceDetail.maintainers as UserProfile[])
+                            : []
+                    }
                     inIteration={inIteration}
                     handlers={{
                         setCurrentVersion: (v) =>
