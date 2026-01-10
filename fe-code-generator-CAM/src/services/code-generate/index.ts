@@ -147,7 +147,9 @@ export const pullAllApisInAllServices = async () => {
                       ? serviceRes.service.api_drafts || []
                       : [];
             const isLatest = serviceRes.is_latest;
-            console.log(`Service ${name} has ${apis.length} apis`);
+            console.log(
+                `Service ${name} has ${apis.length} api${apis.length === 1 ? "" : "s"}`
+            );
 
             // 获取api的参数信息
             for (const api of apis) {

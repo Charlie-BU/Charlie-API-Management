@@ -14,13 +14,13 @@ const BASE_URL = "http://localhost:3000"; // Change to the actual base URL
 export const demoServiceForAxios = new ${demoClassName}<AxiosRequestConfig>({
     baseURL: BASE_URL,
     request: (config, _options) =>
-        axios.request({ ...config }).then((res) => res.data), // Pay attention to the serialization of the response data
+        axios.request({ ...config }),
 });
 
 export const demoServiceForFetch = new ${demoClassName}<RequestInit>({
     baseURL: BASE_URL,
     request: (config, _options) =>
-        fetch(BASE_URL + config.url, { ...config }).then((res) => res.json()), // Pay attention to the serialization of the response data
+        fetch(BASE_URL + config.url, { ...config }),
 });
 `;
 };
