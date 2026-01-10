@@ -61,7 +61,7 @@ const Header: React.FC<HeaderProps> = (props) => {
     const { handleViewService } = useService();
     const { user, getUserByUsernameOrNicknameOrEmail } = useUser();
 
-    const isServiceOwner = creator.id === user?.id;
+    const isServiceOwnerOrIsL0 = creator.id === user?.id || user?.level === 0;
 
     // 使用 ref 保持 fetch 函数的引用稳定，以配合 debounce 使用
     // 这样做既能避免闭包陷阱（stale closure），又能保证 debounce 实例在渲染间保持稳定
@@ -251,91 +251,93 @@ const Header: React.FC<HeaderProps> = (props) => {
                     <Text className={styles.serviceAvatarTip}>版本负责人</Text>
                     {userAvatar([creator], 32)}
                 </span>
-                {(maintainersHere.length > 0 || isServiceOwner) && (
-                    <Space size={10}>
-                        <span className={styles.userInfo}>
-                            <Text className={styles.serviceAvatarTip}>
-                                服务维护者
-                            </Text>
-                            {userAvatar(maintainersHere, 32)}
-                        </span>
-                        {isServiceOwner && (
-                            <Select
-                                mode="multiple"
-                                showSearch
-                                filterOption={false}
-                                onSearch={debounceGetMaintainerOptions}
-                                options={options}
-                                value={maintainersHere.map((m) => m.id)}
-                                placeholder="Search by username, nickname or email"
-                                style={{
-                                    width: 200,
-                                }}
-                                triggerProps={{
-                                    autoAlignPopupWidth: false,
-                                    autoAlignPopupMinWidth: true,
-                                }}
-                                prefix={
-                                    switchLoading ? (
-                                        <IconLoading
-                                            style={{
-                                                marginLeft: 6,
-                                            }}
-                                        />
-                                    ) : (
-                                        <IconUserGroup
-                                            style={{
-                                                marginLeft: 6,
-                                            }}
-                                        />
-                                    )
-                                }
-                                renderTag={() => null}
-                                notFoundContent={null}
-                                onChange={(val) => {
-                                    if (switchLoading) {
-                                        return;
+                {(maintainersHere.length > 0 || isServiceOwnerOrIsL0) &&
+                    isLatest && (
+                        <Space size={10}>
+                            <span className={styles.userInfo}>
+                                <Text className={styles.serviceAvatarTip}>
+                                    服务维护者
+                                </Text>
+                                {userAvatar(maintainersHere, 32)}
+                            </span>
+                            {isServiceOwnerOrIsL0 && (
+                                <Select
+                                    mode="multiple"
+                                    showSearch
+                                    filterOption={false}
+                                    onSearch={debounceGetMaintainerOptions}
+                                    options={options}
+                                    value={maintainersHere.map((m) => m.id)}
+                                    placeholder="Search by username, nickname or email"
+                                    style={{
+                                        width: 200,
+                                    }}
+                                    triggerProps={{
+                                        autoAlignPopupWidth: false,
+                                        autoAlignPopupMinWidth: true,
+                                    }}
+                                    prefix={
+                                        switchLoading ? (
+                                            <IconLoading
+                                                style={{
+                                                    marginLeft: 6,
+                                                }}
+                                            />
+                                        ) : (
+                                            <IconUserGroup
+                                                style={{
+                                                    marginLeft: 6,
+                                                }}
+                                            />
+                                        )
                                     }
-                                    const newIds = val as number[];
-                                    const currentIds = maintainersHere.map(
-                                        (m) => m.id
-                                    );
-                                    // 找出新增的维护者
-                                    const addedId = newIds.find(
-                                        (id) => !currentIds.includes(id)
-                                    );
-                                    // 找出移除的维护者
-                                    const removedId = currentIds.find(
-                                        (id) => !newIds.includes(id)
-                                    );
+                                    renderTag={() => null}
+                                    notFoundContent={null}
+                                    onChange={(val) => {
+                                        if (switchLoading) {
+                                            return;
+                                        }
+                                        const newIds = val as number[];
+                                        const currentIds = maintainersHere.map(
+                                            (m) => m.id
+                                        );
+                                        // 找出新增的维护者
+                                        const addedId = newIds.find(
+                                            (id) => !currentIds.includes(id)
+                                        );
+                                        // 找出移除的维护者
+                                        const removedId = currentIds.find(
+                                            (id) => !newIds.includes(id)
+                                        );
 
-                                    // 执行添加或移除操作
-                                    if (addedId) {
-                                        const addedMaintainer =
-                                            maintainerOptions.find(
-                                                (i) => i.value.id === addedId
-                                            )?.value;
-                                        if (addedMaintainer) {
-                                            handleAddOrRemoveServiceMaintainer(
-                                                addedMaintainer
-                                            );
+                                        // 执行添加或移除操作
+                                        if (addedId) {
+                                            const addedMaintainer =
+                                                maintainerOptions.find(
+                                                    (i) =>
+                                                        i.value.id === addedId
+                                                )?.value;
+                                            if (addedMaintainer) {
+                                                handleAddOrRemoveServiceMaintainer(
+                                                    addedMaintainer
+                                                );
+                                            }
+                                        } else if (removedId) {
+                                            const removedMaintainer =
+                                                maintainersHere.find(
+                                                    (i) => i.id === removedId
+                                                );
+                                            if (removedMaintainer) {
+                                                handleAddOrRemoveServiceMaintainer(
+                                                    removedMaintainer
+                                                );
+                                            }
                                         }
-                                    } else if (removedId) {
-                                        const removedMaintainer =
-                                            maintainersHere.find(
-                                                (i) => i.id === removedId
-                                            );
-                                        if (removedMaintainer) {
-                                            handleAddOrRemoveServiceMaintainer(
-                                                removedMaintainer
-                                            );
-                                        }
-                                    }
-                                }}
-                            />
-                        )}
-                    </Space>
-                )}
+                                    }}
+                                />
+                            )}
+                        </Space>
+                    )}
             </Space>
         </div>
     );

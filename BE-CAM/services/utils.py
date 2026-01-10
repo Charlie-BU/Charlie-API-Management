@@ -36,7 +36,7 @@ def checkServiceIterationPermission(
                 "message": "Service iteration has been committed",
             },
         }
-    # 非L0用户，为当前service owner或当前迭代creator，才有权限进行迭代操作
+    # 非L0用户，为当前service owner或当前迭代creator，才有权限进行迭代操作（维护者也不可操作别人的迭代）
     user = db.get(User, user_id)
     if (
         service_iteration.service.owner_id != user_id

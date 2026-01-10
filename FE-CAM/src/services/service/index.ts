@@ -41,6 +41,17 @@ export const GetMyNewestServices = async (
     );
 };
 
+// 获取当前登录用户的所有维护服务列表
+export const GetMyMaintainedServices = async (
+    page_size?: number,
+    current_page?: number
+) => {
+    return api.get<ServiceListResponse>(
+        `${prefix}/getHisMaintainedServicesByUserId`,
+        { page_size, current_page }
+    );
+};
+
 // 获取所有服务（包含已删除服务）
 export const GetAllServices = async (
     page_size?: number,
@@ -157,14 +168,14 @@ export const UpdateDescription = async (data: UpdateDescriptionRequest) => {
 };
 
 // 通过candidate_id和service_id判断是否为服务的维护者
-export const IsServiceMaintainer = async (
-    data: IsServiceMaintainerRequest
-) => {
-    return api.get<IsServiceMaintainerResponse>(`${prefix}/isServiceMaintainer`, {
-        ...data,
-    });
+export const IsServiceMaintainer = async (data: IsServiceMaintainerRequest) => {
+    return api.get<IsServiceMaintainerResponse>(
+        `${prefix}/isServiceMaintainer`,
+        {
+            ...data,
+        }
+    );
 };
-
 
 // 通过服务id添加或移除maintainer
 export const AddOrRemoveServiceMaintainerById = async (

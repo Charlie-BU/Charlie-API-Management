@@ -79,6 +79,25 @@ def getHisNewestServicesByOwnerId(request: Request):
     return res
 
 
+# 通过用户id获取用户的所有维护服务（Service表中）的列表
+@serviceRouterV1.get("/getHisMaintainedServicesByUserId", auth_required=True)
+def getHisMaintainedServicesByUserId(request: Request):
+    page_size = request.query_params.get("page_size", "10")
+    current_page = request.query_params.get("current_page", "1")
+    my_id = userGetUserIdByAccessToken(request=request)
+    user_id = request.query_params.get("user_id", str(my_id))
+
+    with session() as db:
+        res = serviceGetHisMaintainedServicesByUserId(
+            db=db,
+            user_id=int(user_id),
+            my_id=my_id,
+            page_size=int(page_size) if page_size else 10,
+            current_page=int(current_page) if current_page else 1,
+        )
+    return res
+
+
 # 通过service_uuid和version获取服务详情（根据version判断是否为最新版本）
 @serviceRouterV1.get("/getServiceByUuidAndVersion", auth_required=True)
 def getServiceByUuidAndVersion(request: Request):

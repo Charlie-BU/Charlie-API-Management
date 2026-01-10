@@ -177,6 +177,7 @@ export interface AddOrRemoveServiceMaintainerByIdResponse extends BaseResponse {
 
 export type ServiceRange =
     | "MyServices"
+    | "MyMaintainedServices"
     | "HisServices"
     | "AllServices"
     | "MyDeletedServices";

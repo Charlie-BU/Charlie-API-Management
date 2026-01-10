@@ -19,6 +19,7 @@ import {
     GetAllVersionsByUuid,
     GetHisNewestServicesByOwnerId,
     GetIterationById,
+    GetMyMaintainedServices,
     GetMyNewestServices,
     GetServiceByUuidAndVersion,
     IsServiceMaintainer,
@@ -88,6 +89,28 @@ export const useService = () => {
             setServiceList(res.services || []);
             setLoading(false);
             // 返回服务总数，用于分页
+            return res.total || 0;
+        },
+        []
+    );
+
+    const fetchMyMaintainedServices = useCallback(
+        async (pagination: Pagination) => {
+            // 记录最近一次触发的获取服务操作，用于在删除或还原服务后刷新列表
+            refetchRef.current = () => fetchMyMaintainedServices(pagination);
+
+            setLoading(true);
+            const res = await GetMyMaintainedServices(
+                pagination.page_size,
+                pagination.current_page
+            );
+            if (res.status !== 200) {
+                setLoading(false);
+                setServiceList([]);
+                throw new Error(res.message || "获取服务失败");
+            }
+            setServiceList(res.services || []);
+            setLoading(false);
             return res.total || 0;
         },
         []
@@ -178,18 +201,18 @@ export const useService = () => {
 
     const handleDeleteService = useCallback(async (id: number) => {
         setLoading(true);
-        const res = await DeleteServiceById({ id });
-        if (res.status !== 200) {
-            setLoading(false);
-            throw new Error(res.message || "删除服务失败");
-        }
-        Message.success("删除服务成功");
-        // 刷新服务列表
         try {
+            const res = await DeleteServiceById({ id });
+            if (res.status !== 200) {
+                setLoading(false);
+                throw new Error(res.message || "删除服务失败");
+            }
+            Message.success("删除服务成功");
+            // 刷新服务列表
             await refetchRef.current?.();
         } catch (err) {
             const msg = err instanceof Error ? err.message : String(err);
-            Message.warning(msg || "获取服务失败");
+            Message.warning(msg || "删除服务失败");
         }
         setLoading(false);
     }, []);
@@ -259,6 +282,7 @@ export const useService = () => {
         serviceList,
         loading,
         fetchMyNewestServices,
+        fetchMyMaintainedServices,
         fetchHisNewestServicesByOwnerId,
         fetchMyDeletedServices,
         fetchAllServices,
