@@ -28,6 +28,8 @@ const ApiManagement: React.FC = () => {
         handleAddCategory,
         handleUpdateApiCategory,
         handleDeleteCategory,
+        checkIsServiceMaintainer,
+        handleAddOrRemoveServiceMaintainerById,
         handleStartIteration,
         handleCompleteIteration,
         exitIteration,
@@ -108,6 +110,8 @@ const ApiManagement: React.FC = () => {
                                 "reject"
                             ),
                         exitIteration,
+                        checkIsServiceMaintainer,
+                        handleAddOrRemoveServiceMaintainerById,
                     }}
                 />
             </Layout.Header>

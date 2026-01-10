@@ -10,6 +10,7 @@ import {
 import { t } from "i18next";
 
 import {
+    AddOrRemoveServiceMaintainerById,
     CommitIteration,
     CreateNewService,
     DeleteServiceById,
@@ -20,6 +21,7 @@ import {
     GetIterationById,
     GetMyNewestServices,
     GetServiceByUuidAndVersion,
+    IsServiceMaintainer,
     RestoreServiceById,
     StartIteration,
 } from "@/services/service";
@@ -243,7 +245,7 @@ export const useService = () => {
                     } catch (err: unknown) {
                         const msg =
                             err instanceof Error ? err.message : "服务创建失败";
-                        Message.error(msg);
+                        Message.warning(msg);
                         // 抛出错误以阻止弹窗自动关闭（库内有相关处理）
                         throw err;
                     }
@@ -446,7 +448,7 @@ export const useThisService = (service_uuid: string) => {
                 } catch (err: unknown) {
                     const msg =
                         err instanceof Error ? err.message : "分类添加失败";
-                    Message.error(msg);
+                    Message.warning(msg);
                     // 抛出错误以阻止弹窗自动关闭（库内有相关处理）
                     throw err;
                 }
@@ -478,7 +480,7 @@ export const useThisService = (service_uuid: string) => {
             } catch (err: unknown) {
                 const msg =
                     err instanceof Error ? err.message : "API 分类更新失败";
-                Message.error(msg);
+                Message.warning(msg);
                 throw err;
             }
         },
@@ -498,10 +500,53 @@ export const useThisService = (service_uuid: string) => {
                 );
             } catch (err: unknown) {
                 const msg = err instanceof Error ? err.message : "分类删除失败";
-                Message.error(msg);
+                Message.warning(msg);
             }
         },
         [currentVersion, fetchServiceDetail]
+    );
+
+    const checkIsServiceMaintainer = useCallback(
+        async (candidate_id: number) => {
+            try {
+                const res = await IsServiceMaintainer({
+                    service_id: serviceDetail.id,
+                    candidate_id,
+                });
+                if (res.status !== 200) {
+                    throw new Error(res.message || "服务维护者检查失败");
+                }
+                return res.is_current_maintainer;
+            } catch (err: unknown) {
+                const msg =
+                    err instanceof Error ? err.message : "服务维护者检查失败";
+                Message.warning(msg);
+                return false;
+            }
+        },
+        [serviceDetail.id]
+    );
+
+    const handleAddOrRemoveServiceMaintainerById = useCallback(
+        async (candidate_id: number) => {
+            try {
+                const res = await AddOrRemoveServiceMaintainerById({
+                    service_id: serviceDetail.id,
+                    candidate_id,
+                });
+                if (res.status !== 200) {
+                    throw new Error(res.message || "服务维护者操作失败");
+                }
+                Message.success(res.message || "服务维护者操作成功");
+                return res.is_current_maintainer;
+            } catch (err: unknown) {
+                const msg =
+                    err instanceof Error ? err.message : "服务维护者操作失败";
+                Message.warning(msg);
+                return false;
+            }
+        },
+        [serviceDetail.id, currentVersion, fetchServiceDetail]
     );
 
     // 迭代相关
@@ -521,7 +566,7 @@ export const useThisService = (service_uuid: string) => {
             setIterationId(res.service_iteration_id);
         } catch (err: unknown) {
             const msg = err instanceof Error ? err.message : "迭代开始失败";
-            Message.error(msg);
+            Message.warning(msg);
         }
     }, [serviceDetail.id, currentVersion, fetchServiceDetail]);
 
@@ -551,7 +596,7 @@ export const useThisService = (service_uuid: string) => {
                 } catch (err: unknown) {
                     const msg =
                         err instanceof Error ? err.message : "迭代提交失败";
-                    Message.error(msg);
+                    Message.warning(msg);
                     // 抛出错误以阻止弹窗自动关闭（库内有相关处理）
                     throw err;
                 }
@@ -579,6 +624,8 @@ export const useThisService = (service_uuid: string) => {
         handleAddCategory,
         handleUpdateApiCategory,
         handleDeleteCategory,
+        checkIsServiceMaintainer,
+        handleAddOrRemoveServiceMaintainerById,
         setInIteration,
         handleStartIteration,
         handleCompleteIteration,
@@ -612,7 +659,7 @@ export const useServiceIteration = (
         } catch (err: unknown) {
             const msg =
                 err instanceof Error ? err.message : "获取当前迭代详情失败";
-            Message.error(msg);
+            Message.warning(msg);
         } finally {
             setLoading(false);
         }
@@ -727,7 +774,7 @@ export const useServiceIteration = (
                 } catch (err: unknown) {
                     const msg =
                         err instanceof Error ? err.message : "API 添加失败";
-                    Message.error(msg);
+                    Message.warning(msg);
                     // 抛出错误以阻止弹窗自动关闭（库内有相关处理）
                     throw err;
                 }

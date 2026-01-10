@@ -183,8 +183,6 @@ def serviceGetServiceByUuidAndVersion(
                 "message": "Service version not found",
             }
 
-    print(service.toJson())
-
     user = db.get(User, user_id)
     # 非L0用户，为当前service owner或当前迭代creator，才有权限查看
     if curr_service.owner_id != user_id and user.level.value != 0:  # type: ignore
@@ -330,11 +328,41 @@ def serviceGetAllDeletedServicesByUserId(
     }
 
 
+# 通过candidate_id和service_id判断是否为服务的维护者
+def serviceIsMaintainer(
+    db: Session, service_id: int, user_id: int, candidate_id: int
+) -> dict:
+    service = db.get(Service, service_id)
+    if not service:
+        return {
+            "status": -1,
+            "message": "Service not found",
+        }
+    user = db.get(User, user_id)
+    # 非L0用户只能查看自己的服务maintainer信息
+    if service.owner_id != user_id and user.level.value != 0:  # type: ignore
+        return {
+            "status": -2,
+            "message": "You are not the owner of this service",
+        }
+    candidate = db.get(User, candidate_id)
+    # 检查用户是否已为maintainer
+    if candidate in service.maintainers:  # type: ignore
+        is_current_maintainer = True
+    else:
+        is_current_maintainer = False
+    return {
+        "status": 200,
+        "message": "Check service maintainer success",
+        "is_current_maintainer": is_current_maintainer,
+    }
+
+
 # 通过服务id添加maintainer
 def serviceAddOrRemoveServiceMaintainerById(
-    db: Session, id: int, user_id: int, maintainer_id: int
+    db: Session, service_id: int, user_id: int, candidate_id: int
 ) -> dict:
-    service = db.get(Service, id)
+    service = db.get(Service, service_id)
     if not service:
         return {
             "status": -1,
@@ -347,16 +375,16 @@ def serviceAddOrRemoveServiceMaintainerById(
             "status": -2,
             "message": "You are not the owner of this service",
         }
-    if service.owner_id == maintainer_id:
+    if service.owner_id == candidate_id:
         return {
             "status": -4,
             "message": "Service owner cannot be added as a maintainer",
         }
-    candidate = db.get(User, maintainer_id)
+    candidate = db.get(User, candidate_id)
     if not candidate:
         return {
             "status": -3,
-            "message": "Maintainer not found",
+            "message": "Candidate not found",
         }
     # 检查用户是否已为maintainer
     if candidate in service.maintainers:  # type: ignore
@@ -369,6 +397,7 @@ def serviceAddOrRemoveServiceMaintainerById(
     return {
         "status": 200,
         "message": message,
+        "is_current_maintainer": candidate in service.maintainers,  # type: ignore
     }
 
 

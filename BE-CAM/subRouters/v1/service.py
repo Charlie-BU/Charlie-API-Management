@@ -154,19 +154,41 @@ def getAllDeletedServicesByUserId(request: Request):
     return res
 
 
+# 通过candidate_id和service_id判断是否为服务的维护者
+@serviceRouterV1.get("/isServiceMaintainer", auth_required=True)
+def isServiceMaintainer(request: Request):
+    service_id = request.query_params.get("service_id", None)
+    candidate_id = request.query_params.get("candidate_id", None)
+    if not service_id or not candidate_id:
+        return Response(
+            status_code=400,
+            description="service_id and candidate_id are required",
+            headers={},
+        )
+    user_id = userGetUserIdByAccessToken(request=request)
+    with session() as db:
+        res = serviceIsMaintainer(
+            db=db,
+            service_id=int(service_id),
+            user_id=user_id,
+            candidate_id=int(candidate_id),
+        )
+    return res
+
+
 # 通过服务id添加或移除maintainer
 @serviceRouterV1.post("/addOrRemoveServiceMaintainerById", auth_required=True)
 def addOrRemoveServiceMaintainerById(request: Request):
     data = request.json()
-    id = data["id"]
-    maintainer_id = data["maintainer_id"]
+    service_id = data["service_id"]
+    candidate_id = data["candidate_id"]
     user_id = userGetUserIdByAccessToken(request=request)
     with session() as db:
         res = serviceAddOrRemoveServiceMaintainerById(
             db=db,
-            id=id,
+            service_id=int(service_id),
             user_id=user_id,
-            maintainer_id=int(maintainer_id),
+            candidate_id=int(candidate_id),
         )
     return res
 

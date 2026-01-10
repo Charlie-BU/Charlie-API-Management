@@ -1,4 +1,5 @@
 import { useState } from "react";
+import debounce from "lodash/debounce";
 import { useTranslation } from "react-i18next";
 import { Message, Select, Spin } from "@cloud-materials/common";
 import type { UserProfile } from "@/services/user/types";
@@ -39,6 +40,8 @@ const UserSelect: React.FC<{
         }
     };
 
+    const debouncedSearch = debounce(handleSearch, 300);
+
     return (
         <Select
             showSearch
@@ -58,7 +61,7 @@ const UserSelect: React.FC<{
                     </div>
                 ) : null
             }
-            onSearch={handleSearch}
+            onSearch={debouncedSearch}
             onChange={(value) => {
                 const id = Number(value);
                 if (!Number.isNaN(id)) {

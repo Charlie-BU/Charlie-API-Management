@@ -11,6 +11,9 @@ importers:
       '@cloud-materials/common':
         specifier: ^1.20.1
         version: 1.20.1(@formily/json-schema@2.3.1(typescript@5.9.3))(@types/react-dom@18.2.25)(@types/react@18.2.79)(prop-types@15.8.1)(react-dom@18.2.0(react@18.2.0))(react-router@7.9.5(react-dom@18.2.0(react@18.2.0))(react@18.2.0))(react@18.2.0)(typescript@5.9.3)
+      '@types/lodash':
+        specifier: ^4.17.21
+        version: 4.17.21
       axios:
         specifier: ^1.13.2
         version: 1.13.2
@@ -20,6 +23,9 @@ importers:
       i18next-browser-languagedetector:
         specifier: ^8.2.0
         version: 8.2.0
+      lodash:
+        specifier: ^4.17.21
+        version: 4.17.21
       react:
         specifier: ~18.2.0
         version: 18.2.0
@@ -66,9 +72,6 @@ importers:
       globals:
         specifier: ^16.4.0
         version: 16.5.0
-      jiti:
-        specifier: ^2.4.2
-        version: 2.6.1
       less:
         specifier: ^4.4.2
         version: 4.4.2
@@ -687,6 +690,9 @@ packages:
 
   '@types/json-schema@7.0.15':
     resolution: {integrity: sha512-5+fP8P8MFNC+AyZCDxrB2pkZFPGzqQWUzpSeuuVLvm8VMcorNYavBqoFcxK8bQz4Qsbn4oUEEem4wDLfcysGHA==}
+
+  '@types/lodash@4.17.21':
+    resolution: {integrity: sha512-FOvQ0YPD5NOfPgMzJihoT+Za5pdkDJWcbpuj1DjaKZIr/gxodQjY/uWEFlTNqW2ugXHUiL8lRQgw63dzKHZdeQ==}
 
   '@types/node@24.10.0':
     resolution: {integrity: sha512-qzQZRBqkFsYyaSWXuEHc2WR9c0a0CXwiE5FWUvn7ZM+vdy1uZLfCunD38UzhuB7YN/J11ndbDBcTmOdxJo9Q7A==}
@@ -2403,6 +2409,8 @@ snapshots:
 
   '@types/json-schema@7.0.15': {}
 
+  '@types/lodash@4.17.21': {}
+
   '@types/node@24.10.0':
     dependencies:
       undici-types: 7.16.0
@@ -3020,7 +3028,8 @@ snapshots:
 
   isexe@2.0.0: {}
 
-  jiti@2.6.1: {}
+  jiti@2.6.1:
+    optional: true
 
   js-cookie@3.0.5: {}
 

@@ -101,6 +101,7 @@ export const userAvatar = (users: UserProfile[], size: number, maxCount: number 
         <Avatar.Group size={size} maxCount={maxCount}>
             {users.map((user) => (
                 <Popover
+                    key={user.id}
                     content={
                         <span style={{ cursor: "default" }}>
                             {user.nickname} ({user.username}) - {user.email}

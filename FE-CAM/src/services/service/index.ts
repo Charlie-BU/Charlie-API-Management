@@ -22,6 +22,10 @@ import type {
     UpdateDescriptionRequest,
     UpdateDescriptionResponse,
     GetAllServicesResponse,
+    AddOrRemoveServiceMaintainerByIdRequest,
+    AddOrRemoveServiceMaintainerByIdResponse,
+    IsServiceMaintainerRequest,
+    IsServiceMaintainerResponse,
 } from "./types";
 
 const prefix = "/v1/service";
@@ -47,7 +51,6 @@ export const GetAllServices = async (
         current_page,
     });
 };
-
 
 // 通过 owner_id 获取所有最新版本服务
 export const GetHisNewestServicesByOwnerId = async (
@@ -130,7 +133,9 @@ export const DeleteIterationById = async (data: DeleteIterationByIdRequest) => {
 
 // 通过id获取服务迭代详情
 export const GetIterationById = async (id: number) => {
-    return api.get<GetIterationByIdResponse>(`${prefix}/getIterationById`, { id });
+    return api.get<GetIterationByIdResponse>(`${prefix}/getIterationById`, {
+        id,
+    });
 };
 
 // 发起 service 迭代流程
@@ -147,6 +152,26 @@ export const CommitIteration = async (data: CommitIterationRequest) => {
 export const UpdateDescription = async (data: UpdateDescriptionRequest) => {
     return api.post<UpdateDescriptionResponse>(
         `${prefix}/updateDescription`,
+        data
+    );
+};
+
+// 通过candidate_id和service_id判断是否为服务的维护者
+export const IsServiceMaintainer = async (
+    data: IsServiceMaintainerRequest
+) => {
+    return api.get<IsServiceMaintainerResponse>(`${prefix}/isServiceMaintainer`, {
+        ...data,
+    });
+};
+
+
+// 通过服务id添加或移除maintainer
+export const AddOrRemoveServiceMaintainerById = async (
+    data: AddOrRemoveServiceMaintainerByIdRequest
+) => {
+    return api.post<AddOrRemoveServiceMaintainerByIdResponse>(
+        `${prefix}/addOrRemoveServiceMaintainerById`,
         data
     );
 };

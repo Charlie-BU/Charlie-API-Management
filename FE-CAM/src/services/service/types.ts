@@ -157,6 +157,24 @@ export interface UpdateDescriptionRequest {
 
 export type UpdateDescriptionResponse = BaseResponse;
 
+export interface IsServiceMaintainerRequest {
+    service_id: number;
+    candidate_id: number;
+}
+
+export interface IsServiceMaintainerResponse extends BaseResponse {
+    is_current_maintainer: boolean;
+}
+
+export interface AddOrRemoveServiceMaintainerByIdRequest {
+    service_id: number;
+    candidate_id: number;
+}
+
+export interface AddOrRemoveServiceMaintainerByIdResponse extends BaseResponse {
+    is_current_maintainer: boolean;
+}
+
 export type ServiceRange =
     | "MyServices"
     | "HisServices"
