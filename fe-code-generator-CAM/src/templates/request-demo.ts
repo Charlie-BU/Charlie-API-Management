@@ -19,8 +19,8 @@ export const demoServiceForAxios = new ${demoClassName}<AxiosRequestConfig>({
 
 export const demoServiceForFetch = new ${demoClassName}<RequestInit>({
     baseURL: BASE_URL,
-    request: (config, _options) =>
-        fetch(BASE_URL + config.url, { ...config }),
+        request: (config, _options) =>
+            fetch(config.url, { ...config }).then((res) => res.json()),
 });
 `;
 };
