@@ -93,6 +93,12 @@ const ApiEdit: React.FC<ApiEditProps> = ({
         const req_params: ApiReqParamInput[] = transformReqParamsToApiInput(
             values.request_params_by_location
         );
+        // 检查是否有请求参数name为空
+        if (req_params.some((param) => !param.name)) {
+            Message.warning("存在名称为空的请求参数");
+            setEditLoading(false);
+            return;
+        }
         // 检查是否有Path参数
         const hasPathParams = req_params.some(
             (param) => param.location === "path"
@@ -128,6 +134,12 @@ const ApiEdit: React.FC<ApiEditProps> = ({
         const resp_params: ApiRespParamInput[] = transformRespParamsToApiInput(
             values.response_params_by_status_code
         );
+        // 检查是否有响应参数name为空
+        if (resp_params.some((param) => !param.name)) {
+            Message.warning("存在名称为空的响应参数");
+            setEditLoading(false);
+            return;
+        }
 
         const data: Omit<UpdateApiByApiDraftIdRequest, "service_iteration_id"> =
             {
