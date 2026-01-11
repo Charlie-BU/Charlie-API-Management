@@ -23,13 +23,19 @@ const AddApiForm: React.FC<AddApiFormProps> = ({ apiCategories = [] }) => {
     return (
         <>
             <Form.Item
-                label="API名称"
+                label="API 名称"
                 field="name"
-                rules={[{ required: true, message: "请输入API名称" }]}
+                rules={[
+                    { required: true, message: "请输入 API 名称" },
+                    {
+                        match: /^[^\u4e00-\u9fff]*$/,
+                        message: "API 名称不能包含中文",
+                    },
+                ]}
                 {...formItemLayout}
             >
                 <Input
-                    placeholder="请输入API名称"
+                    placeholder="请输入 API 名称"
                     allowClear
                     onChange={setName}
                 />
@@ -50,11 +56,15 @@ const AddApiForm: React.FC<AddApiFormProps> = ({ apiCategories = [] }) => {
                 </Select>
             </Form.Item>
             <Form.Item
-                label="API路径"
+                label="API 路径"
                 field="path"
                 rules={[
-                    { required: true, message: "请输入API路径" },
+                    { required: true, message: "请输入 API 路径" },
                     { match: /^\//, message: "路径必须以 / 开头" },
+                    {
+                        match: /^[^\u4e00-\u9fff]*$/,
+                        message: "API 路径不能包含中文",
+                    },
                 ]}
                 {...formItemLayout}
             >

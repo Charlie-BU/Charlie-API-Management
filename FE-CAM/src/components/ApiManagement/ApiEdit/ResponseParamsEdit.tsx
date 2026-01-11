@@ -1,4 +1,4 @@
-import { useMemo, useState, useRef } from "react";
+import { useMemo, useState, useRef, useEffect } from "react";
 import {
     IconCommon,
     Space,
@@ -22,6 +22,7 @@ interface ResponseParamsEditProps {
 const ResponseParamsEdit = ({ setRejectSubmit }: ResponseParamsEditProps) => {
     const { form } = Form.useFormContext();
     const newStatusCodeRef = useRef("");
+    const userEditedTabsRef = useRef(false); // 用户是否手动编辑过tab
 
     const responseParamsByStatusCode: Record<
         number,
@@ -40,11 +41,35 @@ const ResponseParamsEdit = ({ setRejectSubmit }: ResponseParamsEditProps) => {
         [responseParamsByStatusCode]
     );
 
-    const [activeTab, setActiveTab] = useState(statusCodes[0] ?? "");
+    // activeTab初始化按当前statusCodes首项为准
+    const [activeTab, setActiveTab] = useState(() => statusCodes[0] ?? "");
+
+    useEffect(() => {
+        if (!statusCodes.length) {
+            // 若用户手动编辑过tab，则不操作
+            if (userEditedTabsRef.current) {
+                return;
+            }
+            const currentValues =
+                form.getFieldValue("response_params_by_status_code") || {};
+            // 当前无状态码配置，初始化200状态码
+            if (Object.keys(currentValues).length) {
+                return;
+            }
+            form.setFieldValue("response_params_by_status_code", { 200: [] });
+            setActiveTab("200");
+            return;
+        }
+        // 若activeTab不在statusCodes中，设为statusCodes首项
+        if (!activeTab || !statusCodes.includes(activeTab)) {
+            setActiveTab(statusCodes[0] || "");
+        }
+    }, [activeTab, form, statusCodes]);
 
     const handleDeleteTab = (tab: string) => {
         handleConfirm(
             () => {
+                userEditedTabsRef.current = true;
                 const currentValues =
                     form.getFieldValue("response_params_by_status_code") || {};
                 const newValues = { ...currentValues };
@@ -91,6 +116,7 @@ const ResponseParamsEdit = ({ setRejectSubmit }: ResponseParamsEditProps) => {
                             </div>
                         }
                         onOk={() => {
+                            userEditedTabsRef.current = true;
                             const code = newStatusCodeRef.current.trim();
                             if (!code) {
                                 Message.warning("状态码不能为空");

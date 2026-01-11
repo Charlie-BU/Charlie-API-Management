@@ -79,6 +79,25 @@ def getHisNewestServicesByOwnerId(request: Request):
     return res
 
 
+# 通过用户id获取用户的所有维护服务（Service表中）的列表
+@serviceRouterV1.get("/getHisMaintainedServicesByUserId", auth_required=True)
+def getHisMaintainedServicesByUserId(request: Request):
+    page_size = request.query_params.get("page_size", "10")
+    current_page = request.query_params.get("current_page", "1")
+    my_id = userGetUserIdByAccessToken(request=request)
+    user_id = request.query_params.get("user_id", str(my_id))
+
+    with session() as db:
+        res = serviceGetHisMaintainedServicesByUserId(
+            db=db,
+            user_id=int(user_id),
+            my_id=my_id,
+            page_size=int(page_size) if page_size else 10,
+            current_page=int(current_page) if current_page else 1,
+        )
+    return res
+
+
 # 通过service_uuid和version获取服务详情（根据version判断是否为最新版本）
 @serviceRouterV1.get("/getServiceByUuidAndVersion", auth_required=True)
 def getServiceByUuidAndVersion(request: Request):
@@ -150,6 +169,45 @@ def getAllDeletedServicesByUserId(request: Request):
             user_id=user_id,
             page_size=int(page_size) if page_size else 10,
             current_page=int(current_page) if current_page else 1,
+        )
+    return res
+
+
+# 通过candidate_id和service_id判断是否为服务的维护者
+@serviceRouterV1.get("/isServiceMaintainer", auth_required=True)
+def isServiceMaintainer(request: Request):
+    service_id = request.query_params.get("service_id", None)
+    candidate_id = request.query_params.get("candidate_id", None)
+    if not service_id or not candidate_id:
+        return Response(
+            status_code=400,
+            description="service_id and candidate_id are required",
+            headers={},
+        )
+    user_id = userGetUserIdByAccessToken(request=request)
+    with session() as db:
+        res = serviceIsMaintainer(
+            db=db,
+            service_id=int(service_id),
+            user_id=user_id,
+            candidate_id=int(candidate_id),
+        )
+    return res
+
+
+# 通过服务id添加或移除maintainer
+@serviceRouterV1.post("/addOrRemoveServiceMaintainerById", auth_required=True)
+def addOrRemoveServiceMaintainerById(request: Request):
+    data = request.json()
+    service_id = data["service_id"]
+    candidate_id = data["candidate_id"]
+    user_id = userGetUserIdByAccessToken(request=request)
+    with session() as db:
+        res = serviceAddOrRemoveServiceMaintainerById(
+            db=db,
+            service_id=int(service_id),
+            user_id=user_id,
+            candidate_id=int(candidate_id),
         )
     return res
 

@@ -1,7 +1,7 @@
-import { Avatar, Modal, Popover, Tag } from "@cloud-materials/common";
+import { Avatar, Modal, Popover, Space, Tag } from "@cloud-materials/common";
 import { t } from "i18next";
 import type { ApiLevel, HttpMethod } from "./services/api/types";
-import type { UserProfile } from "./services/user/types";
+import type { UserProfile, UserRole } from "./services/user/types";
 
 const pad = (n: number, length = 2) => String(n).padStart(length, "0");
 
@@ -95,22 +95,60 @@ export const handleConfirm = (
     });
 };
 
-export const userAvatar = (user: UserProfile, size: number) => {
-    if (!user) return null;
+export const userAvatar = (
+    users: UserProfile[],
+    size: number,
+    maxCount: number = 5
+) => {
+    if (!users) return null;
     return (
-        <Popover
-            content={
-                <span style={{ cursor: "default" }}>
-                    {user.nickname} ({user.username}) - {user.email}
-                </span>
-            }
-        >
-            <Avatar size={size} style={{ backgroundColor: "#ecf2ff" }}>
-                <span style={{ cursor: "default" }}>
-                    {user.nickname?.[0] || user.username?.[0] || "-"}
-                </span>
-            </Avatar>
-        </Popover>
+        <Avatar.Group size={size} maxCount={maxCount}>
+            {users.map((user) => (
+                <Popover
+                    key={user.id}
+                    content={
+                        <Space>
+                            {genUserRoleTag(user.role as UserRole)}
+                            <span>
+                                {user.nickname} ({user.username}) - {user.email}
+                            </span>
+                        </Space>
+                    }
+                    style={{ whiteSpace: "nowrap", maxWidth: "none" }}
+                >
+                    <Avatar size={size} style={{ backgroundColor: "#ecf2ff" }}>
+                        <span>
+                            {user.nickname?.[0] || user.username?.[0] || "-"}
+                        </span>
+                    </Avatar>
+                </Popover>
+            ))}
+        </Avatar.Group>
+    );
+};
+
+export const genUserRoleTag = (
+    role: UserRole,
+    size: "small" | "default" | "medium" | "large" = "default"
+) => {
+    const roleColorMap: Record<UserRole, string> = {
+        frontend: "arcoblue",
+        backend: "cyan",
+        fullstack: "magenta",
+        qa: "green",
+        devops: "orange",
+        product_manager: "purple",
+        designer: "pinkpurple",
+        architect: "orangered",
+        proj_lead: "red",
+        guest: "gray",
+    };
+
+    const color = roleColorMap[role];
+    return (
+        <Tag color={color} size={size}>
+            {t(`user.${role}`)}
+        </Tag>
     );
 };
 

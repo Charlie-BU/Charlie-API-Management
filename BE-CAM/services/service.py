@@ -1,3 +1,4 @@
+from calendar import c
 from datetime import datetime
 from sqlalchemy.orm import Session
 from urllib.parse import unquote
@@ -89,7 +90,7 @@ def serviceGetHisNewestServicesByOwnerId(
     if user.level.value != 0 and owner_id != my_id:  # type: ignore
         return {
             "status": -1,
-            "message": "You are not the owner of this service",
+            "message": "You are not the owner of these services",
         }
     services = (
         db.query(Service)
@@ -144,6 +145,54 @@ def serviceGetHisNewestServicesByOwnerId(
     }
 
 
+# 通过用户id获取用户的所有维护服务（Service表中）的列表
+def serviceGetHisMaintainedServicesByUserId(
+    db: Session, user_id: int, my_id: int, page_size: int, current_page: int
+) -> dict:
+    # 非L0用户只能查看自己的服务
+    user = db.get(User, my_id)
+    if user.level.value != 0 and user_id != my_id:  # type: ignore
+        return {
+            "status": -1,
+            "message": "You don't have authorization to view other users' maintained services",
+        }
+    services = (
+        db.query(Service)
+        .filter(~Service.is_deleted, Service.maintainers.any(User.id == user_id))
+        .order_by(Service.id.desc())
+        .limit(page_size)
+        .offset((current_page - 1) * page_size)
+        .all()
+    )
+    total = (
+        db.query(Service)
+        .filter(~Service.is_deleted, Service.maintainers.any(User.id == user_id))
+        .count()
+    )
+    # 因为是维护的服务，所以owner肯定不是自己，因此总是返回owner信息
+    services = [
+        service.toJson(
+            include=[
+                "id",
+                "service_uuid",
+                "version",
+                "description",
+                "owner_id",
+                "owner",
+                "created_at",
+                "is_deleted",
+            ]
+        )
+        for service in services
+    ]
+    return {
+        "status": 200,
+        "message": "Get services success",
+        "services": services,
+        "total": total,
+    }
+
+
 # 通过service_uuid和version获取服务详情（根据version判断是否为最新版本）
 def serviceGetServiceByUuidAndVersion(
     db: Session, service_uuid: str, version: str, user_id: int
@@ -183,15 +232,13 @@ def serviceGetServiceByUuidAndVersion(
                 "message": "Service version not found",
             }
 
-    print(service.toJson())
-
     user = db.get(User, user_id)
     # 非L0用户，为当前service owner或当前迭代creator，才有权限查看
-    if curr_service.owner_id != user_id and user.level.value != 0:  # type: ignore
+    if curr_service.owner_id != user_id and user not in curr_service.maintainers and user.level.value != 0:  # type: ignore
         if is_latest:  # 最新版
             return {
                 "status": -3,
-                "message": "You are not the owner of this service",
+                "message": "You are neither the owner nor the maintainer of this service",
             }
         elif service.creator_id != user_id:  # type: ignore  # 历史版本，需判断是否为当前迭代creator
             return {
@@ -234,11 +281,11 @@ def serviceGetAllVersionsByUuid(db: Session, service_uuid: str, user_id: int) ->
     )
 
     user = db.get(User, user_id)
-    # 非L0用户只能查看自己的服务
-    if curr_service.owner_id != user_id and user.level.value != 0:  # type: ignore
+    # 非L0用户只能查看自己的服务，或自己维护的服务
+    if curr_service.owner_id != user_id and user not in curr_service.maintainers and user.level.value != 0:  # type: ignore
         return {
             "status": -2,
-            "message": "You are not the owner of this service",
+            "message": "You are neither the owner nor the maintainer of this service",
         }
     versions = [
         {
@@ -327,6 +374,79 @@ def serviceGetAllDeletedServicesByUserId(
             for service in services
         ],
         "total": total,
+    }
+
+
+# 通过candidate_id和service_id判断是否为服务的维护者
+def serviceIsMaintainer(
+    db: Session, service_id: int, user_id: int, candidate_id: int
+) -> dict:
+    service = db.get(Service, service_id)
+    if not service:
+        return {
+            "status": -1,
+            "message": "Service not found",
+        }
+    user = db.get(User, user_id)
+    # 非L0用户只能查看自己的服务maintainer信息
+    if service.owner_id != user_id and user.level.value != 0:  # type: ignore
+        return {
+            "status": -2,
+            "message": "You are not the owner of this service",
+        }
+    candidate = db.get(User, candidate_id)
+    # 检查用户是否已为maintainer
+    if candidate in service.maintainers:  # type: ignore
+        is_current_maintainer = True
+    else:
+        is_current_maintainer = False
+    return {
+        "status": 200,
+        "message": "Check service maintainer success",
+        "is_current_maintainer": is_current_maintainer,
+    }
+
+
+# 通过服务id添加maintainer
+def serviceAddOrRemoveServiceMaintainerById(
+    db: Session, service_id: int, user_id: int, candidate_id: int
+) -> dict:
+    service = db.get(Service, service_id)
+    if not service:
+        return {
+            "status": -1,
+            "message": "Service not found",
+        }
+    user = db.get(User, user_id)
+    # 非L0用户只能为自己的服务添加maintainer
+    if service.owner_id != user_id and user.level.value != 0:  # type: ignore
+        return {
+            "status": -2,
+            "message": "You are not the owner of this service",
+        }
+    if service.owner_id == candidate_id:
+        return {
+            "status": -4,
+            "message": "Service owner cannot be added as a maintainer",
+        }
+    candidate = db.get(User, candidate_id)
+    if not candidate:
+        return {
+            "status": -3,
+            "message": "Candidate not found",
+        }
+    # 检查用户是否已为maintainer
+    if candidate in service.maintainers:  # type: ignore
+        service.maintainers.remove(candidate)  # type: ignore
+        message = "Remove service maintainer success"
+    else:
+        service.maintainers.append(candidate)  # type: ignore
+        message = "Add service maintainer success"
+    db.commit()
+    return {
+        "status": 200,
+        "message": message,
+        "is_current_maintainer": candidate in service.maintainers,  # type: ignore
     }
 
 
@@ -455,10 +575,10 @@ def serviceStartIteration(db: Session, service_id: int, user_id: int) -> dict:
         }
     # 非L0用户，为当前service owner或当前迭代creator，才有权限发起迭代
     user = db.get(User, user_id)
-    if curr_service.owner_id != user_id and user.level.value != 0:  # type: ignore
+    if curr_service.owner_id != user_id and user not in curr_service.maintainers and user.level.value != 0:  # type: ignore
         return {
             "status": -2,
-            "message": "You are not the owner of this service",
+            "message": "You are neither the owner nor the maintainer of this service",
         }
     # 检查当前用户是否已存在未提交的迭代周期
     existing_new_iteration = (

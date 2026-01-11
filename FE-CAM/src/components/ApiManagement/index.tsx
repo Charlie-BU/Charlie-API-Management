@@ -28,6 +28,8 @@ const ApiManagement: React.FC = () => {
         handleAddCategory,
         handleUpdateApiCategory,
         handleDeleteCategory,
+        checkIsServiceMaintainer,
+        handleAddOrRemoveServiceMaintainerById,
         handleStartIteration,
         handleCompleteIteration,
         exitIteration,
@@ -91,6 +93,11 @@ const ApiManagement: React.FC = () => {
                     isLatest={isLatest}
                     currentVersion={currentVersion}
                     creator={creator}
+                    maintainers={
+                        "maintainers" in serviceDetail
+                            ? (serviceDetail.maintainers as UserProfile[])
+                            : []
+                    }
                     inIteration={inIteration}
                     handlers={{
                         setCurrentVersion: (v) =>
@@ -103,6 +110,8 @@ const ApiManagement: React.FC = () => {
                                 "reject"
                             ),
                         exitIteration,
+                        checkIsServiceMaintainer,
+                        handleAddOrRemoveServiceMaintainerById,
                     }}
                 />
             </Layout.Header>

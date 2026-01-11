@@ -23,7 +23,7 @@ const CreateServiceForm: React.FC<{ owner?: UserProfile }> = ({ owner }) => {
                         message: t("service.serviceUUIDRequired"),
                     },
                     {
-                        match: /^[a-zA-Z0-9-]+\/[a-zA-Z0-9-]+\/[a-zA-Z0-9-]+$/,
+                        match: /^[a-zA-Z0-9_-]+\/[a-zA-Z0-9_-]+\/[a-zA-Z0-9_-]+$/,
                         message: t("service.serviceUUIDInvalid"),
                     }
                 ]}
@@ -59,7 +59,7 @@ const CreateServiceForm: React.FC<{ owner?: UserProfile }> = ({ owner }) => {
                     },
                 ]}
             >
-                {userAvatar(owner as UserProfile, 30)}
+                {userAvatar([owner] as UserProfile[], 30)}
             </Form.Item>
             <Form.Item
                 label={t("service.description")}

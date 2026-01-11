@@ -53,3 +53,15 @@ export interface GetUserByUsernameOrNicknameOrEmailResponse {
     message: string;
     users: UserProfile[];
 }
+
+export type UserRole =
+    | "frontend"
+    | "backend"
+    | "fullstack"
+    | "qa"
+    | "devops"
+    | "product_manager"
+    | "designer"
+    | "architect"
+    | "proj_lead"
+    | "guest";

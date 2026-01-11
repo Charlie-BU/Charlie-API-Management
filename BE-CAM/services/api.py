@@ -94,19 +94,20 @@ def apiGetApiById(
             "message": "User not found",
         }
     if user.level.value != 0:
-        if is_latest and api.service.owner_id != user_id:
+        if is_latest and api.service.owner_id != user_id and user not in api.service.maintainers:
             return {
                 "status": -3,
-                "message": "You are not the owner of this service",
+                "message": "You are neither the owner nor the maintainer of this service",
             }
         elif (
             not is_latest
             and api.service_iteration.creator_id != user_id
+            and user not in api.service_iteration.service.maintainers
             and api.service_iteration.service.owner_id != user_id
         ):
             return {
                 "status": -4,
-                "message": "You are neither the owner of this service, nor the creator of this service iteration",
+                "message": "You are neither the owner nor the maintainer of this service, nor the creator of this service iteration",
             }
     # 满足查询条件
     # 处理request_params
@@ -149,10 +150,10 @@ def apiAddCategoryByServiceId(
         }
     # 非L0用户只能操作自己的服务
     user = db.get(User, user_id)
-    if service.owner_id != user_id and user.level.value != 0:  # type: ignore
+    if service.owner_id != user_id and user not in service.maintainers and user.level.value != 0:  # type: ignore
         return {
             "status": -2,
-            "message": "You are not the owner of this service",
+            "message": "You are neither the owner nor the maintainer of this service",
         }
     # 检查category_name是否已存在
     existing_category = (
@@ -192,10 +193,10 @@ def apiDeleteCategoryById(db: Session, category_id: int, user_id: int) -> dict:
             "status": -2,
             "message": "User not found",
         }
-    if category.service.owner_id != user_id and user.level.value != 0:
+    if category.service.owner_id != user_id and user not in category.service.maintainers and user.level.value != 0:  # type: ignore
         return {
             "status": -3,
-            "message": "You are not the owner of this service",
+            "message": "You are neither the owner nor the maintainer of this service",
         }
     db.delete(category)
     db.commit()
@@ -282,10 +283,10 @@ def apiUpdateApiCategory(
             "status": -2,
             "message": "User not found",
         }
-    if api.service.owner_id != user_id and user.level.value != 0:
+    if api.service.owner_id != user_id and user not in api.service.maintainers and user.level.value != 0:  # type: ignore
         return {
             "status": -3,
-            "message": "You are not the owner of this service",
+            "message": "You are neither the owner nor the maintainer of this service",
         }
     if api.category_id == category_id:  # type: ignore
         return {

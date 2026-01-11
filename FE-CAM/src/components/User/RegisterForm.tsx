@@ -1,6 +1,7 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
 import { Form, Input, Select } from "@cloud-materials/common";
+import { genUserRoleTag } from "@/utils";
 
 const RegisterForm: React.FC = () => {
     const { i18n, t } = useTranslation();
@@ -61,32 +62,34 @@ const RegisterForm: React.FC = () => {
             >
                 <Select placeholder={t("register.rolePlaceholder")}>
                     <Select.Option value="frontend">
-                        {t("user.frontend")}
+                        {genUserRoleTag("frontend")}
                     </Select.Option>
                     <Select.Option value="backend">
-                        {t("user.backend")}
+                        {genUserRoleTag("backend")}
                     </Select.Option>
                     <Select.Option value="fullstack">
-                        {t("user.fullstack")}
+                        {genUserRoleTag("fullstack")}
                     </Select.Option>
-                    <Select.Option value="qa">{t("user.qa")}</Select.Option>
+                    <Select.Option value="qa">
+                        {genUserRoleTag("qa")}
+                    </Select.Option>
                     <Select.Option value="devops">
-                        {t("user.devops")}
+                        {genUserRoleTag("devops")}
                     </Select.Option>
                     <Select.Option value="product_manager">
-                        {t("user.product_manager")}
+                        {genUserRoleTag("product_manager")}
                     </Select.Option>
                     <Select.Option value="designer">
-                        {t("user.designer")}
+                        {genUserRoleTag("designer")}
                     </Select.Option>
                     <Select.Option value="architect">
-                        {t("user.architect")}
+                        {genUserRoleTag("architect")}
                     </Select.Option>
                     <Select.Option value="proj_lead">
-                        {t("user.proj_lead")}
+                        {genUserRoleTag("proj_lead")}
                     </Select.Option>
                     <Select.Option value="guest">
-                        {t("user.guest")}
+                        {genUserRoleTag("guest")}
                     </Select.Option>
                 </Select>
             </Form.Item>

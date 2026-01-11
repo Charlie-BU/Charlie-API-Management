@@ -22,13 +22,19 @@ const BriefInfoEdit: React.FC = () => {
             </div>
             <div style={{ width: "100%" }}>
                 <Form.Item
-                    label="接口名称"
+                    label="API 名称"
                     field="name"
-                    rules={[{ required: true, message: "请输入接口名称" }]}
+                    rules={[
+                        { required: true, message: "请输入 API 名称" },
+                        {
+                            match: /^[^\u4e00-\u9fff]*$/,
+                            message: "API 名称不能包含中文",
+                        },
+                    ]}
                     style={{ width: "50%" }}
                 >
                     <Input
-                        placeholder="请输入接口名称"
+                        placeholder="请输入 API 名称"
                         maxLength={50}
                         showWordLimit
                         onChange={(value: string) => {
@@ -37,7 +43,7 @@ const BriefInfoEdit: React.FC = () => {
                     />
                 </Form.Item>
                 <Form.Item
-                    label="接口方法与路径"
+                    label="请求方法与路径"
                     required
                     style={{ width: "50%" }}
                 >
@@ -60,8 +66,12 @@ const BriefInfoEdit: React.FC = () => {
                         <Form.Item
                             field="path"
                             rules={[
-                                { required: true, message: "请输入接口路径" },
+                                { required: true, message: "请输入API路径" },
                                 { match: /^\//, message: "路径必须以 / 开头" },
+                                {
+                                    match: /^[^\u4e00-\u9fff]*$/,
+                                    message: "路径不能包含中文",
+                                },
                             ]}
                             noStyle={{ showErrorTip: true }}
                         >

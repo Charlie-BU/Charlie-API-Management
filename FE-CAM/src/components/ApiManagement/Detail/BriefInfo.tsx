@@ -1,8 +1,4 @@
-import {
-    Descriptions,
-    IconCommon,
-    Space,
-} from "@cloud-materials/common";
+import { Descriptions, IconCommon, Space } from "@cloud-materials/common";
 
 import type { ApiDetail, ApiDraftDetail, ApiLevel } from "@/services/api/types";
 import { genApiLevelTag, formatDateOrDateTime, userAvatar } from "@/utils";
@@ -17,7 +13,7 @@ const BriefInfo = (props: { apiDetail: ApiDetail | ApiDraftDetail }) => {
         },
         {
             label: "接口 Owner",
-            value: userAvatar(apiDetail.owner as UserProfile, 25),
+            value: userAvatar([apiDetail.owner] as UserProfile[], 25),
         },
         {
             label: "接口等级",

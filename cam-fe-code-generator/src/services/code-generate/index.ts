@@ -100,7 +100,7 @@ export const removeService = async (serviceName: string) => {
     }
 };
 
-// 基于cam.config.json中存储的service信息，拉取全部service的全部api
+// 入口：基于cam.config.json中存储的service信息，拉取全部service的全部api
 export const pullAllApisInAllServices = async () => {
     const config = readConfig();
     if (!config.services || Object.keys(config.services).length === 0) {
@@ -127,7 +127,15 @@ export const pullAllApisInAllServices = async () => {
             );
             continue;
         }
-        let apiOptions: ApiOption[] = [];
+
+        // 一个service确定一个输出目录
+        const outputDir = path.join(outDir || ".", name);
+        // 确认输出目录存在
+        if (!fs.existsSync(outputDir)) {
+            fs.mkdirSync(outputDir, { recursive: true });
+        }
+        let namespaceCode = autoGeneratePrefix;
+        let apiOptions: ApiOption[] = []; // 存放当前service全部api的一些信息
         // 拉取service信息
         try {
             const serviceRes = await GetServiceByUuidAndVersion(
@@ -147,7 +155,9 @@ export const pullAllApisInAllServices = async () => {
                       ? serviceRes.service.api_drafts || []
                       : [];
             const isLatest = serviceRes.is_latest;
-            console.log(`Service ${name} has ${apis.length} apis`);
+            console.log(
+                `Service ${name} has ${apis.length} api${apis.length === 1 ? "" : "s"}`
+            );
 
             // 获取api的参数信息
             for (const api of apis) {
@@ -160,13 +170,10 @@ export const pullAllApisInAllServices = async () => {
                 }
                 const apiDetail = apiRes.api as ApiDetail | ApiDraftDetail;
 
-                // 生成ts代码
-                const apiOption: ApiOption =
-                    await generateTSCodeByApiDetailAndWriteToFiles(
-                        apiDetail,
-                        name,
-                        outDir
-                    );
+                // 生成当前api的namespace代码
+                const { namespaceCodeForThisApi, apiOption } =
+                    await generateNamespaceCodeByApiDetail(apiDetail);
+                namespaceCode += `\n\n${namespaceCodeForThisApi}`;
                 apiOptions.push(apiOption);
             }
         } catch (error) {
@@ -176,45 +183,34 @@ export const pullAllApisInAllServices = async () => {
             continue;
         }
 
-        // 一个service统一生成index.ts
-        const outputDir = path.join(outDir || ".", name);
-        const code = await formatCodeByPrettier(
-            serviceClassCode(name, apiOptions)
+        // 统一生成namespaces.ts
+        fs.writeFileSync(
+            path.join(outputDir, "namespaces.ts"),
+            await formatCodeByPrettier(namespaceCode)
         );
-
-        fs.appendFileSync(path.join(outputDir, "index.ts"), code);
+        // 统一生成index.ts
+        const code = await formatCodeByPrettier(
+            `${autoGeneratePrefix}\n${serviceClassCode(name, apiOptions)}`
+        );
+        fs.writeFileSync(path.join(outputDir, "index.ts"), code);
     }
 
-    // 生成request-demo.ts
+    // 生成request-demo.ts（已格式化）
     const demoServiceName = Object.keys(config.services)[0];
     if (!demoServiceName) {
         process.exit(1);
     }
     const code = await formatCodeByPrettier(requestDemoCode(demoServiceName));
-    fs.appendFileSync(path.join(outDir || ".", "request-demo.ts"), code);
+    fs.writeFileSync(path.join(outDir || ".", "request-demo.ts"), code);
 
     console.log(`All services' apis have been generated in ${outDir || "."}.`);
 };
 
-const generateTSCodeByApiDetailAndWriteToFiles = async (
-    api: ApiDetail | ApiDraftDetail,
-    serviceName: string,
-    outDir: string
-): Promise<ApiOption> => {
+const generateNamespaceCodeByApiDetail = async (
+    api: ApiDetail | ApiDraftDetail
+): Promise<{ namespaceCodeForThisApi: string; apiOption: ApiOption }> => {
     const { namespaces, apiOption } = generateTSCode(api);
-    const outputDir = path.join(outDir || ".", serviceName);
+    const namespaceCodeForThisApi = namespaces.join("\n\n");
 
-    if (!fs.existsSync(outputDir)) {
-        fs.mkdirSync(outputDir, { recursive: true });
-        fs.writeFileSync(path.join(outputDir, "index.ts"), autoGeneratePrefix);
-        fs.writeFileSync(
-            path.join(outputDir, "namespaces.ts"),
-            autoGeneratePrefix
-        );
-    }
-
-    const code = await formatCodeByPrettier(namespaces.join("\n\n") + "\n\n");
-
-    fs.appendFileSync(path.join(outputDir, "namespaces.ts"), code);
-    return apiOption;
+    return { namespaceCodeForThisApi, apiOption };
 };

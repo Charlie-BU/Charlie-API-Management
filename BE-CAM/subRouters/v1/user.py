@@ -55,7 +55,6 @@ async def getUserByUsernameOrNicknameOrEmail(request: Request):
     username_or_nickname_or_email = request.query_params.get(
         "username_or_nickname_or_email", None
     )
-    user_id = userGetUserIdByAccessToken(request=request)
     if not username_or_nickname_or_email:
         return Response(
             status_code=400,
@@ -66,7 +65,6 @@ async def getUserByUsernameOrNicknameOrEmail(request: Request):
         res = userGetUserByUsernameOrNicknameOrEmail(
             db=db,
             username_or_nickname_or_email=username_or_nickname_or_email,
-            user_id=user_id,
         )
     return res
 

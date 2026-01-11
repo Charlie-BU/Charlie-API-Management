@@ -32,6 +32,7 @@ const LoggedInView: React.FC<{
         serviceList,
         loading,
         fetchMyNewestServices,
+        fetchMyMaintainedServices,
         fetchMyDeletedServices,
         fetchHisNewestServicesByOwnerId,
         fetchAllServices,
@@ -133,6 +134,18 @@ const LoggedInView: React.FC<{
                         Message.warning(err.message || "获取服务失败");
                     });
                 break;
+            case "MyMaintainedServices":
+                fetchMyMaintainedServices(pagination)
+                    .then((total) => {
+                        setPagination((prev) => ({
+                            ...prev,
+                            total,
+                        }));
+                    })
+                    .catch((err) => {
+                        Message.warning(err.message || "获取服务失败");
+                    });
+                break;
             case "MyDeletedServices":
                 fetchMyDeletedServices(pagination)
                     .then((total) => {
@@ -201,6 +214,10 @@ const LoggedInView: React.FC<{
                 style={{ marginBottom: 18 }}
             >
                 <Tabs.TabPane key="MyServices" title={"My Services"} />
+                <Tabs.TabPane
+                    key="MyMaintainedServices"
+                    title="My Maintained Services"
+                />
                 <Tabs.TabPane
                     key="MyDeletedServices"
                     title="My Deleted Services"
