@@ -409,7 +409,7 @@ export const useThisService = (service_uuid: string) => {
             draggable: false,
         };
 
-        apis.forEach((api) => {
+        apis.sort((a, b) => a.method.localeCompare(b.method)).forEach((api) => {
             const node = {
                 key: api.id.toString(),
                 title: (
@@ -720,43 +720,45 @@ export const useServiceIteration = (
             draggable: false,
         };
 
-        apiDrafts.forEach((apiDraft) => {
-            const node = {
-                key: apiDraft.id.toString(),
-                title: (
-                    <Space style={{ fontWeight: 500 }}>
-                        {genApiMethodTag(apiDraft.method, "small")}
-                        {apiDraft.name}
-                        <Ellipsis
-                            style={{
-                                color: "#6e7687",
-                                fontSize: 10,
-                                maxWidth: 160,
-                            }}
-                            rows={1}
-                            showTooltip
-                        >
-                            {apiDraft.path}
-                        </Ellipsis>
-                    </Space>
-                ),
-                style: {
-                    maxWidth: "100%",
-                    overflow: "auto",
-                    scrollbarWidth: "none",
-                },
-            };
-            if (apiDraft.category_id == null) {
-                uncategorizedGroup.children.push(node);
-            } else {
-                const group = categoryMap.get(apiDraft.category_id);
-                if (group) {
-                    group.children.push(node);
-                } else {
+        apiDrafts
+            .sort((a, b) => a.method.localeCompare(b.method))
+            .forEach((apiDraft) => {
+                const node = {
+                    key: apiDraft.id.toString(),
+                    title: (
+                        <Space style={{ fontWeight: 500 }}>
+                            {genApiMethodTag(apiDraft.method, "small")}
+                            {apiDraft.name}
+                            <Ellipsis
+                                style={{
+                                    color: "#6e7687",
+                                    fontSize: 10,
+                                    maxWidth: 160,
+                                }}
+                                rows={1}
+                                showTooltip
+                            >
+                                {apiDraft.path}
+                            </Ellipsis>
+                        </Space>
+                    ),
+                    style: {
+                        maxWidth: "100%",
+                        overflow: "auto",
+                        scrollbarWidth: "none",
+                    },
+                };
+                if (apiDraft.category_id == null) {
                     uncategorizedGroup.children.push(node);
+                } else {
+                    const group = categoryMap.get(apiDraft.category_id);
+                    if (group) {
+                        group.children.push(node);
+                    } else {
+                        uncategorizedGroup.children.push(node);
+                    }
                 }
-            }
-        });
+            });
 
         return [...Array.from(categoryMap.values()), uncategorizedGroup];
     }, [apiCategories, apiDrafts]);
