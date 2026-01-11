@@ -188,10 +188,24 @@ const Header: React.FC<HeaderProps> = (props) => {
                     borderBottom: "1px solid var(--color-neutral-3)",
                 }}
             >
-                <Text style={{ fontWeight: 600, fontSize: 14 }}>
+                <Text
+                    style={{
+                        fontWeight: 600,
+                        fontSize: 14,
+                        whiteSpace: "nowrap",
+                    }}
+                >
                     {serviceUuid} 相关人员
                 </Text>
-                {Object.values(serviceMembersByRole).flat().length} 人
+                <Text
+                    style={{
+                        fontSize: 12,
+                        marginLeft: 8,
+                        whiteSpace: "nowrap",
+                    }}
+                >
+                    {Object.values(serviceMembersByRole).flat().length} 人
+                </Text>
             </div>
             <Space direction="vertical" style={{ width: "100%" }}>
                 {Object.entries(serviceMembersByRole).map(([role, users]) => (
@@ -260,10 +274,9 @@ const Header: React.FC<HeaderProps> = (props) => {
                 split={<Divider type="vertical" style={{ margin: "0 16px" }} />}
             >
                 <Popover
-                    trigger="click"
                     position="bottom"
                     content={serviceMembersByRoleContent}
-                    style={{ width: 280 }}
+                    style={{ whiteSpace: "nowrap", maxWidth: "none" }}
                 >
                     <Text
                         style={{
