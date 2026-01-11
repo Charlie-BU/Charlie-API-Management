@@ -68,14 +68,8 @@ def userGetUserById(db: Session, id: int) -> dict:
 
 # 通过用户名或昵称或邮箱获取用户信息
 def userGetUserByUsernameOrNicknameOrEmail(
-    db: Session, username_or_nickname_or_email: str, user_id: int
+    db: Session, username_or_nickname_or_email: str
 ) -> dict:
-    user = db.get(User, user_id)
-    if user.level.value != 0:  # type: ignore
-        return {
-            "status": -1,
-            "message": "You don't have permission to view other user's information",
-        }
     # 把 url 编码的字符串解码，否则是 %20 等格式
     keyword = unquote(username_or_nickname_or_email).strip()
     search_users = (
