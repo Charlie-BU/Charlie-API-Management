@@ -45,6 +45,7 @@ import AddApiForm from "@/components/ApiManagement/ApiList/AddApiForm";
 import {
     AddApi,
     AddCategoryByServiceId,
+    CopyApiByApiDraftId,
     DeleteApiByApiDraftId,
     DeleteCategoryById,
     UpdateApiByApiDraftId,
@@ -806,6 +807,22 @@ export const useServiceIteration = (
         });
     }, [iterationId, fetchIterationDetail]);
 
+    const handleCopyApi = useCallback(
+        async (apiDraftId: number) => {
+            const res = await CopyApiByApiDraftId({
+                service_iteration_id: iterationId,
+                api_draft_id: apiDraftId,
+            });
+            if (res.status !== 200) {
+                throw new Error(res.message || "API 复制失败");
+            }
+            Message.success(res.message || "API 复制成功");
+            // 刷新
+            await fetchIterationDetail();
+        },
+        [iterationId, fetchIterationDetail]
+    );
+
     const handleDeleteApi = useCallback(
         async (apiDraftId: number) => {
             const res = await DeleteApiByApiDraftId({
@@ -845,6 +862,7 @@ export const useServiceIteration = (
         iterationTreeData,
         fetchIterationDetail,
         handleAddApi,
+        handleCopyApi,
         handleDeleteApi,
         handleSaveApiDraft,
     };

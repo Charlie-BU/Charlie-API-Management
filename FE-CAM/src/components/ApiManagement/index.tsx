@@ -63,6 +63,7 @@ const ApiManagement: React.FC = () => {
         iterationTreeData,
         handleAddApi,
         handleSaveApiDraft,
+        handleCopyApi,
         handleDeleteApi,
     } = useServiceIteration(iterationId, apiCategories);
 
@@ -151,6 +152,7 @@ const ApiManagement: React.FC = () => {
                             apiDetail={apiDetail}
                             handlers={{
                                 handleSaveApiDraft,
+                                handleCopyApi,
                                 handleDeleteApi,
                             }}
                         />
