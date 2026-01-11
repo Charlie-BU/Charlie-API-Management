@@ -41,7 +41,7 @@ const ApiManagement: React.FC = () => {
             : serviceDetail?.service?.service_uuid || "";
     }, [serviceDetail]);
 
-    const creator = useMemo(() => {
+    const personInCharge = useMemo(() => {
         return "owner" in serviceDetail
             ? (serviceDetail.owner as UserProfile)
             : "creator" in serviceDetail
@@ -93,7 +93,7 @@ const ApiManagement: React.FC = () => {
                     versions={versions}
                     isLatest={isLatest}
                     currentVersion={currentVersion}
-                    creator={creator}
+                    personInCharge={personInCharge}
                     maintainers={
                         "maintainers" in serviceDetail
                             ? (serviceDetail.maintainers as UserProfile[])

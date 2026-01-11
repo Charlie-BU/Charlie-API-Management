@@ -850,6 +850,8 @@ export const useServiceIteration = (
             if (res.status !== 200) {
                 throw new Error(res.message || "API 保存失败");
             }
+            // 刷新
+            await fetchIterationDetail();
             return res;
         },
         [iterationId, fetchIterationDetail]

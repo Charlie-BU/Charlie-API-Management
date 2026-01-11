@@ -204,7 +204,7 @@ def deleteApiByApiDraftId(request: Request):
     return res
 
 
-# 通过service_iteration_id、api_draft_id更新API（正式表Api）
+# 通过service_iteration_id、api_draft_id更新API
 @apiRouterV1.post("/updateApiByApiDraftId", auth_required=True)
 def updateApiByApiDraftId(request: Request):
     data = request.json()
