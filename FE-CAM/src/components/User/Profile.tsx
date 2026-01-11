@@ -2,7 +2,6 @@ import {
     Avatar,
     Typography,
     Space,
-    Tag,
     Divider,
     Layout,
     IconLock,
@@ -13,7 +12,8 @@ import styles from "./index.module.less";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 
-import type { UserProfile } from "@/services/user/types";
+import type { UserProfile, UserRole } from "@/services/user/types";
+import { genUserRoleTag } from "@/utils";
 interface UserProfileProps {
     userInfo: UserProfile;
     logout: () => void;
@@ -66,13 +66,8 @@ const Profile: React.FC<UserProfileProps> = ({
                         </Typography.Ellipsis>
                     </Layout.Content>
                 </Layout>
-                <Space style={{ marginTop: 12, marginLeft: 50 }}>
-                    <Tag size="small" color="blue">
-                        {t(`user.${userInfo.role}`)}
-                    </Tag>
-                    <Tag size="small" color="green">
-                        L{userInfo.level}
-                    </Tag>
+                <Space style={{ marginTop: 8, marginLeft: 50 }}>
+                    {genUserRoleTag(userInfo.role as UserRole, "small")}
                 </Space>
             </div>
             <Divider style={{ margin: 0 }} />

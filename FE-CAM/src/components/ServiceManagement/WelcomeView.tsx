@@ -1,8 +1,4 @@
-import {
-    Space,
-    Button,
-    Typography,
-} from "@cloud-materials/common";
+import { Space, Button, Typography } from "@cloud-materials/common";
 import { useTranslation } from "react-i18next";
 
 import styles from "./index.module.less";
@@ -29,8 +25,7 @@ const WelcomeLoggedIn: React.FC<{
                     </Title>
                     <Text className={styles.subtitle}>
                         {t("service.welcomeBack")}
-                        {displayName}（{t(`user.${user.role}`)} · L{user.level}
-                        ）
+                        {displayName}
                     </Text>
                 </div>
             </Space>

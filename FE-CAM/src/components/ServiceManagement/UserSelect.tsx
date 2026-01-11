@@ -1,8 +1,9 @@
 import { useState } from "react";
 import debounce from "lodash/debounce";
 import { useTranslation } from "react-i18next";
-import { Message, Select, Spin } from "@cloud-materials/common";
-import type { UserProfile } from "@/services/user/types";
+import { Message, Select, Space, Spin } from "@cloud-materials/common";
+import type { UserProfile, UserRole } from "@/services/user/types";
+import { genUserRoleTag } from "@/utils";
 
 const UserSelect: React.FC<{
     getUserByUsernameOrNicknameOrEmail: (
@@ -14,7 +15,7 @@ const UserSelect: React.FC<{
     const [fetching, setFetching] = useState(false);
     const [options, setOptions] = useState<
         {
-            label: string;
+            label: React.ReactNode;
             value: number;
         }[]
     >([]);
@@ -27,7 +28,14 @@ const UserSelect: React.FC<{
             setFetching(true);
             const users = await getUserByUsernameOrNicknameOrEmail(value);
             const opts = users.map((user) => ({
-                label: `${user.nickname} (${user.username}) - ${user.email}`,
+                label: (
+                    <Space style={{ whiteSpace: "nowrap" }}>
+                        {genUserRoleTag(user.role as UserRole)}
+                        <span style={{ cursor: "default" }}>
+                            {user.nickname} ({user.username}) - {user.email}
+                        </span>
+                    </Space>
+                ),
                 value: user.id,
             }));
             setOptions(opts);

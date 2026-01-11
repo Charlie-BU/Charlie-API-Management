@@ -5,6 +5,7 @@ import {
     Divider,
     IconLoading,
     IconUserGroup,
+    Popover,
     Select,
     Space,
     Tag,
@@ -12,8 +13,8 @@ import {
 } from "@cloud-materials/common";
 
 import styles from "./index.module.less";
-import type { UserProfile } from "@/services/user/types";
-import { userAvatar } from "@/utils";
+import type { UserProfile, UserRole } from "@/services/user/types";
+import { genUserRoleTag, userAvatar } from "@/utils";
 import { useService } from "@/hooks/useService";
 import { useUser } from "@/hooks/useUser";
 
@@ -71,7 +72,7 @@ const Header: React.FC<HeaderProps> = (props) => {
     const [maintainersHere, setMaintainersHere] =
         useState<UserProfile[]>(maintainers);
     const [maintainerOptions, setMaintainerOptions] = useState<
-        { label: string; value: UserProfile }[]
+        { label: React.ReactNode; value: UserProfile }[]
     >([]);
 
     useEffect(() => {
@@ -87,7 +88,14 @@ const Header: React.FC<HeaderProps> = (props) => {
         // 把查询到的用户添加到选项中
         setMaintainerOptions(
             res.map((user) => ({
-                label: `${user.nickname} (${user.username}) - ${user.email}`,
+                label: (
+                    <Space>
+                        {genUserRoleTag(user.role as UserRole)}
+                        <span>
+                            {user.nickname} ({user.username}) - {user.email}
+                        </span>
+                    </Space>
+                ),
                 value: user,
             }))
         );
@@ -107,10 +115,21 @@ const Header: React.FC<HeaderProps> = (props) => {
 
     // 合并当前维护人列表和查到的服务维护人选项，去重
     const options = useMemo(() => {
-        const map = new Map<number, { label: string; value: number }>();
+        const map = new Map<
+            number,
+            { label: React.ReactNode; value: number }
+        >();
         maintainersHere.forEach((maintainer) => {
             map.set(maintainer.id, {
-                label: `${maintainer.nickname} (${maintainer.username}) - ${maintainer.email}`,
+                label: (
+                    <Space>
+                        {genUserRoleTag(maintainer.role as UserRole)}
+                        <span>
+                            {maintainer.nickname} ({maintainer.username}) -{" "}
+                            {maintainer.email}
+                        </span>
+                    </Space>
+                ),
                 value: maintainer.id, // Select.Option的value不能是对象，只能是原始类型
             });
         });
@@ -142,6 +161,55 @@ const Header: React.FC<HeaderProps> = (props) => {
         }
         setSwitchLoading(false);
     };
+
+    // 服务相关人员按role分类
+    const serviceMembersByRole = [creator, ...maintainersHere].reduce(
+        (acc, user) => {
+            const role = user.role as UserRole;
+            if (!acc[role]) {
+                acc[role] = [];
+            }
+            acc[role].push(user);
+            return acc;
+        },
+        {} as Record<UserRole, UserProfile[]>
+    );
+
+    // 服务相关人员按role分类展示
+    const serviceMembersByRoleContent = (
+        <div style={{ padding: "6px 0" }}>
+            <div
+                style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    marginBottom: 16,
+                    paddingBottom: 8,
+                    borderBottom: "1px solid var(--color-neutral-3)",
+                }}
+            >
+                <Text style={{ fontWeight: 600, fontSize: 14 }}>
+                    {serviceUuid} 相关人员
+                </Text>
+                {Object.values(serviceMembersByRole).flat().length} 人
+            </div>
+            <Space direction="vertical" style={{ width: "100%" }}>
+                {Object.entries(serviceMembersByRole).map(([role, users]) => (
+                    <div
+                        key={role}
+                        style={{
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "space-between",
+                        }}
+                    >
+                        {genUserRoleTag(role as UserRole, "small")}
+                        {userAvatar(users, 28)}
+                    </div>
+                ))}
+            </Space>
+        </div>
+    );
 
     if (loading || !versions || !serviceUuid) {
         return null;
@@ -191,12 +259,24 @@ const Header: React.FC<HeaderProps> = (props) => {
                 size={0}
                 split={<Divider type="vertical" style={{ margin: "0 16px" }} />}
             >
-                <Text
-                    style={{ fontSize: 16, fontWeight: 600, cursor: "pointer" }}
-                    onClick={() => handleViewService(serviceUuid)}
+                <Popover
+                    trigger="click"
+                    position="bottom"
+                    content={serviceMembersByRoleContent}
+                    style={{ width: 280 }}
                 >
-                    {serviceUuid}
-                </Text>
+                    <Text
+                        style={{
+                            fontSize: 16,
+                            fontWeight: 600,
+                            cursor: "pointer",
+                        }}
+                        onClick={() => handleViewService(serviceUuid)}
+                    >
+                        {serviceUuid}
+                    </Text>
+                </Popover>
+
                 <Select
                     bordered={false}
                     size="large"
@@ -258,7 +338,7 @@ const Header: React.FC<HeaderProps> = (props) => {
                                 <Text className={styles.serviceAvatarTip}>
                                     服务维护者
                                 </Text>
-                                {userAvatar(maintainersHere, 32)}
+                                {userAvatar(maintainersHere, 32, 5)}
                             </span>
                             {isServiceOwnerOrIsL0 && (
                                 <Select
@@ -275,6 +355,7 @@ const Header: React.FC<HeaderProps> = (props) => {
                                     triggerProps={{
                                         autoAlignPopupWidth: false,
                                         autoAlignPopupMinWidth: true,
+                                        position: "bl",
                                     }}
                                     prefix={
                                         switchLoading ? (
