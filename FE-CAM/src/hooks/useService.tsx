@@ -45,6 +45,7 @@ import AddApiForm from "@/components/ApiManagement/ApiList/AddApiForm";
 import {
     AddApi,
     AddCategoryByServiceId,
+    CopyApiByApiDraftId,
     DeleteApiByApiDraftId,
     DeleteCategoryById,
     UpdateApiByApiDraftId,
@@ -408,7 +409,7 @@ export const useThisService = (service_uuid: string) => {
             draggable: false,
         };
 
-        apis.forEach((api) => {
+        apis.sort((a, b) => a.method.localeCompare(b.method)).forEach((api) => {
             const node = {
                 key: api.id.toString(),
                 title: (
@@ -719,43 +720,45 @@ export const useServiceIteration = (
             draggable: false,
         };
 
-        apiDrafts.forEach((apiDraft) => {
-            const node = {
-                key: apiDraft.id.toString(),
-                title: (
-                    <Space style={{ fontWeight: 500 }}>
-                        {genApiMethodTag(apiDraft.method, "small")}
-                        {apiDraft.name}
-                        <Ellipsis
-                            style={{
-                                color: "#6e7687",
-                                fontSize: 10,
-                                maxWidth: 160,
-                            }}
-                            rows={1}
-                            showTooltip
-                        >
-                            {apiDraft.path}
-                        </Ellipsis>
-                    </Space>
-                ),
-                style: {
-                    maxWidth: "100%",
-                    overflow: "auto",
-                    scrollbarWidth: "none",
-                },
-            };
-            if (apiDraft.category_id == null) {
-                uncategorizedGroup.children.push(node);
-            } else {
-                const group = categoryMap.get(apiDraft.category_id);
-                if (group) {
-                    group.children.push(node);
-                } else {
+        apiDrafts
+            .sort((a, b) => a.method.localeCompare(b.method))
+            .forEach((apiDraft) => {
+                const node = {
+                    key: apiDraft.id.toString(),
+                    title: (
+                        <Space style={{ fontWeight: 500 }}>
+                            {genApiMethodTag(apiDraft.method, "small")}
+                            {apiDraft.name}
+                            <Ellipsis
+                                style={{
+                                    color: "#6e7687",
+                                    fontSize: 10,
+                                    maxWidth: 160,
+                                }}
+                                rows={1}
+                                showTooltip
+                            >
+                                {apiDraft.path}
+                            </Ellipsis>
+                        </Space>
+                    ),
+                    style: {
+                        maxWidth: "100%",
+                        overflow: "auto",
+                        scrollbarWidth: "none",
+                    },
+                };
+                if (apiDraft.category_id == null) {
                     uncategorizedGroup.children.push(node);
+                } else {
+                    const group = categoryMap.get(apiDraft.category_id);
+                    if (group) {
+                        group.children.push(node);
+                    } else {
+                        uncategorizedGroup.children.push(node);
+                    }
                 }
-            }
-        });
+            });
 
         return [...Array.from(categoryMap.values()), uncategorizedGroup];
     }, [apiCategories, apiDrafts]);
@@ -806,6 +809,22 @@ export const useServiceIteration = (
         });
     }, [iterationId, fetchIterationDetail]);
 
+    const handleCopyApi = useCallback(
+        async (apiDraftId: number) => {
+            const res = await CopyApiByApiDraftId({
+                service_iteration_id: iterationId,
+                api_draft_id: apiDraftId,
+            });
+            if (res.status !== 200) {
+                throw new Error(res.message || "API 复制失败");
+            }
+            Message.success(res.message || "API 复制成功");
+            // 刷新
+            await fetchIterationDetail();
+        },
+        [iterationId, fetchIterationDetail]
+    );
+
     const handleDeleteApi = useCallback(
         async (apiDraftId: number) => {
             const res = await DeleteApiByApiDraftId({
@@ -833,6 +852,8 @@ export const useServiceIteration = (
             if (res.status !== 200) {
                 throw new Error(res.message || "API 保存失败");
             }
+            // 刷新
+            await fetchIterationDetail();
             return res;
         },
         [iterationId, fetchIterationDetail]
@@ -845,6 +866,7 @@ export const useServiceIteration = (
         iterationTreeData,
         fetchIterationDetail,
         handleAddApi,
+        handleCopyApi,
         handleDeleteApi,
         handleSaveApiDraft,
     };

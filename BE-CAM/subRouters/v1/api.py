@@ -170,6 +170,23 @@ def addApi(request: Request):
     return res
 
 
+# 通过service_iteration_id、api_draft_id复制api
+@apiRouterV1.post("/copyApiByApiDraftId", auth_required=True)
+def copyApiByApiDraftId(request: Request):
+    data = request.json()
+    service_iteration_id = data["service_iteration_id"]
+    api_draft_id = data["api_draft_id"]
+    user_id = userGetUserIdByAccessToken(request)
+    with session() as db:
+        res = apiCopyApiByApiDraftId(
+            db=db,
+            service_iteration_id=int(service_iteration_id),
+            api_draft_id=int(api_draft_id),
+            user_id=user_id,
+        )
+    return res
+
+
 # 通过service_iteration_id、api_draft_id删除api
 @apiRouterV1.post("/deleteApiByApiDraftId", auth_required=True)
 def deleteApiByApiDraftId(request: Request):
@@ -187,7 +204,7 @@ def deleteApiByApiDraftId(request: Request):
     return res
 
 
-# 通过service_iteration_id、api_draft_id更新API（正式表Api）
+# 通过service_iteration_id、api_draft_id更新API
 @apiRouterV1.post("/updateApiByApiDraftId", auth_required=True)
 def updateApiByApiDraftId(request: Request):
     data = request.json()

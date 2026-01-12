@@ -23,7 +23,7 @@ const Layout: React.FC = () => {
                 />
             </ArcoHeader>
             <ArcoLayout>
-                <ArcoSider style={{ width: "200px" }}>
+                <ArcoSider style={{ width: 200 }}>
                     <Sidebar />
                 </ArcoSider>
                 <ArcoContent className={styles.content}>

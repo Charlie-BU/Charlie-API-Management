@@ -6,7 +6,12 @@
 }
 
 .sidebar {
-    padding: 12px;
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    padding-bottom: 30;
+    overflow-y: auto;
 }
 
 :global(.arco-tree-node-selected) {
@@ -46,7 +51,7 @@
 .content {
     flex: 1;
     padding: 16px 20px;
-    min-height: 100vh;
+    padding-bottom: 30px;
 
     :global(.arco-spin) {
         display: block;

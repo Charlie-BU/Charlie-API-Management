@@ -91,6 +91,13 @@ export const AddApi = async (data: AddApiRequest) => {
     return api.post<AddApiResponse>(`${prefix}/addApi`, data);
 };
 
+// 复制 API 草稿
+export const CopyApiByApiDraftId = async (
+    data: DeleteApiByApiDraftIdRequest
+) => {
+    return api.post<AddApiResponse>(`${prefix}/copyApiByApiDraftId`, data);
+};
+
 // 删除 API 草稿
 export const DeleteApiByApiDraftId = async (
     data: DeleteApiByApiDraftIdRequest

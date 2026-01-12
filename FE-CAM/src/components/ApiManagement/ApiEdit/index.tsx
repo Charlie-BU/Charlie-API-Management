@@ -41,6 +41,7 @@ interface ApiEditHandlers {
     handleSaveApiDraft: (
         data: Omit<UpdateApiByApiDraftIdRequest, "service_iteration_id">
     ) => Promise<UpdateApiByApiDraftIdResponse>;
+    handleCopyApi: (apiDraftId: number) => Promise<void>;
     handleDeleteApi: (apiDraftId: number) => Promise<void>;
 }
 
@@ -53,7 +54,7 @@ interface ApiEditProps {
 const ApiEdit: React.FC<ApiEditProps> = ({
     loading,
     apiDetail,
-    handlers: { handleSaveApiDraft, handleDeleteApi },
+    handlers: { handleSaveApiDraft, handleCopyApi, handleDeleteApi },
 }) => {
     const [form] = Form.useForm();
     const [editLoading, setEditLoading] = useState(false);
@@ -182,7 +183,14 @@ const ApiEdit: React.FC<ApiEditProps> = ({
                             loading={editLoading}
                             disabled={!isDraft || rejectSubmit}
                         >
-                            {isDraft ? "保存当前 API" : "当前 API 已保存"}
+                            {isDraft ? "保存 API" : "当前 API 已保存"}
+                        </Button>
+                        <Button
+                            type="default"
+                            status="default"
+                            onClick={() => handleCopyApi(apiDetail.id)}
+                        >
+                            复制 API
                         </Button>
                         <Button
                             type="default"
@@ -195,7 +203,7 @@ const ApiEdit: React.FC<ApiEditProps> = ({
                                 )
                             }
                         >
-                            删除当前 API
+                            删除 API
                         </Button>
                     </Space>
                 </div>

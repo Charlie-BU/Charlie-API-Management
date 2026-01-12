@@ -1,3 +1,4 @@
+import time
 from sqlalchemy import or_
 from sqlalchemy.orm import Session
 
@@ -94,7 +95,11 @@ def apiGetApiById(
             "message": "User not found",
         }
     if user.level.value != 0:
-        if is_latest and api.service.owner_id != user_id and user not in api.service.maintainers:
+        if (
+            is_latest
+            and api.service.owner_id != user_id
+            and user not in api.service.maintainers
+        ):
             return {
                 "status": -3,
                 "message": "You are neither the owner nor the maintainer of this service",
@@ -411,6 +416,125 @@ def apiAddApi(
         "status": 200,
         "message": "Add api success",
         "api": api_draft.toJson(),
+    }
+
+
+# 辅助函数：递归复制参数列表，支持嵌套的object类型参数
+def _copy_params_recursively(
+    db: Session,
+    source_params: list,
+    target_api_draft_id: int,
+    parent_param_id: int | None = None,
+    param_model_class=RequestParamDraft,
+) -> None:
+    for param in source_params:
+        if param_model_class is RequestParamDraft:
+            new_param = RequestParamDraft(
+                api_draft_id=target_api_draft_id,
+                name=param.name,
+                location=param.location,
+                type=param.type,
+                required=param.required,
+                default_value=param.default_value,
+                description=param.description,
+                example=param.example,
+                array_child_type=param.array_child_type,
+                parent_param_id=parent_param_id,
+            )
+        else:
+            new_param = ResponseParamDraft(
+                api_draft_id=target_api_draft_id,
+                status_code=param.status_code,
+                name=param.name,
+                type=param.type,
+                required=param.required,
+                description=param.description,
+                example=param.example,
+                array_child_type=param.array_child_type,
+                parent_param_id=parent_param_id,
+            )
+
+        db.add(new_param)
+        db.flush()  # 获取新创建记录的ID
+
+        if param.child_params:
+            _copy_params_recursively(
+                db=db,
+                source_params=param.child_params,
+                target_api_draft_id=target_api_draft_id,
+                parent_param_id=new_param.id,
+                param_model_class=param_model_class,
+            )
+
+
+# 通过service_iteration_id、api_draft_id复制api
+def apiCopyApiByApiDraftId(
+    db: Session, service_iteration_id: int, api_draft_id: int, user_id: int
+) -> dict:
+    # 版本迭代行为权限校验
+    check_res = checkServiceIterationPermission(
+        db=db, service_iteration_id=service_iteration_id, user_id=user_id
+    )
+    if not check_res["is_ok"]:
+        return check_res["error"]
+    api_draft = db.get(ApiDraft, api_draft_id)
+    if not api_draft:
+        return {
+            "status": -1,
+            "message": "Api draft not found",
+        }
+    if api_draft.service_iteration_id != service_iteration_id:  # type: ignore
+        return {
+            "status": -2,
+            "message": "Api draft not belongs to this service iteration",
+        }
+    # 符合复制条件
+    timestamp = int(time.time())  # 用时间戳作为哈希值，确保唯一
+    new_name = f"{api_draft.name}-copy-{timestamp}"
+    new_path = f"{api_draft.path}-copy-{timestamp}"
+
+    new_api_draft = ApiDraft(
+        service_iteration_id=service_iteration_id,
+        owner_id=user_id,
+        name=new_name,
+        method=api_draft.method,
+        path=new_path,
+        description=api_draft.description,
+        level=api_draft.level,
+        category_id=api_draft.category_id,
+        is_enabled=api_draft.is_enabled,
+    )
+    db.add(new_api_draft)
+    db.flush()
+
+    # 复制请求参数
+    root_req_params = [p for p in api_draft.request_params if p.parent_param_id is None]
+    if root_req_params:
+        _copy_params_recursively(
+            db=db,
+            source_params=root_req_params,
+            target_api_draft_id=new_api_draft.id,
+            parent_param_id=None,
+            param_model_class=RequestParamDraft,
+        )
+
+    # 复制响应参数
+    root_resp_params = [
+        p for p in api_draft.response_params if p.parent_param_id is None
+    ]
+    if root_resp_params:
+        _copy_params_recursively(
+            db=db,
+            source_params=root_resp_params,
+            target_api_draft_id=new_api_draft.id,
+            parent_param_id=None,
+            param_model_class=ResponseParamDraft,
+        )
+
+    db.commit()
+    return {
+        "status": 200,
+        "message": "Copy api success",
     }
 
 

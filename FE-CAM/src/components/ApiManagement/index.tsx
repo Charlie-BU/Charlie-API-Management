@@ -41,7 +41,7 @@ const ApiManagement: React.FC = () => {
             : serviceDetail?.service?.service_uuid || "";
     }, [serviceDetail]);
 
-    const creator = useMemo(() => {
+    const personInCharge = useMemo(() => {
         return "owner" in serviceDetail
             ? (serviceDetail.owner as UserProfile)
             : "creator" in serviceDetail
@@ -63,6 +63,7 @@ const ApiManagement: React.FC = () => {
         iterationTreeData,
         handleAddApi,
         handleSaveApiDraft,
+        handleCopyApi,
         handleDeleteApi,
     } = useServiceIteration(iterationId, apiCategories);
 
@@ -92,7 +93,7 @@ const ApiManagement: React.FC = () => {
                     versions={versions}
                     isLatest={isLatest}
                     currentVersion={currentVersion}
-                    creator={creator}
+                    personInCharge={personInCharge}
                     maintainers={
                         "maintainers" in serviceDetail
                             ? (serviceDetail.maintainers as UserProfile[])
@@ -115,14 +116,9 @@ const ApiManagement: React.FC = () => {
                     }}
                 />
             </Layout.Header>
-            <Layout>
+            <Layout style={{ position: "relative" }}>
                 {/* 左侧 API 列表 */}
-                <Layout.Sider
-                    style={{
-                        width: 300,
-                        paddingBottom: 12,
-                    }}
-                >
+                <Layout.Sider className={styles.sidebar} width={300}>
                     <ApiList
                         inIteration={inIteration}
                         isLatest={isLatest}
@@ -144,13 +140,14 @@ const ApiManagement: React.FC = () => {
                         }}
                     />
                 </Layout.Sider>
-                <Layout.Content>
+                <Layout.Content style={{ marginLeft: 300 }}>
                     {inIteration && iterationDetail ? (
                         <ApiEdit
                             loading={iterationLoading || apiLoading}
                             apiDetail={apiDetail}
                             handlers={{
                                 handleSaveApiDraft,
+                                handleCopyApi,
                                 handleDeleteApi,
                             }}
                         />

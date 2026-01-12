@@ -35,7 +35,7 @@ interface HeaderProps {
     versions: { version: string; is_latest: boolean }[];
     isLatest: boolean;
     currentVersion: string;
-    creator: UserProfile;
+    personInCharge: UserProfile;
     maintainers: UserProfile[];
     inIteration: boolean;
     handlers: HeaderHandlers;
@@ -48,7 +48,7 @@ const Header: React.FC<HeaderProps> = (props) => {
         versions,
         isLatest,
         currentVersion,
-        creator,
+        personInCharge,
         maintainers,
         inIteration,
         handlers: {
@@ -62,7 +62,8 @@ const Header: React.FC<HeaderProps> = (props) => {
     const { handleViewService } = useService();
     const { user, getUserByUsernameOrNicknameOrEmail } = useUser();
 
-    const isServiceOwnerOrIsL0 = creator.id === user?.id || user?.level === 0;
+    const isServiceOwnerOrIsL0 =
+        personInCharge.id === user?.id || user?.level === 0;
 
     // 使用 ref 保持 fetch 函数的引用稳定，以配合 debounce 使用
     // 这样做既能避免闭包陷阱（stale closure），又能保证 debounce 实例在渲染间保持稳定
@@ -163,7 +164,7 @@ const Header: React.FC<HeaderProps> = (props) => {
     };
 
     // 服务相关人员按role分类
-    const serviceMembersByRole = [creator, ...maintainersHere].reduce(
+    const serviceMembersByRole = [personInCharge, ...maintainersHere].reduce(
         (acc, user) => {
             const role = user.role as UserRole;
             if (!acc[role]) {
@@ -188,10 +189,24 @@ const Header: React.FC<HeaderProps> = (props) => {
                     borderBottom: "1px solid var(--color-neutral-3)",
                 }}
             >
-                <Text style={{ fontWeight: 600, fontSize: 14 }}>
+                <Text
+                    style={{
+                        fontWeight: 600,
+                        fontSize: 14,
+                        whiteSpace: "nowrap",
+                    }}
+                >
                     {serviceUuid} 相关人员
                 </Text>
-                {Object.values(serviceMembersByRole).flat().length} 人
+                <Text
+                    style={{
+                        fontSize: 12,
+                        marginLeft: 8,
+                        whiteSpace: "nowrap",
+                    }}
+                >
+                    {Object.values(serviceMembersByRole).flat().length} 人
+                </Text>
             </div>
             <Space direction="vertical" style={{ width: "100%" }}>
                 {Object.entries(serviceMembersByRole).map(([role, users]) => (
@@ -260,10 +275,9 @@ const Header: React.FC<HeaderProps> = (props) => {
                 split={<Divider type="vertical" style={{ margin: "0 16px" }} />}
             >
                 <Popover
-                    trigger="click"
                     position="bottom"
                     content={serviceMembersByRoleContent}
-                    style={{ width: 280 }}
+                    style={{ whiteSpace: "nowrap", maxWidth: "none" }}
                 >
                     <Text
                         style={{
@@ -328,8 +342,10 @@ const Header: React.FC<HeaderProps> = (props) => {
                         ))}
                 </Select>
                 <span className={styles.userInfo}>
-                    <Text className={styles.serviceAvatarTip}>版本负责人</Text>
-                    {userAvatar([creator], 32)}
+                    <Text className={styles.serviceAvatarTip}>
+                        {isLatest ? "服务" : "版本"}负责人
+                    </Text>
+                    {userAvatar([personInCharge], 32)}
                 </span>
                 {(maintainersHere.length > 0 || isServiceOwnerOrIsL0) &&
                     isLatest && (

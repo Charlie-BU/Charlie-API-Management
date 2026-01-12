@@ -144,7 +144,7 @@ const ApiList: React.FC<ApiListProps> = (props) => {
     }
 
     return (
-        <div className={styles.sidebar}>
+        <div style={{ padding: 12 }}>
             <div className={styles.search}>
                 <Search allowClear placeholder="搜索 API" />
                 {inIteration ? (
