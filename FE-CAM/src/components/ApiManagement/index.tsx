@@ -116,14 +116,9 @@ const ApiManagement: React.FC = () => {
                     }}
                 />
             </Layout.Header>
-            <Layout>
+            <Layout style={{ position: "relative" }}>
                 {/* 左侧 API 列表 */}
-                <Layout.Sider
-                    style={{
-                        width: 300,
-                        paddingBottom: 12,
-                    }}
-                >
+                <Layout.Sider className={styles.sidebar} width={300}>
                     <ApiList
                         inIteration={inIteration}
                         isLatest={isLatest}
@@ -145,7 +140,7 @@ const ApiManagement: React.FC = () => {
                         }}
                     />
                 </Layout.Sider>
-                <Layout.Content>
+                <Layout.Content style={{ marginLeft: 300 }}>
                     {inIteration && iterationDetail ? (
                         <ApiEdit
                             loading={iterationLoading || apiLoading}
