@@ -5,6 +5,6 @@
     "basedpyright.disableLanguageServices": true,
     "editor.formatOnSave": false,
     "[python]": {
-        "editor.defaultFormatter": "ms-python.black-formatter"
+        "editor.defaultFormatter": "ms-python.black-formatter" 
     }
 }
