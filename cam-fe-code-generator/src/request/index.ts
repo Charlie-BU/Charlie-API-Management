@@ -2,7 +2,7 @@ import axios, { AxiosHeaders } from "axios";
 import type { AxiosError, AxiosInstance, AxiosRequestConfig } from "axios";
 import { TokenManager } from "../utils/data-manager";
 
-const BASE_URL = "http://124.223.93.75:1024";
+const BASE_URL = "https://cam-api.com/api";
 // const BASE_URL = "http://0.0.0.0:1024";
 
 const getAccessToken = (): string => {
