@@ -1,4 +1,6 @@
 import os
+import ssl
+import certifi
 import aiosmtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
@@ -44,6 +46,9 @@ async def send_email(
     message.attach(MIMEText(content, msg_type, "utf-8"))
 
     try:
+        # 创建 SSL 上下文，使用 certifi 提供的 CA 证书
+        context = ssl.create_default_context(cafile=certifi.where())
+        
         # 异步连接并发送
         await aiosmtplib.send(
             message,
@@ -53,6 +58,7 @@ async def send_email(
             username=SMTP_USER,
             password=SMTP_PASSWORD,
             use_tls=True,  # 如果端口是 465 通常需要 True，587 通常用 start_tls
+            tls_context=context, # 显式传入 SSL 上下文
         )
         return {"status": 200, "message": "Email sent successfully"}
     except Exception as e:

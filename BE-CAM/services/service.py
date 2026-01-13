@@ -803,13 +803,15 @@ async def serviceCommitIteration(
     for maintainer in service.maintainers:
         if maintainer.email:
             recipients.add(maintainer.email)
-    await send_email(
+    mailRes = await send_email(
         to_email=list(recipients),
         subject=f"服务 {service.service_uuid} 版本更新",
         content=f"您好！您负责 / 维护的服务 {service.service_uuid} 已更新到版本 {new_version}。\n"
         f"可通过 https://cam-api.com/service?uuid={service.service_uuid} 查看详情。\n\n"
         f"操作人：{check_res["user"].nickname} ({check_res["user"].username}) - {check_res["user"].email}\n",
     )
+    if mailRes["status"] != 200:
+        print(f"Send email failed: {mailRes.get('message', 'Unknown error')}")
     return {
         "status": 200,
         "message": "Commit service iteration success",
