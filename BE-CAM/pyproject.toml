@@ -5,7 +5,9 @@ description = "Backend of CAM"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
+    "aiosmtplib>=5.0.0",
     "alembic>=1.17.0",
+    "asyncpg>=0.31.0",
     "bcrypt>=5.0.0",
     "psycopg2-binary>=2.9.11",
     "python-dotenv>=1.0.0",

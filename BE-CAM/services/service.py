@@ -1,5 +1,6 @@
 from calendar import c
 from datetime import datetime
+from mailer import send_email
 from sqlalchemy.orm import Session
 from urllib.parse import unquote
 
@@ -694,7 +695,7 @@ def serviceStartIteration(db: Session, service_id: int, user_id: int) -> dict:
 
 
 # 完成service迭代流程，service版本更新
-def serviceCommitIteration(
+async def serviceCommitIteration(
     db: Session, service_iteration_id: int, new_version: str, user_id: int
 ) -> dict:
     # 版本迭代行为权限校验
@@ -796,6 +797,19 @@ def serviceCommitIteration(
     service_iteration.version = new_version
     service_iteration.is_committed = True
     db.commit()
+    # 发送邮件通知当前service全部相关人
+    # 收集收件人并去重
+    recipients = {service.owner.email}
+    for maintainer in service.maintainers:
+        if maintainer.email:
+            recipients.add(maintainer.email)
+    await send_email(
+        to_email=list(recipients),
+        subject=f"服务 {service.service_uuid} 版本更新",
+        content=f"您好！您负责 / 维护的服务 {service.service_uuid} 已更新到版本 {new_version}。\n"
+        f"可通过 https://cam-api.com/service?uuid={service.service_uuid} 查看详情。\n\n"
+        f"操作人：{check_res["user"].nickname} ({check_res["user"].username}) - {check_res["user"].email}\n",
+    )
     return {
         "status": 200,
         "message": "Commit service iteration success",
