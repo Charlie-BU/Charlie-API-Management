@@ -282,13 +282,13 @@ def startIteration(request: Request):
 
 # 完成service迭代流程，service版本更新
 @serviceRouterV1.post("/commitIteration", auth_required=True)
-def commitIteration(request: Request):
+async def commitIteration(request: Request):
     data = request.json()
     service_iteration_id = data["service_iteration_id"]
     new_version = data["new_version"]
     user_id = userGetUserIdByAccessToken(request=request)
     with session() as db:
-        res = serviceCommitIteration(
+        res = await serviceCommitIteration(
             db=db,
             service_iteration_id=service_iteration_id,
             new_version=new_version,

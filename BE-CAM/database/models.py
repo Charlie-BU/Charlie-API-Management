@@ -13,7 +13,7 @@ from sqlalchemy import (
     func,
 )
 from sqlalchemy.orm import relationship, declarative_base
-from datetime import datetime
+from datetime import datetime, timezone
 
 from .enums import (
     HttpMethod,
@@ -158,7 +158,7 @@ class ServiceIteration(Base, SerializableMixin):
         String(32), nullable=True
     )  # 发布前可为空，发布后最新迭代与 service.version 对齐
     description = Column(Text)
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=datetime.now(timezone.utc))
     # 是否已发布
     is_committed = Column(Boolean, default=False)
 
