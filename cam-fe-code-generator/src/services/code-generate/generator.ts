@@ -56,7 +56,7 @@ const generateInterface = (
         const fieldName = param.name;
         const isOptional = !param.required;
         const comment = param.description
-            ? `  /* ${param.description} */\n`
+            ? `  /** ${param.description} */\n`
             : "";
 
         if (
@@ -192,6 +192,7 @@ export const generateTSCode = (
         functionName: `${capitalizeFirstLetter(api.name)}${api.method}`,
         apiMethod: api.method,
         apiPath: api.path,
+        apiDescription: api.description || "",
         reqBodyInterfaceName,
         reqQueryInterfaceName,
         reqPathInterfaceName,

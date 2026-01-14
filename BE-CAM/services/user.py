@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 from jose import jwt
 import os
 from dotenv import load_dotenv
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 from database.models import User
 from database.enums import UserRole
@@ -21,7 +21,7 @@ def createAccessToken(
     data: dict, expires_delta: timedelta | None = timedelta(hours=24)
 ) -> str:
     to_encode = data.copy()
-    expire = datetime.utcnow() + expires_delta
+    expire = datetime.now(timezone.utc) + expires_delta
     to_encode.update({"exp": expire})
     if not ALGORITHM or not SECRET_KEY:
         raise Exception("ALGORITHM or SECRET_KEY is not set in .env file")

@@ -5,6 +5,7 @@ export interface ApiOption {
     functionName: string;
     apiMethod: HttpMethod;
     apiPath: string;
+    apiDescription: string;
     reqBodyInterfaceName: string;
     reqQueryInterfaceName: string;
     reqPathInterfaceName: string;
@@ -33,6 +34,7 @@ export const serviceClassCode = (
             functionName,
             apiMethod,
             apiPath,
+            apiDescription,
             reqBodyInterfaceName,
             reqQueryInterfaceName,
             reqPathInterfaceName,
@@ -92,6 +94,7 @@ export const serviceClassCode = (
             : `req?: any`;
 
         const apiFunctionCode = `
+  /** ${apiDescription} */
   ${functionName}(${reqParamDef}, options?: T): Promise<${respInterfaceName}> {
     const _req = req || {};
     ${urlCode}

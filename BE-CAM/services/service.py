@@ -1,5 +1,4 @@
-from calendar import c
-from datetime import datetime
+from datetime import datetime, timezone
 from mailer import send_email
 from sqlalchemy.orm import Session
 from urllib.parse import unquote
@@ -467,7 +466,7 @@ def serviceDeleteServiceById(db: Session, id: int, user_id: int) -> dict:
             "message": "You are not the owner of this service",
         }
     service.is_deleted = True  # type: ignore
-    service.deleted_at = datetime.utcnow()  # type: ignore
+    service.deleted_at = datetime.now(timezone.utc)  # type: ignore
     db.commit()
     return {
         "status": 200,
