@@ -1,6 +1,7 @@
 import axios, { AxiosHeaders } from "axios";
 import type { AxiosError, AxiosInstance, AxiosRequestConfig } from "axios";
 import { TokenManager } from "../utils/data-manager";
+import { UserProfile } from "../services/apis/user/types";
 
 const BASE_URL = "https://cam-api.com/api";
 // const BASE_URL = "http://0.0.0.0:1024";
@@ -36,8 +37,21 @@ http.interceptors.request.use(
 http.interceptors.response.use(
     (response) => response,
     (error: AxiosError) => {
+        const status = error?.response?.status;
         const message = error.message || "Request error";
-        console.error("API Error:", message, error);
+        // 处理 401 ：清除 token 和用户信息缓存
+        if (status === 401) {
+            const tokenManager = TokenManager.getInstance();
+            if (!tokenManager.getToken()) {
+                return;
+            }
+            tokenManager.setToken("");
+            tokenManager.setUser({} as UserProfile);
+            console.warn("User token expired, please login again.");
+        } else {
+            console.error("API Error:", message);
+        }
+
         return Promise.reject(message);
     }
 );
