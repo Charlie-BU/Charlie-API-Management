@@ -312,3 +312,25 @@ def updateDescription(request: Request):
             user_id=user_id,
         )
     return res
+
+
+# 导出openapi
+@serviceRouterV1.get("/exportOpenapiByUuidAndVersion", auth_required=True)
+def exportOpenapiByUuidAndVersion(request: Request):
+    service_uuid = request.query_params.get("service_uuid", None)
+    version = request.query_params.get("version", None)
+    if not service_uuid or not version:
+        return Response(
+            status_code=400,
+            description="service_uuid and version are required",
+            headers={},
+        )
+    user_id = userGetUserIdByAccessToken(request=request)
+    with session() as db:
+        res = serviceExportOpenapiByUuidAndVersion(
+            db=db,
+            service_uuid=service_uuid,
+            version=version,
+            user_id=user_id,
+        )
+    return res
