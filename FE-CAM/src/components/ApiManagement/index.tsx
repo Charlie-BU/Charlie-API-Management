@@ -30,6 +30,7 @@ const ApiManagement: React.FC = () => {
         handleDeleteCategory,
         checkIsServiceMaintainer,
         handleAddOrRemoveServiceMaintainerById,
+        handleExportOpenAPI,
         handleStartIteration,
         handleCompleteIteration,
         exitIteration,
@@ -113,6 +114,7 @@ const ApiManagement: React.FC = () => {
                         exitIteration,
                         checkIsServiceMaintainer,
                         handleAddOrRemoveServiceMaintainerById,
+                        handleExportOpenAPI,
                     }}
                 />
             </Layout.Header>

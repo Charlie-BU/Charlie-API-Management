@@ -175,6 +175,11 @@ export interface AddOrRemoveServiceMaintainerByIdResponse extends BaseResponse {
     is_current_maintainer: boolean;
 }
 
+export interface ExportOpenapiByUuidAndVersionResponse extends BaseResponse {
+    openapi_object: Record<string, any>;
+    is_latest: boolean;
+}
+
 export type ServiceRange =
     | "MyServices"
     | "MyMaintainedServices"

@@ -26,6 +26,7 @@ import type {
     AddOrRemoveServiceMaintainerByIdResponse,
     IsServiceMaintainerRequest,
     IsServiceMaintainerResponse,
+    ExportOpenapiByUuidAndVersionResponse,
 } from "./types";
 
 const prefix = "/v1/service";
@@ -186,3 +187,15 @@ export const AddOrRemoveServiceMaintainerById = async (
         data
     );
 };
+
+// 导出openapi
+export const ExportOpenapiByUuidAndVersion = async (
+    service_uuid: string,
+    version: string
+) => {
+    return api.get<ExportOpenapiByUuidAndVersionResponse>(
+        `${prefix}/exportOpenapiByUuidAndVersion`,
+        { service_uuid, version }
+    );
+};
+

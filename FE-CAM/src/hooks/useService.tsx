@@ -14,6 +14,7 @@ import {
     CommitIteration,
     CreateNewService,
     DeleteServiceById,
+    ExportOpenapiByUuidAndVersion,
     GetAllDeletedServicesByUserId,
     GetAllServices,
     GetAllVersionsByUuid,
@@ -79,7 +80,7 @@ export const useService = () => {
             setLoading(true);
             const res = await GetMyNewestServices(
                 pagination.page_size,
-                pagination.current_page
+                pagination.current_page,
             );
             if (res.status !== 200) {
                 // 在这里不直接通过Message提示用户的原因是，在组件层一并捕获非200未成功和请求失败错误，一并处理
@@ -92,7 +93,7 @@ export const useService = () => {
             // 返回服务总数，用于分页
             return res.total || 0;
         },
-        []
+        [],
     );
 
     const fetchMyMaintainedServices = useCallback(
@@ -103,7 +104,7 @@ export const useService = () => {
             setLoading(true);
             const res = await GetMyMaintainedServices(
                 pagination.page_size,
-                pagination.current_page
+                pagination.current_page,
             );
             if (res.status !== 200) {
                 setLoading(false);
@@ -114,7 +115,7 @@ export const useService = () => {
             setLoading(false);
             return res.total || 0;
         },
-        []
+        [],
     );
 
     const fetchHisNewestServicesByOwnerId = useCallback(
@@ -127,7 +128,7 @@ export const useService = () => {
             const res = await GetHisNewestServicesByOwnerId(
                 ownerId,
                 pagination.page_size,
-                pagination.current_page
+                pagination.current_page,
             );
             if (res.status !== 200) {
                 setLoading(false);
@@ -138,7 +139,7 @@ export const useService = () => {
             setLoading(false);
             return res.total || 0;
         },
-        []
+        [],
     );
 
     const fetchMyDeletedServices = useCallback(
@@ -149,7 +150,7 @@ export const useService = () => {
             setLoading(true);
             const res = await GetAllDeletedServicesByUserId(
                 pagination.page_size,
-                pagination.current_page
+                pagination.current_page,
             );
             if (res.status !== 200) {
                 setLoading(false);
@@ -160,7 +161,7 @@ export const useService = () => {
             setLoading(false);
             return res.total || 0;
         },
-        []
+        [],
     );
 
     const fetchAllServices = useCallback(async (pagination: Pagination) => {
@@ -170,7 +171,7 @@ export const useService = () => {
         setLoading(true);
         const res = await GetAllServices(
             pagination.page_size,
-            pagination.current_page
+            pagination.current_page,
         );
         if (res.status !== 200) {
             setLoading(false);
@@ -190,14 +191,14 @@ export const useService = () => {
             }
             return res;
         },
-        []
+        [],
     );
 
     const handleViewService = useCallback(
         (service_uuid: string) => {
             navigate(`/service?uuid=${service_uuid}`);
         },
-        [navigate]
+        [navigate],
     );
 
     const handleDeleteService = useCallback(async (id: number) => {
@@ -276,7 +277,7 @@ export const useService = () => {
                 },
             });
         },
-        [createNewService]
+        [createNewService],
     );
 
     return {
@@ -346,7 +347,7 @@ export const useThisService = (service_uuid: string) => {
             try {
                 const res = await GetServiceByUuidAndVersion(
                     service_uuid,
-                    version
+                    version,
                 );
                 if (res.status !== 200) {
                     setServiceDetail({} as ServiceDetail);
@@ -362,8 +363,8 @@ export const useThisService = (service_uuid: string) => {
                         ("apis" in res.service
                             ? res.service.apis
                             : "api_drafts" in res.service
-                            ? res.service.api_drafts
-                            : []) || []
+                              ? res.service.api_drafts
+                              : []) || [],
                     );
                 }
             } catch (err: unknown) {
@@ -374,7 +375,7 @@ export const useThisService = (service_uuid: string) => {
                 setLoading(false);
             }
         },
-        [service_uuid]
+        [service_uuid],
     );
 
     useEffect(() => {
@@ -499,8 +500,8 @@ export const useThisService = (service_uuid: string) => {
                                   category_id:
                                       category_id >= 0 ? category_id : null,
                               }
-                            : api
-                    )
+                            : api,
+                    ),
                 );
             } catch (err: unknown) {
                 const msg =
@@ -509,7 +510,7 @@ export const useThisService = (service_uuid: string) => {
                 throw err;
             }
         },
-        [currentVersion, fetchServiceDetail]
+        [currentVersion, fetchServiceDetail],
     );
 
     const handleDeleteCategory = useCallback(
@@ -521,14 +522,14 @@ export const useThisService = (service_uuid: string) => {
                 }
                 Message.success(res.message || "分类删除成功");
                 setApiCategories((prev) =>
-                    prev.filter((cat) => cat.id !== category_id)
+                    prev.filter((cat) => cat.id !== category_id),
                 );
             } catch (err: unknown) {
                 const msg = err instanceof Error ? err.message : "分类删除失败";
                 Message.warning(msg);
             }
         },
-        [currentVersion, fetchServiceDetail]
+        [currentVersion, fetchServiceDetail],
     );
 
     const checkIsServiceMaintainer = useCallback(
@@ -549,7 +550,7 @@ export const useThisService = (service_uuid: string) => {
                 return false;
             }
         },
-        [serviceDetail.id]
+        [serviceDetail.id],
     );
 
     const handleAddOrRemoveServiceMaintainerById = useCallback(
@@ -571,8 +572,27 @@ export const useThisService = (service_uuid: string) => {
                 return false;
             }
         },
-        [serviceDetail.id, currentVersion, fetchServiceDetail]
+        [serviceDetail.id, currentVersion, fetchServiceDetail],
     );
+
+    const handleExportOpenAPI = useCallback(async () => {
+        try {
+            const res = await ExportOpenapiByUuidAndVersion(
+                service_uuid,
+                currentVersion,
+            );
+            console.log(res);
+            if (res.status !== 200) {
+                throw new Error(res.message || "导出 OpenAPI 失败");
+            }
+            return res.openapi_object;
+        } catch (err: unknown) {
+            const msg =
+                err instanceof Error ? err.message : "导出 OpenAPI 失败";
+            Message.warning(msg);
+            return null;
+        }
+    }, [service_uuid, currentVersion]);
 
     // 迭代相关
     const [inIteration, setInIteration] = useState(false);
@@ -651,6 +671,7 @@ export const useThisService = (service_uuid: string) => {
         handleDeleteCategory,
         checkIsServiceMaintainer,
         handleAddOrRemoveServiceMaintainerById,
+        handleExportOpenAPI,
         setInIteration,
         handleStartIteration,
         handleCompleteIteration,
@@ -661,7 +682,7 @@ export const useThisService = (service_uuid: string) => {
 // 迭代相关（只用于一次迭代周期内，与服务历史版本无关）
 export const useServiceIteration = (
     iterationId: number,
-    apiCategories: ApiCategory[]
+    apiCategories: ApiCategory[],
 ) => {
     const [loading, setLoading] = useState(false);
     const [iterationDetail, setIterationDetail] =
@@ -822,7 +843,7 @@ export const useServiceIteration = (
             // 刷新
             await fetchIterationDetail();
         },
-        [iterationId, fetchIterationDetail]
+        [iterationId, fetchIterationDetail],
     );
 
     const handleDeleteApi = useCallback(
@@ -838,12 +859,12 @@ export const useServiceIteration = (
             // 刷新
             await fetchIterationDetail();
         },
-        [iterationId, fetchIterationDetail]
+        [iterationId, fetchIterationDetail],
     );
 
     const handleSaveApiDraft = useCallback(
         async (
-            data: Omit<UpdateApiByApiDraftIdRequest, "service_iteration_id">
+            data: Omit<UpdateApiByApiDraftIdRequest, "service_iteration_id">,
         ): Promise<UpdateApiByApiDraftIdResponse> => {
             const res = await UpdateApiByApiDraftId({
                 ...data,
@@ -856,7 +877,7 @@ export const useServiceIteration = (
             await fetchIterationDetail();
             return res;
         },
-        [iterationId, fetchIterationDetail]
+        [iterationId, fetchIterationDetail],
     );
 
     return {
