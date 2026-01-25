@@ -1,7 +1,9 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import debounce from "lodash/debounce";
 import {
+    Badge,
     Breadcrumb,
+    Button,
     Divider,
     IconLoading,
     IconUserGroup,
@@ -9,13 +11,13 @@ import {
     Select,
     Space,
     Tag,
+    Tooltip,
     Typography,
 } from "@cloud-materials/common";
 
 import styles from "./index.module.less";
 import type { UserProfile, UserRole } from "@/services/user/types";
-import { genUserRoleTag, userAvatar } from "@/utils";
-import { useService } from "@/hooks/useService";
+import { copyToClipboard, genUserRoleTag, userAvatar } from "@/utils";
 import { useUser } from "@/hooks/useUser";
 
 const { Text } = Typography;
@@ -25,8 +27,9 @@ interface HeaderHandlers {
     exitIteration: () => void;
     checkIsServiceMaintainer: (serviceId: number) => Promise<boolean>;
     handleAddOrRemoveServiceMaintainerById: (
-        maintainerId: number
+        maintainerId: number,
     ) => Promise<boolean>;
+    handleExportOpenAPI: () => Promise<Record<string, any> | null>;
 }
 
 interface HeaderProps {
@@ -56,10 +59,10 @@ const Header: React.FC<HeaderProps> = (props) => {
             exitIteration,
             checkIsServiceMaintainer,
             handleAddOrRemoveServiceMaintainerById,
+            handleExportOpenAPI,
         },
     } = props;
 
-    const { handleViewService } = useService();
     const { user, getUserByUsernameOrNicknameOrEmail } = useUser();
 
     const isServiceOwnerOrIsL0 =
@@ -98,7 +101,7 @@ const Header: React.FC<HeaderProps> = (props) => {
                     </Space>
                 ),
                 value: user,
-            }))
+            })),
         );
         // 检查查询到的用户是否是服务维护人，如果是则添加到维护人列表中
         for (const user of res) {
@@ -111,7 +114,7 @@ const Header: React.FC<HeaderProps> = (props) => {
 
     const debounceGetMaintainerOptions = useCallback(
         debounce((val) => getMaintainerOptions(val), 300),
-        []
+        [],
     );
 
     // 合并当前维护人列表和查到的服务维护人选项，去重
@@ -148,7 +151,7 @@ const Header: React.FC<HeaderProps> = (props) => {
     // 切换服务维护人
     const [switchLoading, setSwitchLoading] = useState(false);
     const handleAddOrRemoveServiceMaintainer = async (
-        maintainer: UserProfile
+        maintainer: UserProfile,
     ) => {
         setSwitchLoading(true);
         const isCurrentMaintainer =
@@ -157,7 +160,7 @@ const Header: React.FC<HeaderProps> = (props) => {
             setMaintainersHere((prev) => [...prev, maintainer]);
         } else {
             setMaintainersHere((prev) =>
-                prev.filter((i) => i.id !== maintainer.id)
+                prev.filter((i) => i.id !== maintainer.id),
             );
         }
         setSwitchLoading(false);
@@ -173,7 +176,7 @@ const Header: React.FC<HeaderProps> = (props) => {
             acc[role].push(user);
             return acc;
         },
-        {} as Record<UserRole, UserProfile[]>
+        {} as Record<UserRole, UserProfile[]>,
     );
 
     // 服务相关人员按role分类展示
@@ -225,6 +228,32 @@ const Header: React.FC<HeaderProps> = (props) => {
             </Space>
         </div>
     );
+
+    // 导出 OpenAPI
+    const [exportLoading, setExportLoading] = useState(false);
+    const exportAndDownloadOpenAPI = async () => {
+        setExportLoading(true);
+        try {
+            const openAPIObj = await handleExportOpenAPI();
+            if (openAPIObj) {
+                const blob = new Blob([JSON.stringify(openAPIObj, null, 2)], {
+                    type: "application/json",
+                });
+                const url = window.URL.createObjectURL(blob);
+                const link = document.createElement("a");
+                link.href = url;
+                link.download = `${serviceUuid}.json`;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                window.URL.revokeObjectURL(url);
+            }
+        } catch (error) {
+            console.error("Export failed:", error);
+        } finally {
+            setExportLoading(false);
+        }
+    };
 
     if (loading || !versions || !serviceUuid) {
         return null;
@@ -279,16 +308,18 @@ const Header: React.FC<HeaderProps> = (props) => {
                     content={serviceMembersByRoleContent}
                     style={{ whiteSpace: "nowrap", maxWidth: "none" }}
                 >
-                    <Text
-                        style={{
-                            fontSize: 16,
-                            fontWeight: 600,
-                            cursor: "pointer",
-                        }}
-                        onClick={() => handleViewService(serviceUuid)}
-                    >
-                        {serviceUuid}
-                    </Text>
+                    <Tooltip content="点击复制">
+                        <Text
+                            style={{
+                                fontSize: 16,
+                                fontWeight: 600,
+                                cursor: "pointer",
+                            }}
+                            onClick={() => copyToClipboard(serviceUuid)}
+                        >
+                            {serviceUuid}
+                        </Text>
+                    </Tooltip>
                 </Popover>
 
                 <Select
@@ -396,15 +427,15 @@ const Header: React.FC<HeaderProps> = (props) => {
                                         }
                                         const newIds = val as number[];
                                         const currentIds = maintainersHere.map(
-                                            (m) => m.id
+                                            (m) => m.id,
                                         );
                                         // 找出新增的维护者
                                         const addedId = newIds.find(
-                                            (id) => !currentIds.includes(id)
+                                            (id) => !currentIds.includes(id),
                                         );
                                         // 找出移除的维护者
                                         const removedId = currentIds.find(
-                                            (id) => !newIds.includes(id)
+                                            (id) => !newIds.includes(id),
                                         );
 
                                         // 执行添加或移除操作
@@ -412,21 +443,21 @@ const Header: React.FC<HeaderProps> = (props) => {
                                             const addedMaintainer =
                                                 maintainerOptions.find(
                                                     (i) =>
-                                                        i.value.id === addedId
+                                                        i.value.id === addedId,
                                                 )?.value;
                                             if (addedMaintainer) {
                                                 handleAddOrRemoveServiceMaintainer(
-                                                    addedMaintainer
+                                                    addedMaintainer,
                                                 );
                                             }
                                         } else if (removedId) {
                                             const removedMaintainer =
                                                 maintainersHere.find(
-                                                    (i) => i.id === removedId
+                                                    (i) => i.id === removedId,
                                                 );
                                             if (removedMaintainer) {
                                                 handleAddOrRemoveServiceMaintainer(
-                                                    removedMaintainer
+                                                    removedMaintainer,
                                                 );
                                             }
                                         }
@@ -435,6 +466,16 @@ const Header: React.FC<HeaderProps> = (props) => {
                             )}
                         </Space>
                     )}
+                <Badge text="NEW">
+                    <Button
+                        type="default"
+                        status="success"
+                        onClick={exportAndDownloadOpenAPI}
+                        loading={exportLoading}
+                    >
+                        导出 OpenAPI
+                    </Button>
+                </Badge>
             </Space>
         </div>
     );

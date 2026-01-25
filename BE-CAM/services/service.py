@@ -14,7 +14,7 @@ from database.models import (
     RequestParamDraft,
     ResponseParamDraft,
 )
-from services.utils import checkServiceIterationPermission
+from services.utils import checkServiceIterationPermission, openapiTemplate
 
 
 # 获取全部服务
@@ -233,7 +233,7 @@ def serviceGetServiceByUuidAndVersion(
             }
 
     user = db.get(User, user_id)
-    # 非L0用户，为当前service owner或当前迭代creator，才有权限查看
+    # 非L0用户，为当前service owner或maintainer或当前迭代creator，才有权限查看
     if curr_service.owner_id != user_id and user not in curr_service.maintainers and user.level.value != 0:  # type: ignore
         if is_latest:  # 最新版
             return {
@@ -546,7 +546,7 @@ def serviceGetServiceIterationById(db: Session, id: int, user_id: int) -> dict:
             "message": "Service iteration not found",
         }
     user = db.get(User, user_id)
-    # 非L0用户，为当前service owner或当前迭代creator，才有权限查看
+    # 非L0用户，为当前service owner或maintainer或当前迭代creator，才有权限查看
     if iteration.creator_id != user_id and iteration.service.owner_id != user_id and user.level.value != 0:  # type: ignore
         return {
             "status": -2,
@@ -837,4 +837,68 @@ def serviceUpdateDescription(
     return {
         "status": 200,
         "message": "Update service description success",
+    }
+
+
+# 导出openapi
+def serviceExportOpenapiByUuidAndVersion(
+    db: Session, service_uuid: str, version: str, user_id: int
+) -> dict:
+    # 把 url 编码的字符串解码，否则 / 是 %2F
+    service_uuid = unquote(service_uuid).strip()
+    curr_service = (
+        db.query(Service)
+        .filter(
+            Service.service_uuid == service_uuid,
+            ~Service.is_deleted,
+        )
+        .first()
+    )
+    if not curr_service:
+        return {
+            "status": -1,
+            "message": "Service not found",
+        }
+    # 判断是否最新版本（当前version是否与curr_service版本一致，或version为latest）
+    if curr_service.version == version or version == "latest":  # type: ignore
+        is_latest = True
+        service = curr_service
+    else:
+        is_latest = False
+        service = (
+            db.query(ServiceIteration)
+            .filter(
+                ServiceIteration.service_id == curr_service.id,
+                ServiceIteration.version == version,
+            )
+            .first()
+        )
+        if not service:
+            return {
+                "status": -2,
+                "message": "Service version not found",
+            }
+
+    user = db.get(User, user_id)
+    # 非L0用户，为当前service owner或maintainer或当前迭代creator，才有权限查看
+    if curr_service.owner_id != user_id and user not in curr_service.maintainers and user.level.value != 0:  # type: ignore
+        if is_latest:  # 最新版
+            return {
+                "status": -3,
+                "message": "You are neither the owner nor the maintainer of this service",
+            }
+        elif service.creator_id != user_id:  # type: ignore  # 历史版本，需判断是否为当前迭代creator
+            return {
+                "status": -4,
+                "message": "You are not the creator of this service iteration",
+            }
+    openapi = openapiTemplate(
+        service=service,
+        is_latest=is_latest,
+    )
+    return {
+        "status": 200,
+        "message": "Get service success",
+        "openapi_object": openapi,
+        "is_latest": is_latest,
     }

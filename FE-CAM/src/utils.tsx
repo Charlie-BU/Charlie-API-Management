@@ -1,4 +1,11 @@
-import { Avatar, Modal, Popover, Space, Tag } from "@cloud-materials/common";
+import {
+    Avatar,
+    Modal,
+    Popover,
+    Space,
+    Tag,
+    Message,
+} from "@cloud-materials/common";
 import { t } from "i18next";
 import type { ApiLevel, HttpMethod } from "./services/api/types";
 import type { UserProfile, UserRole } from "./services/user/types";
@@ -30,7 +37,7 @@ const parseToDate = (input: string | number | Date): Date | null => {
         if (!isNaN(d.getTime())) return d;
     }
     const m = s.match(
-        /^(\d{4})-(\d{1,2})-(\d{1,2})(?:[ T](\d{1,2}):(\d{1,2})(?::(\d{1,2}))?)?$/
+        /^(\d{4})-(\d{1,2})-(\d{1,2})(?:[ T](\d{1,2}):(\d{1,2})(?::(\d{1,2}))?)?$/,
     );
     if (m) {
         const [, y, mo, da, h = "0", mi = "0", se = "0"] = m;
@@ -40,7 +47,7 @@ const parseToDate = (input: string | number | Date): Date | null => {
             Number(da),
             Number(h),
             Number(mi),
-            Number(se)
+            Number(se),
         );
         return isNaN(d.getTime()) ? null : d;
     }
@@ -50,7 +57,7 @@ const parseToDate = (input: string | number | Date): Date | null => {
 
 export const formatDateOrDateTime = (
     dateOrDateTime: string | number | Date,
-    granularity: "date" | "minute" | "second" = "second"
+    granularity: "date" | "minute" | "second" = "second",
 ) => {
     const date = parseToDate(dateOrDateTime);
     if (!date) return "";
@@ -70,7 +77,7 @@ export const formatDateOrDateTime = (
 export const handleConfirm = (
     onOk: () => void | Promise<void>,
     action?: string,
-    confirmText?: string
+    confirmText?: string,
 ) => {
     const modal = Modal.confirm({
         title: `确认${action || "操作"}`,
@@ -98,7 +105,7 @@ export const handleConfirm = (
 export const userAvatar = (
     users: UserProfile[],
     size: number,
-    maxCount: number = 5
+    maxCount: number = 5,
 ) => {
     if (!users) return null;
     return (
@@ -129,7 +136,7 @@ export const userAvatar = (
 
 export const genUserRoleTag = (
     role: UserRole,
-    size: "small" | "default" | "medium" | "large" = "default"
+    size: "small" | "default" | "medium" | "large" = "default",
 ) => {
     const roleColorMap: Record<UserRole, string> = {
         frontend: "arcoblue",
@@ -154,7 +161,7 @@ export const genUserRoleTag = (
 
 export const genApiMethodTag = (
     method: HttpMethod,
-    size: "small" | "default" | "medium" | "large" = "default"
+    size: "small" | "default" | "medium" | "large" = "default",
 ) => {
     const methodColorMap = {
         GET: "arcoblue",
@@ -174,7 +181,7 @@ export const genApiMethodTag = (
 
 export const genApiLevelTag = (
     level: ApiLevel,
-    size: "small" | "default" | "medium" | "large" = "default"
+    size: "small" | "default" | "medium" | "large" = "default",
 ) => {
     const levelColorMap = {
         P0: "red",
@@ -194,7 +201,7 @@ export const genApiLevelTag = (
 
 export const genStatusCodeTag = (
     code: number,
-    size: "small" | "default" | "medium" | "large" = "default"
+    size: "small" | "default" | "medium" | "large" = "default",
 ) => {
     const codeColorMap: Record<string, string> = {
         "2": "green",
@@ -212,7 +219,7 @@ export const genStatusCodeTag = (
 export const inIterationWarning = (
     action: Function,
     inIteration: boolean,
-    type: "warning" | "reject"
+    type: "warning" | "reject",
 ) => {
     if (!inIteration) return action();
     if (type === "warning") {
@@ -236,5 +243,26 @@ export const inIterationWarning = (
             okText: "返回",
         });
         return;
+    }
+};
+
+export const copyToClipboard = async (text: string) => {
+    try {
+        if (navigator.clipboard) {
+            await navigator.clipboard.writeText(text);
+        } else {
+            const textarea = document.createElement("textarea");
+            textarea.value = text;
+            textarea.style.position = "fixed";
+            textarea.style.opacity = "0";
+            document.body.appendChild(textarea);
+            textarea.select();
+            document.execCommand("copy");
+            document.body.removeChild(textarea);
+        }
+        Message.success("复制成功");
+    } catch (error) {
+        console.error("Copy failed", error);
+        Message.error("复制失败");
     }
 };
